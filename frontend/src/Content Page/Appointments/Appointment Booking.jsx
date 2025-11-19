@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const AppointmentBooking = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        date: '',
+        date: new Date(),
         time: '',
         message: ''
     });
@@ -18,6 +20,13 @@ const AppointmentBooking = () => {
         });
     };
 
+    const handleDateChange = (date) => {
+        setFormData({
+            ...formData,
+            date
+        });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitted(true);
@@ -28,7 +37,7 @@ const AppointmentBooking = () => {
             setFormData({
                 name: '',
                 email: '',
-                date: '',
+                date: new Date(),
                 time: '',
                 message: ''
             });
@@ -172,6 +181,8 @@ const AppointmentBooking = () => {
                                                 onChange={handleChange}
                                                 onFocus={() => setFocusedField('time')}
                                                 onBlur={() => setFocusedField(null)}
+                                                min="09:00"
+                                                max="17:00"
                                                 required
                                                 className="w-full px-5 py-4 bg-gray-700/50 border-2 border-gray-600 rounded-xl text-white focus:outline-none focus:border-purple-500 input-glow transition-all duration-300 backdrop-blur-sm"
                                             />
@@ -185,7 +196,7 @@ const AppointmentBooking = () => {
                                         <svg className="w-5 h-5 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                         </svg>
-                                        Message 
+                                        Message
                                     </label>
                                     <div className="relative group">
                                         <textarea
