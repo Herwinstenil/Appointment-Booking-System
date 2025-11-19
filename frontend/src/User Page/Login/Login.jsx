@@ -1,20 +1,13 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 
-const Signin = () => {
-    const [username, setUsername] = useState('');
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [focusedField, setFocusedField] = useState('');
-
-    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Signin attempt:', { username, email, password, confirmPassword });
-        // Navigate to login page after account creation
-        navigate('/login');
+        console.log('Login attempt:', { email, password });
+        // Add login logic here if needed
     };
 
     return (
@@ -24,12 +17,12 @@ const Signin = () => {
                     0%, 100% { transform: translateY(0px); }
                     50% { transform: translateY(-20px); }
                 }
-                
+
                 @keyframes pulse-glow {
                     0%, 100% { opacity: 0.3; transform: scale(1); }
                     50% { opacity: 0.6; transform: scale(1.1); }
                 }
-                
+
                 @keyframes slide-in-left {
                     from {
                         opacity: 0;
@@ -40,7 +33,7 @@ const Signin = () => {
                         transform: translateX(0);
                     }
                 }
-                
+
                 @keyframes slide-in-right {
                     from {
                         opacity: 0;
@@ -51,46 +44,46 @@ const Signin = () => {
                         transform: translateX(0);
                     }
                 }
-                
+
                 @keyframes fade-in {
                     from { opacity: 0; }
                     to { opacity: 1; }
                 }
-                
+
                 @keyframes rotate {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
                 }
-                
+
                 @keyframes shimmer {
                     0% { background-position: -1000px 0; }
                     100% { background-position: 1000px 0; }
                 }
-                
+
                 .float-animation {
                     animation: float 3s ease-in-out infinite;
                 }
-                
+
                 .pulse-glow {
                     animation: pulse-glow 2s ease-in-out infinite;
                 }
-                
+
                 .slide-in-left {
                     animation: slide-in-left 0.6s ease-out forwards;
                 }
-                
+
                 .slide-in-right {
                     animation: slide-in-right 0.6s ease-out forwards;
                 }
-                
+
                 .fade-in {
                     animation: fade-in 0.8s ease-out forwards;
                 }
-                
+
                 .rotate-slow {
                     animation: rotate 20s linear infinite;
                 }
-                
+
                 .shimmer-bg {
                     background: linear-gradient(
                         90deg,
@@ -101,11 +94,11 @@ const Signin = () => {
                     background-size: 1000px 100%;
                     animation: shimmer 3s infinite;
                 }
-                
+
                 .input-focus-ring {
                     position: relative;
                 }
-                
+
                 .input-focus-ring::before {
                     content: '';
                     position: absolute;
@@ -119,12 +112,12 @@ const Signin = () => {
                     opacity: 0;
                     transition: opacity 0.3s;
                 }
-                
+
                 .input-focus-ring.focused::before {
                     opacity: 1;
                     animation: rotate 3s linear infinite;
                 }
-                
+
                 .stagger-1 { animation-delay: 0.1s; }
                 .stagger-2 { animation-delay: 0.2s; }
                 .stagger-3 { animation-delay: 0.3s; }
@@ -158,21 +151,21 @@ const Signin = () => {
                             />
                         </div>
                         <h1 className="text-4xl font-bold text-white mb-4 slide-in-left stagger-1">
-                            Welcome to <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">Roriri</span>
+                            Welcome back to <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">Roriri</span>
                         </h1>
                         <p className="text-xl text-blue-100 mb-6 slide-in-left stagger-2">
-                            Book appointments seamlessly with our advanced scheduling system
+                            Login to access your appointments
                         </p>
 
                         {/* Features List */}
                         <div className="space-y-3">
                             <div className="flex items-center text-blue-100 slide-in-left stagger-3 hover:translate-x-2 transition-transform duration-300">
                                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 pulse-glow"></div>
-                                <span>Easy appointment scheduling</span>
+                                <span>Manage your bookings</span>
                             </div>
                             <div className="flex items-center text-blue-100 slide-in-left stagger-4 hover:translate-x-2 transition-transform duration-300">
                                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 pulse-glow" style={{ animationDelay: '0.3s' }}></div>
-                                <span>Real-time notifications</span>
+                                <span>View upcoming appointments</span>
                             </div>
                             <div className="flex items-center text-blue-100 slide-in-left stagger-5 hover:translate-x-2 transition-transform duration-300">
                                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 pulse-glow" style={{ animationDelay: '0.6s' }}></div>
@@ -188,26 +181,11 @@ const Signin = () => {
                 {/* Right Side - Form */}
                 <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-white">Create Account</h2>
-                        <p className="text-gray-400 mt-2">Join Roriri Software Solutions today</p>
+                        <h2 className="text-3xl font-bold text-white">Login</h2>
+                        <p className="text-gray-400 mt-2">Access your Roriri account</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                                Username
-                            </label>
-                            <input
-                                type="text"
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                                placeholder="Enter your username"
-                                required
-                            />
-                        </div>
-
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                                 Email Address
@@ -223,59 +201,39 @@ const Signin = () => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                                    placeholder="Enter password"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                                    placeholder="Confirm password"
-                                    required
-                                />
-                            </div>
+                        <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                                placeholder="Enter your password"
+                                required
+                            />
                         </div>
 
                         <button
                             type="submit"
                             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 hover:from-blue-700 hover:to-purple-700"
                         >
-                            Create Account
+                            Login
                         </button>
                     </form>
 
                     <div className="text-center mt-6">
-                        <p className="text-gray-400">
-                            Already have an account?{' '}
-                            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300">
-                                Login
-                            </Link>
-                        </p>
+                            <a href="/signin" className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-300">
+                                Forgot Your Password?
+                            </a>
                     </div>
 
                     {/* Terms and Conditions */}
                     <div className="text-center mt-4">
                         <p className="text-xs text-gray-500">
-                            By creating an account, you agree to our{' '}
+                            By logging in, you agree to our{' '}
                             <a href="#" className="text-blue-400 hover:text-blue-300">Terms</a> and{' '}
                             <a href="#" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
                         </p>
@@ -286,4 +244,4 @@ const Signin = () => {
     );
 };
 
-export default Signin;
+export default Login;
