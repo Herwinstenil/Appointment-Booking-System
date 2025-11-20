@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
     Facebook,
-    Twitter,
+    Youtube,
     Instagram,
     Linkedin,
     Mail,
@@ -34,14 +34,14 @@ const Footer = () => {
     };
 
     const socialLinks = [
-        { name: 'Facebook', icon: Facebook, href: '#', color: 'hover:text-blue-500' },
-        { name: 'Twitter', icon: Twitter, href: '#', color: 'hover:text-sky-400' },
-        { name: 'Instagram', icon: Instagram, href: '#', color: 'hover:text-pink-500' },
-        { name: 'Linkedin', icon: Linkedin, href: '#', color: 'hover:text-blue-600' }
+        { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/RoririSoftwareSolutionsPvtLtd/', color: 'hover:text-blue-500' },
+        { name: 'Youtube', icon: Youtube, href: 'https://youtube.com/@roriri_soft?si=u-VGsjZ_rmU7-liH', color: 'hover:text-red-500' },
+        { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/roriri_it_park/', color: 'hover:text-pink-500' },
+        { name: 'Linkedin', icon: Linkedin, href: 'https://www.linkedin.com/company/roriri-software-solutions-pvt-ltd/', color: 'hover:text-blue-600' }
     ];
 
     const quickLinks = [
-        { name: 'Home', href: '#home' },
+        { name: 'Home', href: '/' },
         { name: 'About Us', href: '#about' },
         { name: 'Careers', href: '#careers' },
         { name: 'Contact', href: '#contact' }
