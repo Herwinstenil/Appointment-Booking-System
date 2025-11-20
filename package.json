@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "@lottiefiles/dotlottie-react": "^0.17.7",
+    "gsap": "^3.13.0",
+    "lottie-react": "^2.4.1",
+    "ogl": "^1.0.11",
+    "react-datepicker": "^8.9.0"
+  }
+}

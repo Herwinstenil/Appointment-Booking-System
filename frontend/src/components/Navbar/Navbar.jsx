@@ -57,7 +57,7 @@ const Navbar = () => {
             ]
         },
         {
-            title: "Internships",
+            title: "Internship",
             icon: GraduationCap,
             path: "/internship",
         },
@@ -182,7 +182,7 @@ const Navbar = () => {
                     <div className="hidden lg:flex items-center flex-shrink-0 -mr-2">
                         {isLoggedIn ? (
                             <Link
-                                to="/Appointment"
+                                to="/appointment"
                                 className="relative group overflow-hidden px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 rounded-full text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                             >
                                 <span className="relative z-10 text-lg">Book Appointment</span>
@@ -203,7 +203,7 @@ const Navbar = () => {
                     <div className="lg:hidden flex items-center gap-4">
                         {isLoggedIn ? (
                             <Link
-                                to="/Appointment"
+                                to="/appointment"
                                 className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-blue-600 rounded-full text-white font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 text-sm"
                             >
                                 Book
