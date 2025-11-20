@@ -206,9 +206,8 @@ const Footer = () => {
                                 &copy; 2025 Roriri Software Solutions. All rights reserved.
                             </p>
                             <div className="flex space-x-6 text-sm">
-                                <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a>
-                                <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a>
-                                <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Cookie Policy</a>
+                                <a href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a>
+                                <a href="/terms-condition" className="text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a>
                             </div>
                         </div>
                     </div>
