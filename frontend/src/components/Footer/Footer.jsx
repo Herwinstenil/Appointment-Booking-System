@@ -9,7 +9,6 @@ import {
     MapPin,
     ArrowUp,
     ArrowDown,
-    Heart
 } from 'lucide-react';
 
 const Footer = () => {
@@ -207,7 +206,7 @@ const Footer = () => {
                             </p>
                             <div className="flex space-x-6 text-sm">
                                 <a href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a>
-                                <a href="/terms-condition" className="text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a>
+                                <a href="/terms-condition" className="text-gray-400 hover:text-white transition-colors duration-300">Terms and Conditions</a>
                             </div>
                         </div>
                     </div>
