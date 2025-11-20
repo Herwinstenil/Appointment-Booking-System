@@ -398,11 +398,11 @@ const Signin = () => {
                     <div className="text-center mt-4 fade-in stagger-8">
                         <p className="text-xs text-gray-500 leading-relaxed">
                             By creating an account, you agree to our{' '}
-                            <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium hover:underline">
+                            <a href="/terms-condition" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium hover:underline">
                                 Terms
                             </a>{' '}
                             and{' '}
-                            <a href="#" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium hover:underline">
+                            <a href="/privacy-policy" className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-medium hover:underline">
                                 Privacy Policy
                             </a>
                         </p>
