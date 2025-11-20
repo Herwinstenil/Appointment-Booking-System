@@ -43,19 +43,26 @@ const Footer = () => {
     const quickLinks = [
         { name: 'Home', href: '#home' },
         { name: 'About Us', href: '#about' },
-        { name: 'Services', href: '#services' },
-        { name: 'Portfolio', href: '#portfolio' },
-        { name: 'Blog', href: '#blog' },
+        { name: 'Careers', href: '#careers' },
         { name: 'Contact', href: '#contact' }
     ];
 
+    const aboutUsLinks = [
+        { name: 'Our Story', href: '#about' },
+        { name: 'Events', href: '#events' },
+    ];
+
     const services = [
+        'Mobile App Development',
         'Web Development',
-        'Mobile Apps',
-        'UI/UX Design',
-        'Digital Marketing',
-        'Cloud Solutions',
-        'Consulting'
+        'All Products & Trials',
+        'IT consulting'
+    ];
+
+    const productLinks = [
+        { name: 'ERP Solutions ', href: '#erp-solutions' },
+        { name: 'Roriri Attedence App', href: '#products' },
+        { name: 'Nexemy', href: '#products' },
     ];
 
     const handleSubscribe = (e) => {
@@ -76,7 +83,7 @@ const Footer = () => {
 
                 <div className="relative container mx-auto px-6 pt-16 pb-8">
                     {/* Main Footer Content */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 mb-12">
                         {/* Company Info */}
                         <div className="space-y-6 animate-fadeInUp">
                             <div className="group cursor-pointer inline-block">
@@ -132,8 +139,29 @@ const Footer = () => {
                             </ul>
                         </div>
 
+                        {/* About Us */}
+                        <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: '0.15s' }}>
+                            <h3 className="text-xl font-bold relative inline-block">
+                                About Us
+                                <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                            </h3>
+                            <ul className="space-y-3">
+                                {aboutUsLinks.map((link, index) => (
+                                    <li key={link.name}>
+                                        <a
+                                            href={link.href}
+                                            className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group"
+                                        >
+                                            <span className="w-0 group-hover:w-2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 mr-0 group-hover:mr-2 transition-all duration-300 rounded"></span>
+                                            {link.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         {/* Services */}
-                        <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+                        <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: '0.25s' }}>
                             <h3 className="text-xl font-bold relative inline-block">
                                 Services
                                 <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
@@ -153,8 +181,29 @@ const Footer = () => {
                             </ul>
                         </div>
 
-                        {/* Newsletter */}
+                        {/* Products */}
                         <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+                            <h3 className="text-xl font-bold relative inline-block">
+                                Products
+                                <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                            </h3>
+                            <ul className="space-y-3">
+                                {productLinks.map((link, index) => (
+                                    <li key={link.name}>
+                                        <a
+                                            href={link.href}
+                                            className="text-gray-400 hover:text-white transition-all duration-300 flex items-center group"
+                                        >
+                                            <span className="w-0 group-hover:w-2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 mr-0 group-hover:mr-2 transition-all duration-300 rounded"></span>
+                                            {link.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Newsletter */}
+                        <div className="space-y-6 animate-fadeInUp" style={{ animationDelay: '0.35s' }}>
                             <h3 className="text-xl font-bold relative inline-block">
                                 Stay Updated
                                 <div className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
