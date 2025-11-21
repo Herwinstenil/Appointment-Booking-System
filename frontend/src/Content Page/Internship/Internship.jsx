@@ -34,12 +34,28 @@ const Internship = () => {
                 </a>
               </div>
             </div>
-            <div className="flex items-center">
-              <img
-                src="https://placehold.co/500x600/cccccc/333333?text=Lottie+Animation"
-                alt="Animation"
-                className="sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[600px]"
-              />
+            
+            {/* Replace DotLottieReact with beautiful CSS animation */}
+            <div className="flex items-center justify-center">
+              <div className="relative sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[600px] flex items-center justify-center">
+                {/* Animated gradient circles */}
+                <div className="absolute w-64 h-64 bg-gradient-to-r from-green-500 to-blue-500 rounded-full opacity-20 animate-pulse"></div>
+                <div className="absolute w-56 h-56 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-30 animate-bounce" style={{ animationDuration: '3s' }}></div>
+                <div className="absolute w-48 h-48 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-40 animate-ping" style={{ animationDuration: '4s' }}></div>
+                
+                {/* Rotating rings */}
+                <div className="absolute w-72 h-72 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="absolute w-64 h-64 border-4 border-blue-500 border-r-transparent rounded-full animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }}></div>
+                <div className="absolute w-56 h-56 border-4 border-purple-500 border-b-transparent rounded-full animate-spin" style={{ animationDuration: '4s' }}></div>
+                
+                {/* Center content */}
+                <div className="text-white text-center z-10 bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-700">
+                  <div className="text-6xl mb-4">🚀</div>
+                  <div className="text-2xl font-bold text-green-400 mb-2">Roriri</div>
+                  <div className="text-lg font-semibold">Internship Program</div>
+                  <div className="text-sm text-gray-300 mt-2">Start Your Journey</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -68,7 +84,6 @@ const Internship = () => {
             <CircularGallery bend={3} textColor="white" borderRadius={0.05} scrollEase={0.02} />
           </div>
 
-          {/* Updated Project Internship Section */}
           <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="relative flex justify-center items-center p-4">
@@ -101,7 +116,6 @@ const Internship = () => {
 
           <Certification />
           
-          {/* Updated Certification Section */}
           <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col items-center py-12 justify-center px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="flex flex-col justify-center text-center md:text-left">
