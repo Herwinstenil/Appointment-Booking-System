@@ -123,7 +123,7 @@ const JobOpeningsSection = () => {
       description: 'Installing Network Hardware, Set up routers, switches, firewalls, and other network devices. Build infrastructure that powers innovation.'
     },
     {
-      id: 'business-development',
+      id: 'business-development-executive',
       title: 'Business Development Executive',
       tags: ['Full time', 'Office', 'Hybrid'],
       experience: '2 Years+',

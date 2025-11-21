@@ -2,7 +2,7 @@
 
 const jobData = [
   {
-    id: 'fullstack-developer', 
+    id: 'fullstack-developer',
     title: 'Fullstack Developer',
     workplace: 'Office',
     location: 'Tirunelveli, Kalakad',
@@ -150,18 +150,18 @@ const jobData = [
     ],
   },
   {
-    id: 'python-developer', 
-    title: 'Python Developer', 
-    workplace: 'Office', 
-    location: 'Tirunelveli, Kalakad', 
-    jobType: 'Full time', 
-    experience: '2 Years+', 
+    id: 'python-developer',
+    title: 'Python Developer',
+    workplace: 'Office',
+    location: 'Tirunelveli, Kalakad',
+    jobType: 'Full time',
+    experience: '2 Years+',
     roleDescription: `The Python Developer at Roriri Software Solutions will be responsible for developing and maintaining
       backend systems. This role requires proficiency in Python and experience with frameworks like Django or Flask,
       along with strong database management skills.`,
     qualifications: [
-      'Proficiency in Python and frameworks like Django or Flask.', 
-      'Experience with database systems (e.g., PostgreSQL, MySQL, or MongoDB).', 
+      'Proficiency in Python and frameworks like Django or Flask.',
+      'Experience with database systems (e.g., PostgreSQL, MySQL, or MongoDB).',
     ],
     skillsRequired: [
       'Python programming',
@@ -172,6 +172,38 @@ const jobData = [
       'Develop and maintain robust Python-based applications.',
       'Design and implement database solutions.',
       'Collaborate with team members on various projects.',
+    ],
+  },
+  {
+    id: 'ai-engineer',
+    title: 'AI/ML Engineer',
+    workplace: 'Office',
+    location: 'Tirunelveli, Kalakad',
+    jobType: 'Full time',
+    experience: '3 Years+',
+    roleDescription: `The AI/ML Engineer at Roriri Software Solutions will design, develop, and deploy machine learning models and AI systems. This role involves working with large datasets, implementing algorithms, and integrating AI solutions into production environments. The engineer will collaborate with cross-functional teams to build intelligent applications that drive innovation and business value.`,
+    qualifications: [
+      'B.E, M.Sc. in computer science, B.Sc. in computer science, BCA',
+      'Strong background in mathematics, statistics, and computer science.',
+      'Proficiency in programming languages such as Python, R, or Java.',
+      'Experience with machine learning frameworks like TensorFlow, PyTorch, or scikit-learn.',
+      'Knowledge of data processing tools and cloud platforms (AWS, GCP, Azure).',
+    ],
+    skillsRequired: [
+      'Machine Learning Algorithms: Deep understanding of supervised and unsupervised learning, neural networks, and deep learning techniques.',
+      'Programming Skills: Proficiency in Python, with experience in libraries like NumPy, Pandas, and scikit-learn.',
+      'Data Handling: Experience with data preprocessing, feature engineering, and working with large datasets.',
+      'Model Deployment: Knowledge of deploying ML models to production using tools like Docker, Kubernetes, or cloud services.',
+      'Problem-Solving: Ability to analyze complex problems and develop innovative AI solutions.',
+      'Version Control and Collaboration: Familiarity with Git, and experience working in agile development environments.',
+    ],
+    responsibilities: [
+      'Design and develop machine learning models for various applications.',
+      'Analyze and preprocess large datasets to extract meaningful insights.',
+      'Implement and optimize algorithms for performance and scalability.',
+      'Collaborate with data scientists and engineers to integrate AI solutions.',
+      'Monitor and maintain deployed models in production environments.',
+      'Stay updated with the latest advancements in AI and machine learning.',
     ],
   },
 ];
