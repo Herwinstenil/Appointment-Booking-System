@@ -128,13 +128,13 @@ const InternshipRegistrationForm = () => {
       <div className=" w-full flex flex-col lg:flex-row  rounded-xl  overflow-hidden lg:p-5">
         <div className="lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center ">
           <h2 className="text-green-600 text-lg font-semibold mb-2">Contact Us</h2>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-6">
             Get in touch with us <br />today
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-300 text-lg">
             Reach out to explore endless possibilities with Ronri Software Solutions!
           </p>
-          <h3 className="text-xl font-semibold text-gray-900 mt-10 mb-4 rounded-lg">Follow Us:</h3>
+          <h3 className="text-xl font-semibold text-green-600 mt-10 mb-4 rounded-lg">Follow Us:</h3>
           <div className="flex justify-center lg:justify-start space-x-4">
             <a href="https://www.facebook.com/RoririSoftwareSolutionsPvtLtd/" target="_blank" rel="noopener noreferrer" className="h-12 w-12 p-1 rounded-full text-white hover:scale-110 transition-transform duration-200">
               <img src={facebook} />

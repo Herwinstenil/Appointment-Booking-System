@@ -54,7 +54,7 @@ const WhatSetsUsApartPage = () => {
   };
 
   return (
-    <div className="italic min-h-screen bg-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="italic min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <Motion.div
         className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
         initial="hidden"
@@ -67,14 +67,15 @@ const WhatSetsUsApartPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight mb-6 text-gray-800">
-            What Sets Us <span className="text-green-600">Apart</span> ?
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight mb-6 text-white">
+            What Sets Us <span className="text-green-500">Apart</span> ?
           </h1>
-          <p className="text-lg sm:text-xl text-gray-700 mb-8 max-w-prose">
+          <p className="text-lg sm:text-xl text-gray-300 mb-8 max-w-prose">
             Our 1-week Foundational Program equips internship students with key skills and
             confidence to thrive in real-world projects.
           </p>
-          <Motion.button onClick={handleRegister}
+          <Motion.button 
+            onClick={handleRegister}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out self-center md:self-start"
@@ -87,13 +88,13 @@ const WhatSetsUsApartPage = () => {
           {features.map((feature, i) => (
             <Motion.div
               key={i}
-              className="bg-green-50 p-6 rounded-lg shadow-md flex flex-col items-center justify-center text-center hover:shadow-xl transition"
+              className="bg-gray-800/50 backdrop-blur-sm p-6 rounded-lg border border-gray-700 shadow-lg flex flex-col items-center justify-center text-center hover:shadow-xl transition hover:border-green-500/50 hover:bg-gray-800/70"
               custom={i}
               variants={cardVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
-              whileHover={{ scale: 1.03 }}
+              whileHover={{ scale: 1.03, y: -5 }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -103,12 +104,12 @@ const WhatSetsUsApartPage = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-12 h-12 text-green-600 mb-3"
+                className="w-12 h-12 text-green-500 mb-3"
               >
                 {feature.icon}
                 {feature.extra}
               </svg>
-              <h3 className="text-lg font-semibold text-gray-800">{feature.title}</h3>
+              <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
             </Motion.div>
           ))}
         </div>
