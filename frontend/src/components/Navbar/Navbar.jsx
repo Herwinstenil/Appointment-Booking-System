@@ -64,7 +64,7 @@ const Navbar = () => {
         {
             title: "Careers",
             icon: TrendingUp,
-            path: "/careers",
+            path: "/career",
         },
     ];
 
