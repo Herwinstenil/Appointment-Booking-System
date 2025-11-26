@@ -4,6 +4,7 @@ import './App.css'
 import Landing from './Landing/Landing.jsx'
 import Login from './User Page/Login.jsx'
 import Signin from './User Page/Signin.jsx'
+import AppointmentBooking from './Appointment/AppointmentBooking.jsx'
 
 function App() {
 
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/user/login" element={<Login />} />
         <Route path="/user/signin" element={<Signin />} />
+        <Route path="/appointment" element={<AppointmentBooking />} />
       </Routes>
     </>
   )
