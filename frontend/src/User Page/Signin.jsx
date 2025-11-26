@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
 
 export default function Signin() {
     const [formData, setFormData] = useState({
@@ -82,9 +83,9 @@ export default function Signin() {
                 {/* Back Button */}
                 <button
                     onClick={() => window.history.back()}
-                    className="flex items-center text-purple-600 hover:text-purple-700 mb-8 transition-all duration-300 hover:translate-x-[-4px] group"
+                     className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
                 >
-                    <ArrowLeft className="w-5 h-5 mr-2 transition-transform group-hover:translate-x-[-2px]" />
+                    <Home className="w-4 h-4" />
                     <span className="font-medium">Back to Home</span>
                 </button>
 
@@ -237,7 +238,7 @@ export default function Signin() {
                     {/* Additional Links */}
                     <div className="text-center mt-6">
                         <span className="text-gray-600 text-sm">Already have an account? </span>
-                        <a href="#" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
+                        <a href="/user/login" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
                             Login
                         </a>
                     </div>

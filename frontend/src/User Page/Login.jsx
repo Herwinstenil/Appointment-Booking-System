@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -181,7 +182,7 @@ export default function Login() {
 
                     <div className="text-center mt-4">
                         <span className="text-gray-600 text-sm">Don't have an account? </span>
-                        <a href="/signin" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
+                        <a href="/user/signin" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
                             Sign In
                         </a>
                     </div>
