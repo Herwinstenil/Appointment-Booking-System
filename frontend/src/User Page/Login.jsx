@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
 
 export default function Login() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -61,17 +62,19 @@ export default function Login() {
             <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{ animationDelay: '1s' }}></div>
 
             <div className="max-w-md w-full relative z-10">
-                {/* Back Button */}
-                <button
-                    onClick={() => window.history.back()}
-                    className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
-                >
-                    <Home className="w-4 h-4" />
-                    <span className="font-medium">Back to Home</span>
-                </button>
-
                 {/* Login Card */}
                 <div className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/20 transform transition-all duration-500 hover:shadow-3xl">
+                    {/* Back Button */}
+                    <div className="flex justify-start mb-4">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
+                        >
+                            <Home className="w-4 h-4" />
+                            <span className="font-medium">Back to Home</span>
+                        </button>
+                    </div>
+
                     <div className="text-center mb-8">
                         <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 transform transition-all duration-500 hover:scale-110 hover:rotate-12 shadow-lg">
                             <User className="w-10 h-10 text-white" />
