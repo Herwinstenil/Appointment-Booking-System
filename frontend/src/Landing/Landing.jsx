@@ -1,8 +1,9 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle, Star, ArrowRight, Menu, X } from 'lucide-react';
 
 export default function AppointmentLanding() {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -51,9 +52,12 @@ export default function AppointmentLanding() {
               <a href="#services" className="text-gray-700 hover:text-purple-600 transition">Services</a>
               <a href="#about" className="text-gray-700 hover:text-purple-600 transition">About</a>
               <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition">Testimonials</a>
-              <a href="#booking" className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition">
-                Book Now
-              </a>
+              <button
+                onClick={() => navigate('/user/login')}
+                className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition"
+              >
+                Login
+              </button>
             </div>
 
             <button
