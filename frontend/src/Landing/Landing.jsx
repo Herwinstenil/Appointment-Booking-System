@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, CheckCircle, Star, ArrowRight, Menu, X } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, Star, ArrowRight, Menu, X, Home } from 'lucide-react';
 
 export default function AppointmentLanding() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function AppointmentLanding() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-2">
               <Calendar className="w-8 h-8 text-purple-600" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
@@ -49,9 +49,9 @@ export default function AppointmentLanding() {
             </div>
 
             <div className="hidden md:flex space-x-8">
-              <a href="#services" className="text-gray-700 hover:text-purple-600 transition">Services</a>
-              <a href="#about" className="text-gray-700 hover:text-purple-600 transition">About</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-purple-600 transition">Testimonials</a>
+              <a href="#services" className="text-gray-700 py-2 hover:text-purple-600 transition">Services</a>
+              <a href="#about" className="text-gray-700 py-2 hover:text-purple-600 transition">About</a>
+              <a href="#testimonials" className="text-gray-700 py-2 hover:text-purple-600 transition">Testimonials</a>
               <button
                 onClick={() => navigate('/user/login')}
                 className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition"
@@ -77,7 +77,7 @@ export default function AppointmentLanding() {
               <a href="#about" className="block text-gray-700 hover:text-purple-600">About</a>
               <a href="#testimonials" className="block text-gray-700 hover:text-purple-600">Testimonials</a>
               <a href="#booking" className="block bg-purple-600 text-white px-6 py-2 rounded-full text-center">
-                Book Now
+                Login
               </a>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function AppointmentLanding() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-32 pb-24 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
@@ -174,6 +174,15 @@ export default function AppointmentLanding() {
       <section id="booking" className="py-20 px-4 bg-gradient-to-br from-purple-600 to-blue-600">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl">
+            <div className="flex justify-start mb-4">
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
+              >
+                <Home className="w-4 h-4" />
+                Back to Home
+              </button>
+            </div>
             <h2 className="text-4xl font-bold text-center mb-2">Book Your Appointment</h2>
             <p className="text-gray-600 text-center mb-8">Fill in the details and we'll get back to you</p>
 

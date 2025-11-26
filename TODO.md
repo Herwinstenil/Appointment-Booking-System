@@ -1,3 +1,0 @@
-- [x] Update handleSubmit in Login.jsx to validate email contains "@gmail"
-- [x] Set error message if "@gmail" is missing
-- [x] Prevent login if validation fails
