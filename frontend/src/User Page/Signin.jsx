@@ -144,7 +144,7 @@ export default function Signin() {
                         </div>
 
                         {/* Mobile Number Field */}
-                        <div className="transform transition-all duration-300">
+                        {/* <div className="transform transition-all duration-300"> }
                             <label className="block text-gray-700 font-semibold mb-2">Mobile Number</label>
                             <div className="relative group">
                                 <Phone className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${focusedField === 'mobile' ? 'text-purple-600' : 'text-gray-400'
