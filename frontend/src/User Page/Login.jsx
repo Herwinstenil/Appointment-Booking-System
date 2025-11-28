@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
+import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -44,12 +46,13 @@ export default function Login() {
             setIsLoading(true);
             setTimeout(() => {
                 setIsLoading(false);
-                if (formData.role === 'admin') {
+                login(formData.role);
+                if (formData.role === 'user') {
+                    navigate('/');
+                } else if (formData.role === 'admin') {
                     navigate('/dashboard/admin');
                 } else if (formData.role === 'client') {
                     navigate('/dashboard/client');
-                } else if (formData.role === 'user') {
-                    navigate('/dashboard/user');
                 }
             }, 1500);
         }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     FolderOpen,
     Search,
@@ -11,16 +12,18 @@ import {
     ChevronDown,
     History
 } from 'lucide-react';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserDashboard = () => {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
     const [activeItem, setActiveItem] = useState('View Available Services');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
     const handleLogout = () => {
-        // Add your logout logic here
-        console.log('Logging out...');
-        // Example: clear tokens, redirect to login, etc.
+        logout();
+        navigate('/user/login');
     };
 
     const sidebarItems = [

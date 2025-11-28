@@ -8,11 +8,12 @@ import AppointmentBooking from './Appointment/AppointmentBooking.jsx'
 import AdminDashboard from './Dashboard/Admin/AdminDashboard.jsx'
 import ClientDashboard from './Dashboard/Client/ClientDashboard.jsx'
 import UserDashboard from './Dashboard/User/UserDashboard.jsx'
+import { AuthProvider } from './Context/AuthContext.jsx'
 
 function App() {
 
   return (
-    <>
+    <AuthProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/user/login" element={<Login />} />
@@ -22,7 +23,7 @@ function App() {
         <Route path="/dashboard/client" element={<ClientDashboard />} />
         <Route path="/dashboard/user" element={<UserDashboard />} />
       </Routes>
-    </>
+    </AuthProvider>
   )
 }
 

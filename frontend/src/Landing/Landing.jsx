@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle, Star, ArrowRight, Menu, X, Home } from 'lucide-react';
+import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function AppointmentLanding() {
   const navigate = useNavigate();
+  const { isLoggedIn, userRole } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -52,12 +54,21 @@ export default function AppointmentLanding() {
               <a href="#services" className="text-gray-700 py-2 hover:text-purple-600 transition">Services</a>
               <a href="#about" className="text-gray-700 py-2 hover:text-purple-600 transition">About</a>
               <a href="#testimonials" className="text-gray-700 py-2 hover:text-purple-600 transition">Testimonials</a>
-              <button
-                onClick={() => navigate('/user/login')}
-                className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition cursor-pointer"
-              >
-                Login
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={() => navigate(`/dashboard/${userRole}`)}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition cursor-pointer"
+                >
+                  My Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/user/login')}
+                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition cursor-pointer"
+                >
+                  Login
+                </button>
+              )}
             </div>
 
             <button
@@ -76,9 +87,27 @@ export default function AppointmentLanding() {
               <a href="#services" className="block text-gray-700 hover:text-purple-600">Services</a>
               <a href="#about" className="block text-gray-700 hover:text-purple-600">About</a>
               <a href="#testimonials" className="block text-gray-700 hover:text-purple-600">Testimonials</a>
-              <a href="#booking" className="block bg-purple-600 text-white px-6 py-2 rounded-full text-center">
-                Login
-              </a>
+              {isLoggedIn ? (
+                <button
+                  onClick={() => {
+                    navigate(`/dashboard/${userRole}`);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="block bg-purple-600 text-white px-6 py-2 rounded-full text-center w-full"
+                >
+                  My Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    navigate('/user/login');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="block bg-purple-600 text-white px-6 py-2 rounded-full text-center w-full"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
         )}
