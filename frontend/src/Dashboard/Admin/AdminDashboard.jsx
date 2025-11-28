@@ -6,12 +6,19 @@ import {
     DollarSign,
     User,
     Menu,
-    X
+    X,
+    LogOut
 } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeItem, setActiveItem] = useState('User Management');
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const handleLogout = () => {
+        // Add your logout logic here
+        console.log('Logging out...');
+        // Example: clear tokens, redirect to login, etc.
+    };
 
     const sidebarItems = [
         { name: 'User Management', icon: Users },
@@ -108,7 +115,7 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-rose-600 to-pink-700 shadow-2xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
                 <div className="flex items-center justify-between p-6 border-b border-white/20">
-                    <h1 className="text-xl font-bold text-white tracking-tight">Admin Portal</h1>
+                    <h1 className="text-xl font-bold text-white tracking-tight">Admin Dashboard</h1>
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="lg:hidden p-1 rounded-md hover:bg-white/20 text-white transition-colors duration-200"
@@ -135,6 +142,17 @@ const AdminDashboard = () => {
                         );
                     })}
                 </nav>
+                
+                {/* Logout button at bottom of sidebar */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-white/20">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 transform hover:scale-105 text-white/80 hover:bg-white/10 hover:text-white"
+                    >
+                        <LogOut size={20} className="mr-3" />
+                        <span className="text-sm">Log Out</span>
+                    </button>
+                </div>
             </div>
 
             {/* Main content */}
@@ -154,6 +172,13 @@ const AdminDashboard = () => {
                             <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer">
                                 A
                             </div>
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+                            >
+                                <LogOut size={18} />
+                                <span className="hidden sm:inline">Log Out</span>
+                            </button>
                         </div>
                     </div>
                 </header>
