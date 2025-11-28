@@ -7,12 +7,15 @@ import {
     User,
     Menu,
     X,
-    LogOut
+    LogOut,
+    ChevronDown,
+    Settings
 } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [activeItem, setActiveItem] = useState('User Management');
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
 
     const handleLogout = () => {
         // Add your logout logic here
@@ -35,7 +38,7 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">User Management</h2>
                         <p className="text-gray-600 mb-6">Manage users here. Add, edit, or remove user accounts.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <Users size={48} className="mx-auto mb-2 text-rose-500" />
@@ -50,7 +53,7 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Service Category Management</h2>
                         <p className="text-gray-600 mb-6">Manage service categories and subcategories.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <FolderOpen size={48} className="mx-auto mb-2 text-rose-500" />
@@ -65,7 +68,7 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Booking Analytics</h2>
                         <p className="text-gray-600 mb-6">View analytics and insights on bookings.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <BarChart3 size={48} className="mx-auto mb-2 text-rose-500" />
@@ -80,7 +83,7 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Revenue Dashboard</h2>
                         <p className="text-gray-600 mb-6">Monitor revenue and financial metrics.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <DollarSign size={48} className="mx-auto mb-2 text-rose-500" />
@@ -95,7 +98,7 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Profile</h2>
                         <p className="text-gray-600 mb-6">Manage your admin profile settings.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <div className="flex items-center justify-center h-32 text-gray-500">
                                 <div className="text-center">
                                     <User size={48} className="mx-auto mb-2 text-rose-500" />
@@ -142,43 +145,80 @@ const AdminDashboard = () => {
                         );
                     })}
                 </nav>
-                
-                {/* Logout button at bottom of sidebar */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-white/20">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 transform hover:scale-105 text-white/80 hover:bg-white/10 hover:text-white"
-                    >
-                        <LogOut size={20} className="mr-3" />
-                        <span className="text-sm">Log Out</span>
-                    </button>
-                </div>
             </div>
 
             {/* Main content */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Navbar */}
-                <header className="bg-white shadow-md border-b border-gray-200">
+                <header className="bg-white shadow-lg border-b border-gray-200">
                     <div className="flex items-center justify-between px-6 py-4">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-                        >
-                            <Menu size={20} />
-                        </button>
-                        <h1 className="text-lg font-semibold lg:hidden text-gray-800">Admin Dashboard</h1>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-600 font-medium">Welcome, Admin</span>
-                            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer">
-                                A
-                            </div>
+                        <div className="flex items-center">
                             <button
-                                onClick={handleLogout}
-                                className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 mr-4"
                             >
-                                <LogOut size={18} />
-                                <span className="hidden sm:inline">Log Out</span>
+                                <Menu size={20} />
                             </button>
+                            <h1 className="text-xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent lg:hidden">
+                                Admin Dashboard
+                            </h1>
+                        </div>
+
+                        {/* Right side - User profile with dropdown */}
+                        <div className="flex items-center space-x-4">
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowUserDropdown(!showUserDropdown)}
+                                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
+                                >
+                                    <div className="text-right hidden sm:block">
+                                        <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                                        <p className="text-xs text-gray-500">Administrator</p>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
+                                            A
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                                        </div>
+                                    </div>
+                                    <ChevronDown 
+                                        size={16} 
+                                        className={`text-gray-400 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                {showUserDropdown && (
+                                    <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
+                                        <div className="px-4 py-3 border-b border-gray-100">
+                                            <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                                            <p className="text-xs text-gray-500 mt-1">admin@example.com</p>
+                                        </div>
+                                        
+                                        <button className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 transform hover:translate-x-1">
+                                            <User size={16} className="mr-3" />
+                                            My Profile
+                                        </button>
+                                        
+                                        <button className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 transform hover:translate-x-1">
+                                            <Settings size={16} className="mr-3" />
+                                            Settings
+                                        </button>
+                                        
+                                        <div className="border-t border-gray-100 mt-2 pt-2">
+                                            <button
+                                                onClick={handleLogout}
+                                                className="w-full flex items-center px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 font-medium transition-all duration-200 transform hover:translate-x-1 group"
+                                            >
+                                                <LogOut size={16} className="mr-3 transform group-hover:scale-110 transition-transform duration-200" />
+                                                Log Out
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -192,12 +232,12 @@ const AdminDashboard = () => {
             {/* Overlay for mobile */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden transition-opacity duration-300"
+                    className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden transition-opacity duration-300 animate-fadeIn"
                     onClick={() => setSidebarOpen(false)}
                 ></div>
             )}
             
-            {/* Add CSS animation for fade-in effect */}
+            {/* Add CSS animations */}
             <style>{`
                 @keyframes fadeIn {
                     from {
@@ -209,8 +249,29 @@ const AdminDashboard = () => {
                         transform: translateY(0);
                     }
                 }
+                
+                @keyframes dropdown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
+                }
+                
+                .animate-dropdown {
+                    animation: dropdown 0.2s ease-out;
+                }
+                
+                /* Smooth scrolling */
+                .overflow-y-auto {
+                    scroll-behavior: smooth;
                 }
             `}</style>
         </div>
