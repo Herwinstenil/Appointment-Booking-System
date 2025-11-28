@@ -9,7 +9,6 @@ import {
     X,
     LogOut,
     ChevronDown,
-    Settings
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -183,8 +182,8 @@ const AdminDashboard = () => {
                                             <div className="w-2 h-2 bg-white rounded-full"></div>
                                         </div>
                                     </div>
-                                    <ChevronDown 
-                                        size={16} 
+                                    <ChevronDown
+                                        size={16}
                                         className={`text-gray-400 transition-transform duration-200 ${showUserDropdown ? 'rotate-180' : ''}`}
                                     />
                                 </button>
@@ -196,7 +195,7 @@ const AdminDashboard = () => {
                                             <p className="text-sm font-semibold text-gray-800">Admin</p>
                                             <p className="text-xs text-gray-500 mt-1">admin@example.com</p>
                                         </div>
-                                         
+
                                         <div>
                                             <button
                                                 onClick={handleLogout}
@@ -226,7 +225,7 @@ const AdminDashboard = () => {
                     onClick={() => setSidebarOpen(false)}
                 ></div>
             )}
-            
+
             {/* Add CSS animations */}
             <style>{`
                 @keyframes fadeIn {
