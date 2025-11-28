@@ -172,7 +172,7 @@ const AdminDashboard = () => {
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                                        <p className="text-sm font-semibold text-gray-800">Admin</p>
                                         <p className="text-xs text-gray-500">Administrator</p>
                                     </div>
                                     <div className="relative">
@@ -193,21 +193,11 @@ const AdminDashboard = () => {
                                 {showUserDropdown && (
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-gray-800">Admin User</p>
+                                            <p className="text-sm font-semibold text-gray-800">Admin</p>
                                             <p className="text-xs text-gray-500 mt-1">admin@example.com</p>
                                         </div>
-                                        
-                                        <button className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 transform hover:translate-x-1">
-                                            <User size={16} className="mr-3" />
-                                            My Profile
-                                        </button>
-                                        
-                                        <button className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 transform hover:translate-x-1">
-                                            <Settings size={16} className="mr-3" />
-                                            Settings
-                                        </button>
-                                        
-                                        <div className="border-t border-gray-100 mt-2 pt-2">
+                                         
+                                        <div>
                                             <button
                                                 onClick={handleLogout}
                                                 className="w-full flex items-center px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 font-medium transition-all duration-200 transform hover:translate-x-1 group"
