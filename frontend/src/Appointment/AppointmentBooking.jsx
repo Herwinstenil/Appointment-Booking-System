@@ -7,7 +7,7 @@ export default function AppointmentBooking() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone: '',
+        phone: '+91 ',
         service: '',
         date: '',
         time: ''
@@ -16,7 +16,7 @@ export default function AppointmentBooking() {
     const handleSubmit = () => {
         if (formData.name && formData.email && formData.phone && formData.service && formData.date && formData.time) {
             alert('Appointment request submitted! We\'ll contact you shortly.');
-            setFormData({ name: '', email: '', phone: '', service: '', date: '', time: '' });
+            setFormData({ name: '', email: '', phone: '+91 ', service: '', date: '', time: '' });
         } else {
             alert('Please fill in all fields');
         }
@@ -73,9 +73,16 @@ export default function AppointmentBooking() {
                                 <input
                                     type="tel"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e) => {
+                                        let value = e.target.value;
+                                        if (!value.startsWith('+91 ')) {
+                                            value = '+91 ' + value.replace(/^\+91\s*/, '');
+                                        }
+                                        value = '+91 ' + value.slice(4).replace(/\D/g, '').slice(0, 10);
+                                        setFormData({ ...formData, phone: value });
+                                    }}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                                    placeholder="+1 234 567 8900"
+                                    placeholder="+91 1234567890"
                                 />
                             </div>
                         </div>
