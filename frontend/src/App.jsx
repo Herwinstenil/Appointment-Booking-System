@@ -6,6 +6,7 @@ import Login from './User Page/Login.jsx'
 import Signin from './User Page/Signin.jsx'
 import AppointmentBooking from './Appointment/AppointmentBooking.jsx'
 import AdminDashboard from './Dashboard/Admin/AdminDashboard.jsx'
+import ClientDashboard from './Dashboard/Client/ClientDashboard.jsx'
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/user/signin" element={<Signin />} />
         <Route path="/appointment" element={<AppointmentBooking />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/client" element={<ClientDashboard />} />
       </Routes>
     </>
   )
