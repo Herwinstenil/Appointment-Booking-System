@@ -44,7 +44,13 @@ export default function Login() {
             setIsLoading(true);
             setTimeout(() => {
                 setIsLoading(false);
-                alert(`Login attempt as ${formData.role}: ${formData.email}`);
+                if (formData.role === 'admin') {
+                    navigate('/dashboard/admin');
+                } else if (formData.role === 'client') {
+                    navigate('/dashboard/client');
+                } else if (formData.role === 'user') {
+                    navigate('/dashboard/user');
+                }
             }, 1500);
         }
     };
