@@ -7,7 +7,7 @@ export default function Signin() {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        mobile: '',
+        mobile: '+91 ',
         password: '',
         confirmPassword: ''
     });
@@ -49,8 +49,8 @@ export default function Signin() {
         if (!formData.mobile) {
             setErrors(prev => ({ ...prev, mobile: 'Mobile number is required' }));
             hasErrors = true;
-        } else if (!/^\d{10}$/.test(formData.mobile)) {
-            setErrors(prev => ({ ...prev, mobile: 'Please enter a valid 10-digit mobile number' }));
+        } else if (!/^\+91\s*\d{10}$/.test(formData.mobile)) {
+            setErrors(prev => ({ ...prev, mobile: 'Please enter a valid mobile number starting with +91 followed by 10 digits' }));
             hasErrors = true;
         }
         if (!formData.password) {
@@ -69,7 +69,7 @@ export default function Signin() {
             setIsLoading(true);
             setTimeout(() => {
                 setIsLoading(false);
-                alert(`Sign-in attempt: ${formData.username} - ${formData.email}`);
+                alert(`Sign-in attempt: ${formData.username} - ${formData.email} - ${formData.mobile}`);
             }, 1500);
         }
     };
@@ -144,7 +144,7 @@ export default function Signin() {
                         </div>
 
                         {/* Mobile Number Field */}
-                        {/* <div className="transform transition-all duration-300"> }
+                        <div className="transform transition-all duration-300">
                             <label className="block text-gray-700 font-semibold mb-2">Mobile Number</label>
                             <div className="relative group">
                                 <Phone className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${focusedField === 'mobile' ? 'text-purple-600' : 'text-gray-400'
@@ -152,7 +152,14 @@ export default function Signin() {
                                 <input
                                     type="tel"
                                     value={formData.mobile}
-                                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                                    onChange={(e) => {
+                                        let value = e.target.value;
+                                        if (!value.startsWith('+91 ')) {
+                                            value = '+91 ' + value.replace(/^\+91\s*/, '');
+                                        }
+                                        value = '+91 ' + value.slice(4).replace(/\D/g, '').slice(0, 10);
+                                        setFormData({ ...formData, mobile: value });
+                                    }}
                                     onFocus={() => setFocusedField('mobile')}
                                     onBlur={() => setFocusedField(null)}
                                     className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white"
