@@ -7,6 +7,7 @@ import Signin from './User Page/Signin.jsx'
 import AppointmentBooking from './Appointment/AppointmentBooking.jsx'
 import AdminDashboard from './Dashboard/Admin/AdminDashboard.jsx'
 import ClientDashboard from './Dashboard/Client/ClientDashboard.jsx'
+import UserDashboard from './Dashboard/User/UserDashboard.jsx'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/appointment" element={<AppointmentBooking />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         <Route path="/dashboard/client" element={<ClientDashboard />} />
+        <Route path="/dashboard/user" element={<UserDashboard />} />
       </Routes>
     </>
   )
