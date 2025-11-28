@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Users,
     FolderOpen,
@@ -16,10 +17,13 @@ const AdminDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleLogout = () => {
         // Add your logout logic here
         console.log('Logging out...');
         // Example: clear tokens, redirect to login, etc.
+        navigate('/user/login');
     };
 
     const sidebarItems = [
