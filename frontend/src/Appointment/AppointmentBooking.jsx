@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Home } from 'lucide-react';
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
 
 export default function AppointmentBooking() {
     const navigate = useNavigate();
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedTime, setSelectedTime] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -103,22 +107,27 @@ export default function AppointmentBooking() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                <label className="block font-medium">Select Date</label>
+                                <DatePicker
+                                    selected={selectedDate}
+                                    onChange={(date) => setSelectedDate(date)}
+                                    dateFormat="yyyy-MM-dd"
+                                    className="border p-2 rounded w-full"
+                                    minDate={new Date()}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Time</label>
-                                <input
-                                    type="time"
-                                    value={formData.time}
-                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                <label className="block font-medium">Select Time</label>
+                                <DatePicker
+                                    selected={selectedTime}
+                                    onChange={(time) => setSelectedTime(time)}
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeIntervals={30}
+                                    timeCaption="Time"
+                                    dateFormat="h:mm aa"
+                                    className="border p-2 rounded w-full"
                                 />
                             </div>
                         </div>
