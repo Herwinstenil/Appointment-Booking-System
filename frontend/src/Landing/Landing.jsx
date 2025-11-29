@@ -126,9 +126,11 @@ export default function AppointmentLanding() {
               Schedule seamlessly with our intuitive booking system. Get instant confirmation and reminders.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button onClick={() => navigate('/appointment')} className="bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-700 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                Get Started <ArrowRight className="w-5 h-5" />
-              </button>
+              {isLoggedIn && (
+                <button onClick={() => navigate('/appointment')} className="bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-700 transition transform hover:scale-105 flex items-center justify-center gap-2">
+                  Get Started <ArrowRight className="w-5 h-5" />
+                </button>
+              )}
               <a href="#services" className="bg-white text-purple-600 px-8 py-4 rounded-full text-lg font-semibold border-2 border-purple-600 hover:bg-purple-50 transition">
                 Learn More
               </a>
