@@ -23,7 +23,7 @@ const UserDashboard = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/user/login');
+        navigate('/');
     };
 
     const sidebarItems = [
