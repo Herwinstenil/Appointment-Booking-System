@@ -128,7 +128,7 @@ export default function AppointmentLanding() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isLoggedIn && (
                 <button onClick={() => navigate('/appointment')} className="bg-purple-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-purple-700 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                  Get Started <ArrowRight className="w-5 h-5" />
+                  Book Appointment <ArrowRight className="w-5 h-5" />
                 </button>
               )}
               <a href="#services" className="bg-white text-purple-600 px-8 py-4 rounded-full text-lg font-semibold border-2 border-purple-600 hover:bg-purple-50 transition">
@@ -214,7 +214,7 @@ export default function AppointmentLanding() {
             <a href="#" className="text-gray-400 hover:text-white transition">Terms</a>
             <a href="#" className="text-gray-400 hover:text-white transition">Contact</a>
           </div>
-          <p className="text-gray-500 mt-8">© 2024 BookIt. All rights reserved.</p>
+          <p className="text-gray-500 mt-8">© 2025 BookIt. All rights reserved.</p>
         </div>
       </footer>
 
