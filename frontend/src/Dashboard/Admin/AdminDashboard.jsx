@@ -241,16 +241,243 @@ const AdminDashboard = () => {
                 );
 
             case 'Revenue Dashboard':
+                // Mock revenue data
+                const revenueMetrics = {
+                    totalRevenue: 1254300,
+                    monthlyRevenue: 98750,
+                    growthPercentage: 12.5,
+                    activeSubscriptions: 2847,
+                    averageOrderValue: 156,
+                    topCategory: 'Premium Services'
+                };
+
+                const revenueTrend = [
+                    { month: 'Jan', revenue: 85000 },
+                    { month: 'Feb', revenue: 92000 },
+                    { month: 'Mar', revenue: 101000 },
+                    { month: 'Apr', revenue: 95000 },
+                    { month: 'May', revenue: 108000 },
+                    { month: 'Jun', revenue: 115000 },
+                    { month: 'Jul', revenue: 98750 }
+                ];
+
+                const revenueByCategory = [
+                    { category: 'Premium Services', amount: 450000, percentage: 35.9 },
+                    { category: 'Consultation', amount: 320000, percentage: 25.5 },
+                    { category: 'Basic Services', amount: 280000, percentage: 22.3 },
+                    { category: 'Add-ons', amount: 203000, percentage: 16.2 }
+                ];
+
+                const recentTransactions = [
+                    { id: 1, client: 'John Smith', service: 'Premium Support', amount: 299, date: '2024-01-15', status: 'completed' },
+                    { id: 2, client: 'Sarah Johnson', service: 'Consultation', amount: 150, date: '2024-01-15', status: 'completed' },
+                    { id: 3, client: 'Mike Davis', service: 'Basic Service', amount: 89, date: '2024-01-14', status: 'pending' },
+                    { id: 4, client: 'Emma Wilson', service: 'Premium Support', amount: 299, date: '2024-01-14', status: 'completed' },
+                    { id: 5, client: 'Alex Brown', service: 'Add-on Package', amount: 75, date: '2024-01-13', status: 'completed' }
+                ];
+
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Revenue Dashboard</h2>
-                        <p className="text-gray-600 mb-6">Monitor revenue and financial metrics.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <DollarSign size={48} className="mx-auto mb-2 text-rose-500" />
-                                    <p className="font-medium">Revenue charts and metrics will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Revenue Dashboard</h2>
+                                <p className="text-gray-600">Monitor revenue and financial metrics in real-time</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105">
+                                    <Download size={16} />
+                                    Export Report
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                                    <BarChart3 size={16} />
+                                    View Analytics
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Key Metrics Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-green-100 text-sm font-medium">Total Revenue</p>
+                                        <p className="text-2xl font-bold">${revenueMetrics.totalRevenue.toLocaleString()}</p>
+                                        <p className="text-green-100 text-xs mt-1">+{revenueMetrics.growthPercentage}% from last month</p>
+                                    </div>
+                                    <DollarSign size={32} className="opacity-80" />
                                 </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-100 text-sm font-medium">Monthly Revenue</p>
+                                        <p className="text-2xl font-bold">${revenueMetrics.monthlyRevenue.toLocaleString()}</p>
+                                        <p className="text-blue-100 text-xs mt-1">Current month</p>
+                                    </div>
+                                    <BarChart3 size={32} className="opacity-80" />
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-purple-100 text-sm font-medium">Active Subscriptions</p>
+                                        <p className="text-2xl font-bold">{revenueMetrics.activeSubscriptions.toLocaleString()}</p>
+                                        <p className="text-purple-100 text-xs mt-1">+5.2% from last month</p>
+                                    </div>
+                                    <Users size={32} className="opacity-80" />
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-amber-100 text-sm font-medium">Avg Order Value</p>
+                                        <p className="text-2xl font-bold">${revenueMetrics.averageOrderValue}</p>
+                                        <p className="text-amber-100 text-xs mt-1">Top: {revenueMetrics.topCategory}</p>
+                                    </div>
+                                    <CreditCard size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            {/* Revenue Trend Chart */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
+                                        Last 7 months
+                                    </div>
+                                </div>
+                                <div className="h-64 flex items-end justify-between space-x-2">
+                                    {revenueTrend.map((data, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-300 hover:from-rose-600 hover:to-pink-600"
+                                                style={{ height: `${(data.revenue / 120000) * 100}%` }}
+                                            ></div>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
+                                            <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Revenue by Category */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Revenue by Category</h3>
+                                <div className="space-y-4">
+                                    {revenueByCategory.map((category, index) => (
+                                        <div key={index} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-4 h-4 rounded-full ${index === 0 ? 'bg-rose-500' :
+                                                    index === 1 ? 'bg-blue-500' :
+                                                        index === 2 ? 'bg-green-500' : 'bg-purple-500'
+                                                    }`}></div>
+                                                <span className="text-gray-700 font-medium">{category.category}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-gray-900 font-semibold">${category.amount.toLocaleString()}</p>
+                                                <p className="text-sm text-gray-500">{category.percentage}%</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-6 h-32 flex items-end justify-center">
+                                    <div className="relative w-32 h-32">
+                                        <svg viewBox="0 0 36 36" className="w-full h-full">
+                                            <path
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                fill="none"
+                                                stroke="#f3f4f6"
+                                                strokeWidth="2"
+                                            />
+                                            <path
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                fill="none"
+                                                stroke="#ef4444"
+                                                strokeWidth="2"
+                                                strokeDasharray={`${revenueByCategory[0].percentage * 1.13}, 100`}
+                                            />
+                                            <path
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                fill="none"
+                                                stroke="#3b82f6"
+                                                strokeWidth="2"
+                                                strokeDasharray={`${revenueByCategory[1].percentage * 1.13}, 100`}
+                                                strokeDashoffset={`-${revenueByCategory[0].percentage * 1.13}`}
+                                            />
+                                            <path
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                fill="none"
+                                                stroke="#10b981"
+                                                strokeWidth="2"
+                                                strokeDasharray={`${revenueByCategory[2].percentage * 1.13}, 100`}
+                                                strokeDashoffset={`-${(revenueByCategory[0].percentage + revenueByCategory[1].percentage) * 1.13}`}
+                                            />
+                                            <path
+                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                                fill="none"
+                                                stroke="#8b5cf6"
+                                                strokeWidth="2"
+                                                strokeDasharray={`${revenueByCategory[3].percentage * 1.13}, 100`}
+                                                strokeDashoffset={`-${(revenueByCategory[0].percentage + revenueByCategory[1].percentage + revenueByCategory[2].percentage) * 1.13}`}
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Transactions */}
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
+                                <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                    View All
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-200">
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Client</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentTransactions.map((transaction) => (
+                                            <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                            {transaction.client.split(' ').map(n => n[0]).join('')}
+                                                        </div>
+                                                        <span className="text-gray-900 font-medium">{transaction.client}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-4 text-gray-700">{transaction.service}</td>
+                                                <td className="py-3 px-4 text-gray-900 font-semibold">${transaction.amount}</td>
+                                                <td className="py-3 px-4 text-gray-600">{transaction.date}</td>
+                                                <td className="py-3 px-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                                        }`}>
+                                                        {transaction.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
