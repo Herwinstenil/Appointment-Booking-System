@@ -29,7 +29,18 @@ import {
     Globe,
     CheckCircle,
     AlertCircle,
-    XCircle
+    XCircle,
+    TrendingUp,
+    TrendingDown,
+    Filter,
+    MoreVertical,
+    ArrowUpRight,
+    ArrowDownRight,
+    Search,
+    Plus,
+    Eye as ViewIcon,
+    Edit,
+    Trash2
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -77,6 +88,102 @@ const AdminDashboard = () => {
         deviceManagement: true
     });
 
+    // User Management State
+    const [users, setUsers] = useState([
+        { id: 1, name: 'John Smith', email: 'john@example.com', role: 'Client', status: 'Active', joinDate: '2024-01-10', lastLogin: '2 hours ago' },
+        { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', role: 'User', status: 'Active', joinDate: '2024-01-08', lastLogin: '1 day ago' },
+        { id: 3, name: 'Mike Davis', email: 'mike@example.com', role: 'Client', status: 'Inactive', joinDate: '2024-01-05', lastLogin: '3 days ago' },
+        { id: 4, name: 'Emma Wilson', email: 'emma@example.com', role: 'User', status: 'Active', joinDate: '2024-01-03', lastLogin: '5 hours ago' },
+        { id: 5, name: 'Alex Brown', email: 'alex@example.com', role: 'Client', status: 'Active', joinDate: '2024-01-01', lastLogin: '12 hours ago' }
+    ]);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUsers, setSelectedUsers] = useState([]);
+
+    // Service Category Management State
+    const [services, setServices] = useState([
+        { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development' },
+        { id: 2, name: 'Mobile App Development', description: 'iOS and Android app development', status: 'Active', price: '$800', category: 'Development' },
+        { id: 3, name: 'UI/UX Design', description: 'User interface and experience design', status: 'Active', price: '$300', category: 'Design' },
+        { id: 4, name: 'Digital Marketing', description: 'SEO and social media marketing', status: 'Inactive', price: '$400', category: 'Marketing' },
+        { id: 5, name: 'IT Consulting', description: 'Technical consultation services', status: 'Active', price: '$200', category: 'Consulting' }
+    ]);
+
+    // Revenue Dashboard State
+    const [timeRange, setTimeRange] = useState('monthly');
+    const [selectedMetric, setSelectedMetric] = useState('revenue');
+
+    // Revenue Dashboard Data
+    const revenueMetrics = {
+        totalRevenue: 1254300,
+        monthlyRevenue: 98750,
+        growthPercentage: 12.5,
+        activeSubscriptions: 2847,
+        averageOrderValue: 156,
+        topCategory: 'Premium Services',
+        newCustomers: 342,
+        churnRate: 2.3,
+        customerLifetimeValue: 2450
+    };
+
+    const revenueTrend = [
+        { month: 'Jan', revenue: 85000, growth: 5.2 },
+        { month: 'Feb', revenue: 92000, growth: 8.2 },
+        { month: 'Mar', revenue: 101000, growth: 9.8 },
+        { month: 'Apr', revenue: 95000, growth: -5.9 },
+        { month: 'May', revenue: 108000, growth: 13.7 },
+        { month: 'Jun', revenue: 115000, growth: 6.5 },
+        { month: 'Jul', revenue: 98750, growth: -14.1 }
+    ];
+
+    const revenueByCategory = [
+        { category: 'Premium Services', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-rose-500' },
+        { category: 'Consultation', amount: 320000, percentage: 25.5, growth: 8.7, color: 'bg-blue-500' },
+        { category: 'Basic Services', amount: 280000, percentage: 22.3, growth: 3.2, color: 'bg-green-500' },
+        { category: 'Add-ons', amount: 203000, percentage: 16.2, growth: 12.8, color: 'bg-purple-500' }
+    ];
+
+    const recentTransactions = [
+        { id: 1, client: 'John Smith', service: 'Premium Support', amount: 299, date: '2024-01-15', status: 'completed', avatar: 'JS' },
+        { id: 2, client: 'Sarah Johnson', service: 'Consultation', amount: 150, date: '2024-01-15', status: 'completed', avatar: 'SJ' },
+        { id: 3, client: 'Mike Davis', service: 'Basic Service', amount: 89, date: '2024-01-14', status: 'pending', avatar: 'MD' },
+        { id: 4, client: 'Emma Wilson', service: 'Premium Support', amount: 299, date: '2024-01-14', status: 'completed', avatar: 'EW' },
+        { id: 5, client: 'Alex Brown', service: 'Add-on Package', amount: 75, date: '2024-01-13', status: 'completed', avatar: 'AB' }
+    ];
+
+    const performanceMetrics = [
+        { name: 'Conversion Rate', value: '3.2%', change: '+0.4%', positive: true },
+        { name: 'Avg Session Duration', value: '4m 12s', change: '+23s', positive: true },
+        { name: 'Bounce Rate', value: '42%', change: '-3.2%', positive: true },
+        { name: 'Customer Satisfaction', value: '4.8/5', change: '+0.2', positive: true }
+    ];
+
+    // Booking Analytics Data
+    const bookingData = {
+        totalBookings: 1247,
+        completedBookings: 984,
+        pendingBookings: 187,
+        cancelledBookings: 76,
+        bookingRate: 78.9
+    };
+
+    const bookingTrend = [
+        { day: 'Mon', bookings: 45 },
+        { day: 'Tue', bookings: 52 },
+        { day: 'Wed', bookings: 48 },
+        { day: 'Thu', bookings: 61 },
+        { day: 'Fri', bookings: 55 },
+        { day: 'Sat', bookings: 38 },
+        { day: 'Sun', bookings: 29 }
+    ];
+
+    const popularServices = [
+        { service: 'Web Development', bookings: 234, revenue: 117000 },
+        { service: 'Mobile App Development', bookings: 189, revenue: 151200 },
+        { service: 'UI/UX Design', bookings: 156, revenue: 46800 },
+        { service: 'Consultation', bookings: 143, revenue: 28600 }
+    ];
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -101,19 +208,17 @@ const AdminDashboard = () => {
     const handleSaveProfile = () => {
         console.log('Saving profile data:', profileData);
         setIsEditing(false);
-        setOriginalProfileData({ ...profileData }); // Update original data
+        setOriginalProfileData({ ...profileData });
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
     };
 
     const handleCancelEdit = () => {
-        // Reset to original data
         setProfileData({ ...originalProfileData });
         setIsEditing(false);
     };
 
     const handleStartEditing = () => {
-        // Store current data as original when starting to edit
         setOriginalProfileData({ ...profileData });
         setIsEditing(true);
     };
@@ -132,6 +237,34 @@ const AdminDashboard = () => {
 
     const triggerFileInput = () => {
         document.getElementById('profile-image-input').click();
+    };
+
+    // User Management Handlers
+    const handleUserSelect = (userId) => {
+        setSelectedUsers(prev =>
+            prev.includes(userId)
+                ? prev.filter(id => id !== userId)
+                : [...prev, userId]
+        );
+    };
+
+    const handleSelectAll = () => {
+        setSelectedUsers(selectedUsers.length === users.length ? [] : users.map(user => user.id));
+    };
+
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Service Management Handlers
+    const toggleServiceStatus = (serviceId) => {
+        setServices(services.map(service =>
+            service.id === serviceId
+                ? { ...service, status: service.status === 'Active' ? 'Inactive' : 'Active' }
+                : service
+        ));
     };
 
     const sidebarItems = [
@@ -195,14 +328,162 @@ const AdminDashboard = () => {
             case 'User Management':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">User Management</h2>
-                        <p className="text-gray-600 mb-6">Manage users here. Add, edit, or remove user accounts.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <Users size={48} className="mx-auto mb-2 text-rose-500" />
-                                    <p className="font-medium">User list and management tools will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    User Management
+                                </h2>
+                                <p className="text-gray-600">Manage and monitor all user accounts in the system</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search users..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                                    />
                                 </div>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Plus size={16} />
+                                    Add User
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* User Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                                    </div>
+                                    <Users className="text-rose-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Active').length}</p>
+                                    </div>
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={16} className="text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Clients</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Client').length}</p>
+                                    </div>
+                                    <User className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Regular Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'User').length}</p>
+                                    </div>
+                                    <Users className="text-purple-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Users Table */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-800">All Users</h3>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">{filteredUsers.length} users found</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedUsers.length === users.length && users.length > 0}
+                                                    onChange={handleSelectAll}
+                                                    className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredUsers.map((user) => (
+                                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedUsers.includes(user.id)}
+                                                        onChange={() => handleUserSelect(user.id)}
+                                                        className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                            {user.name.split(' ').map(n => n[0]).join('')}
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        user.role === 'Client' 
+                                                            ? 'bg-blue-100 text-blue-800'
+                                                            : 'bg-purple-100 text-purple-800'
+                                                    }`}>
+                                                        {user.role}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        user.status === 'Active'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {user.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-900">{user.joinDate}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">{user.lastLogin}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                            <ViewIcon size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-green-600 hover:text-green-800 transition-colors">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -211,15 +492,106 @@ const AdminDashboard = () => {
             case 'Service Category Management':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Service Category Management</h2>
-                        <p className="text-gray-600 mb-6">Manage service categories and subcategories.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <FolderOpen size={48} className="mx-auto mb-2 text-rose-500" />
-                                    <p className="font-medium">Service categories and management tools will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    Service Category Management
+                                </h2>
+                                <p className="text-gray-600">Manage and organize your service offerings</p>
+                            </div>
+                            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0">
+                                <Plus size={16} />
+                                Add Service
+                            </button>
+                        </div>
+
+                        {/* Service Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Services</p>
+                                        <p className="text-2xl font-bold text-gray-900">{services.length}</p>
+                                    </div>
+                                    <FolderOpen className="text-rose-500" size={32} />
                                 </div>
                             </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active Services</p>
+                                        <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.status === 'Active').length}</p>
+                                    </div>
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={16} className="text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Categories</p>
+                                        <p className="text-2xl font-bold text-gray-900">{[...new Set(services.map(s => s.category))].length}</p>
+                                    </div>
+                                    <BarChart3 className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Avg Price</p>
+                                        <p className="text-2xl font-bold text-gray-900">$440</p>
+                                    </div>
+                                    <DollarSign className="text-green-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Services Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {services.map((service) => (
+                                <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                    <div className="p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                                            <button
+                                                onClick={() => toggleServiceStatus(service.id)}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                                    service.status === 'Active' ? 'bg-rose-500' : 'bg-gray-300'
+                                                }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                        service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                                    }`}
+                                                />
+                                            </button>
+                                        </div>
+                                        <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-2xl font-bold text-rose-600">{service.price}</span>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                service.status === 'Active'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {service.status}
+                                            </span>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                            <span className="text-sm text-gray-500">Category: {service.category}</span>
+                                        </div>
+                                        <div className="mt-4 flex items-center space-x-2">
+                                            <button className="flex-1 bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors text-sm">
+                                                Edit
+                                            </button>
+                                            <button className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                                                View
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
@@ -227,13 +599,111 @@ const AdminDashboard = () => {
             case 'Booking Analytics':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Booking Analytics</h2>
-                        <p className="text-gray-600 mb-6">View analytics and insights on bookings.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <BarChart3 size={48} className="mx-auto mb-2 text-rose-500" />
-                                    <p className="font-medium">Charts and analytics data will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    Booking Analytics
+                                </h2>
+                                <p className="text-gray-600">Track and analyze booking patterns and trends</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                    <Download size={16} />
+                                    Export Data
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Filter size={16} />
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Booking Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-rose-100 text-sm font-medium">Total Bookings</p>
+                                        <p className="text-2xl font-bold">{bookingData.totalBookings.toLocaleString()}</p>
+                                        <p className="text-rose-100 text-xs mt-1">All time</p>
+                                    </div>
+                                    <BarChart3 size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-green-100 text-sm font-medium">Completed</p>
+                                        <p className="text-2xl font-bold">{bookingData.completedBookings.toLocaleString()}</p>
+                                        <p className="text-green-100 text-xs mt-1">{bookingData.bookingRate}% rate</p>
+                                    </div>
+                                    <CheckCircle size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-amber-100 text-sm font-medium">Pending</p>
+                                        <p className="text-2xl font-bold">{bookingData.pendingBookings}</p>
+                                        <p className="text-amber-100 text-xs mt-1">Awaiting confirmation</p>
+                                    </div>
+                                    <AlertCircle size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-red-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-red-100 text-sm font-medium">Cancelled</p>
+                                        <p className="text-2xl font-bold">{bookingData.cancelledBookings}</p>
+                                        <p className="text-red-100 text-xs mt-1">6.1% cancellation rate</p>
+                                    </div>
+                                    <XCircle size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            {/* Booking Trend */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Booking Trend</h3>
+                                <div className="h-64 flex items-end justify-between space-x-2">
+                                    {bookingTrend.map((data, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center group">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-300 hover:from-rose-600 hover:to-pink-600 cursor-pointer relative overflow-hidden"
+                                                style={{ height: `${(data.bookings / 70) * 100}%` }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.day}</p>
+                                            <p className="text-xs text-gray-500">{data.bookings}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Popular Services */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Popular Services</h3>
+                                <div className="space-y-4">
+                                    {popularServices.map((service, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                                    {index + 1}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{service.service}</p>
+                                                    <p className="text-sm text-gray-600">{service.bookings} bookings</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-bold text-rose-600">${service.revenue.toLocaleString()}</p>
+                                                <p className="text-sm text-gray-500">revenue</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -241,243 +711,306 @@ const AdminDashboard = () => {
                 );
 
             case 'Revenue Dashboard':
-                // Mock revenue data
-                const revenueMetrics = {
-                    totalRevenue: 1254300,
-                    monthlyRevenue: 98750,
-                    growthPercentage: 12.5,
-                    activeSubscriptions: 2847,
-                    averageOrderValue: 156,
-                    topCategory: 'Premium Services'
-                };
-
-                const revenueTrend = [
-                    { month: 'Jan', revenue: 85000 },
-                    { month: 'Feb', revenue: 92000 },
-                    { month: 'Mar', revenue: 101000 },
-                    { month: 'Apr', revenue: 95000 },
-                    { month: 'May', revenue: 108000 },
-                    { month: 'Jun', revenue: 115000 },
-                    { month: 'Jul', revenue: 98750 }
-                ];
-
-                const revenueByCategory = [
-                    { category: 'Premium Services', amount: 450000, percentage: 35.9 },
-                    { category: 'Consultation', amount: 320000, percentage: 25.5 },
-                    { category: 'Basic Services', amount: 280000, percentage: 22.3 },
-                    { category: 'Add-ons', amount: 203000, percentage: 16.2 }
-                ];
-
-                const recentTransactions = [
-                    { id: 1, client: 'John Smith', service: 'Premium Support', amount: 299, date: '2024-01-15', status: 'completed' },
-                    { id: 2, client: 'Sarah Johnson', service: 'Consultation', amount: 150, date: '2024-01-15', status: 'completed' },
-                    { id: 3, client: 'Mike Davis', service: 'Basic Service', amount: 89, date: '2024-01-14', status: 'pending' },
-                    { id: 4, client: 'Emma Wilson', service: 'Premium Support', amount: 299, date: '2024-01-14', status: 'completed' },
-                    { id: 5, client: 'Alex Brown', service: 'Add-on Package', amount: 75, date: '2024-01-13', status: 'completed' }
-                ];
-
                 return (
                     <div className="p-8 animate-fadeIn">
+                        {/* Header Section */}
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
-                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Revenue Dashboard</h2>
-                                <p className="text-gray-600">Monitor revenue and financial metrics in real-time</p>
+                                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    Revenue Table
+                                </h2>
+                                <p className="text-gray-600 text-lg">Monitor revenue and financial metrics in real-time</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105">
+                                {/* Time Range Filter */}
+                                <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-xl p-1">
+                                    {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
+                                        <button
+                                            key={range}
+                                            onClick={() => setTimeRange(range)}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
+                                                timeRange === range
+                                                    ? 'bg-rose-500 text-white shadow-lg'
+                                                    : 'text-gray-600 hover:text-rose-600'
+                                            }`}
+                                        >
+                                            {range.charAt(0).toUpperCase() + range.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+                                
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                    <Filter size={16} />
+                                    Filters
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                                     <Download size={16} />
                                     Export Report
-                                </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105">
-                                    <BarChart3 size={16} />
-                                    View Analytics
                                 </button>
                             </div>
                         </div>
 
                         {/* Key Metrics Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-                                        <p className="text-2xl font-bold">${revenueMetrics.totalRevenue.toLocaleString()}</p>
-                                        <p className="text-green-100 text-xs mt-1">+{revenueMetrics.growthPercentage}% from last month</p>
+                            {[
+                                {
+                                    title: 'Total Revenue',
+                                    value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
+                                    change: `+${revenueMetrics.growthPercentage}%`,
+                                    positive: true,
+                                    icon: DollarSign,
+                                    gradient: 'from-green-500 to-emerald-600',
+                                    delay: 0
+                                },
+                                {
+                                    title: 'Monthly Revenue',
+                                    value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`,
+                                    change: '+8.2%',
+                                    positive: true,
+                                    icon: BarChart3,
+                                    gradient: 'from-blue-500 to-cyan-600',
+                                    delay: 100
+                                },
+                                {
+                                    title: 'Active Subscriptions',
+                                    value: revenueMetrics.activeSubscriptions.toLocaleString(),
+                                    change: '+5.2%',
+                                    positive: true,
+                                    icon: Users,
+                                    gradient: 'from-purple-500 to-violet-600',
+                                    delay: 200
+                                },
+                                {
+                                    title: 'Avg Order Value',
+                                    value: `$${revenueMetrics.averageOrderValue}`,
+                                    change: '+3.1%',
+                                    positive: true,
+                                    icon: CreditCard,
+                                    gradient: 'from-amber-500 to-orange-600',
+                                    delay: 300
+                                }
+                            ].map((metric, index) => {
+                                const Icon = metric.icon;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`bg-gradient-to-br ${metric.gradient} p-6 rounded-2xl shadow-lg text-white transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-slideIn`}
+                                        style={{ animationDelay: `${metric.delay}ms` }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-white/80 text-sm font-medium mb-1">{metric.title}</p>
+                                                <p className="text-2xl font-bold mb-2">{metric.value}</p>
+                                                <div className={`flex items-center gap-1 text-sm ${metric.positive ? 'text-green-300' : 'text-red-300'}`}>
+                                                    {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                    <span>{metric.change}</span>
+                                                    <span className="text-white/70">from last month</span>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                                                <Icon size={24} className="text-white" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <DollarSign size={32} className="opacity-80" />
+                                );
+                            })}
+                        </div>
+
+                        {/* Charts and Performance Section */}
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                            {/* Revenue Trend Chart */}
+                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                            <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
+                                            Revenue
+                                        </div>
+                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="h-64 flex items-end justify-between space-x-2 relative">
+                                    {/* Grid Lines */}
+                                    <div className="absolute inset-0 flex flex-col justify-between">
+                                        {[0, 1, 2, 3, 4].map((i) => (
+                                            <div key={i} className="border-t border-gray-100"></div>
+                                        ))}
+                                    </div>
+                                    
+                                    {revenueTrend.map((data, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-500 hover:from-rose-600 hover:to-pink-600 cursor-pointer relative overflow-hidden"
+                                                style={{ height: `${(data.revenue / 120000) * 100}%` }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
+                                            <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
+                                            
+                                            {/* Hover Tooltip */}
+                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                <div className="font-semibold">${data.revenue.toLocaleString()}</div>
+                                                <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                    {Math.abs(data.growth)}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-blue-100 text-sm font-medium">Monthly Revenue</p>
-                                        <p className="text-2xl font-bold">${revenueMetrics.monthlyRevenue.toLocaleString()}</p>
-                                        <p className="text-blue-100 text-xs mt-1">Current month</p>
-                                    </div>
-                                    <BarChart3 size={32} className="opacity-80" />
+                            {/* Performance Metrics */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Performance Metrics</h3>
+                                <div className="space-y-4">
+                                    {performanceMetrics.map((metric, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                        >
+                                            <div>
+                                                <p className="font-medium text-gray-800 group-hover:text-rose-700">{metric.name}</p>
+                                                <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600 mt-1">
+                                                    {metric.value}
+                                                </p>
+                                            </div>
+                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                                                metric.positive 
+                                                    ? 'bg-green-100 text-green-700 group-hover:bg-green-200' 
+                                                    : 'bg-red-100 text-red-700 group-hover:bg-red-200'
+                                            }`}>
+                                                {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                {metric.change}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Revenue Distribution and Transactions */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Revenue by Category */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Revenue by Category</h3>
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                        View Details
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {revenueByCategory.map((category, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-12 h-12 ${category.color} rounded-xl flex items-center justify-center text-white font-bold text-sm`}>
+                                                    {category.percentage}%
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800 group-hover:text-rose-700">{category.category}</p>
+                                                    <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600">
+                                                        ${category.amount.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className={`flex items-center gap-1 text-sm font-medium ${
+                                                    category.growth >= 0 ? 'text-green-600' : 'text-red-600'
+                                                }`}>
+                                                    {category.growth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                    {category.growth}%
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-1">Growth</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                            {/* Recent Transactions */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {recentTransactions.map((transaction) => (
+                                        <div
+                                            key={transaction.id}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg group-hover:shadow-xl transition-all duration-300">
+                                                    {transaction.avatar}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800 group-hover:text-rose-700">{transaction.client}</p>
+                                                    <p className="text-sm text-gray-600">{transaction.service}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-bold text-gray-900 group-hover:text-rose-600">
+                                                    ${transaction.amount}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-xs text-gray-500">{transaction.date}</span>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                        transaction.status === 'completed'
+                                                            ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
+                                                            : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
+                                                    }`}>
+                                                        {transaction.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-purple-100 text-sm font-medium">Active Subscriptions</p>
-                                        <p className="text-2xl font-bold">{revenueMetrics.activeSubscriptions.toLocaleString()}</p>
-                                        <p className="text-purple-100 text-xs mt-1">+5.2% from last month</p>
+                                        <p className="text-indigo-100 text-sm font-medium">New Customers</p>
+                                        <p className="text-2xl font-bold">{revenueMetrics.newCustomers}</p>
+                                        <p className="text-indigo-100 text-xs mt-1">This month</p>
                                     </div>
                                     <Users size={32} className="opacity-80" />
                                 </div>
                             </div>
-
-                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                            
+                            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-amber-100 text-sm font-medium">Avg Order Value</p>
-                                        <p className="text-2xl font-bold">${revenueMetrics.averageOrderValue}</p>
-                                        <p className="text-amber-100 text-xs mt-1">Top: {revenueMetrics.topCategory}</p>
+                                        <p className="text-cyan-100 text-sm font-medium">Churn Rate</p>
+                                        <p className="text-2xl font-bold">{revenueMetrics.churnRate}%</p>
+                                        <p className="text-cyan-100 text-xs mt-1">-0.3% from last month</p>
                                     </div>
-                                    <CreditCard size={32} className="opacity-80" />
+                                    <TrendingDown size={32} className="opacity-80" />
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Charts Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                            {/* Revenue Trend Chart */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                        <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
-                                        Last 7 months
+                            
+                            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-emerald-100 text-sm font-medium">Lifetime Value</p>
+                                        <p className="text-2xl font-bold">${revenueMetrics.customerLifetimeValue}</p>
+                                        <p className="text-emerald-100 text-xs mt-1">Per customer</p>
                                     </div>
+                                    <DollarSign size={32} className="opacity-80" />
                                 </div>
-                                <div className="h-64 flex items-end justify-between space-x-2">
-                                    {revenueTrend.map((data, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-300 hover:from-rose-600 hover:to-pink-600"
-                                                style={{ height: `${(data.revenue / 120000) * 100}%` }}
-                                            ></div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
-                                            <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Revenue by Category */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">Revenue by Category</h3>
-                                <div className="space-y-4">
-                                    {revenueByCategory.map((category, index) => (
-                                        <div key={index} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-4 h-4 rounded-full ${index === 0 ? 'bg-rose-500' :
-                                                    index === 1 ? 'bg-blue-500' :
-                                                        index === 2 ? 'bg-green-500' : 'bg-purple-500'
-                                                    }`}></div>
-                                                <span className="text-gray-700 font-medium">{category.category}</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-gray-900 font-semibold">${category.amount.toLocaleString()}</p>
-                                                <p className="text-sm text-gray-500">{category.percentage}%</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-6 h-32 flex items-end justify-center">
-                                    <div className="relative w-32 h-32">
-                                        <svg viewBox="0 0 36 36" className="w-full h-full">
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#f3f4f6"
-                                                strokeWidth="2"
-                                            />
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#ef4444"
-                                                strokeWidth="2"
-                                                strokeDasharray={`${revenueByCategory[0].percentage * 1.13}, 100`}
-                                            />
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#3b82f6"
-                                                strokeWidth="2"
-                                                strokeDasharray={`${revenueByCategory[1].percentage * 1.13}, 100`}
-                                                strokeDashoffset={`-${revenueByCategory[0].percentage * 1.13}`}
-                                            />
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#10b981"
-                                                strokeWidth="2"
-                                                strokeDasharray={`${revenueByCategory[2].percentage * 1.13}, 100`}
-                                                strokeDashoffset={`-${(revenueByCategory[0].percentage + revenueByCategory[1].percentage) * 1.13}`}
-                                            />
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#8b5cf6"
-                                                strokeWidth="2"
-                                                strokeDasharray={`${revenueByCategory[3].percentage * 1.13}, 100`}
-                                                strokeDashoffset={`-${(revenueByCategory[0].percentage + revenueByCategory[1].percentage + revenueByCategory[2].percentage) * 1.13}`}
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recent Transactions */}
-                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
-                                <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
-                                    View All
-                                </button>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b border-gray-200">
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Client</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Service</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Amount</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
-                                            <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {recentTransactions.map((transaction) => (
-                                            <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                                            {transaction.client.split(' ').map(n => n[0]).join('')}
-                                                        </div>
-                                                        <span className="text-gray-900 font-medium">{transaction.client}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4 text-gray-700">{transaction.service}</td>
-                                                <td className="py-3 px-4 text-gray-900 font-semibold">${transaction.amount}</td>
-                                                <td className="py-3 px-4 text-gray-600">{transaction.date}</td>
-                                                <td className="py-3 px-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : 'bg-amber-100 text-amber-700'
-                                                        }`}>
-                                                        {transaction.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
@@ -1010,12 +1543,27 @@ const AdminDashboard = () => {
                     }
                 }
                 
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
                 }
                 
                 .animate-dropdown {
                     animation: dropdown 0.2s ease-out;
+                }
+                
+                .animate-slideIn {
+                    animation: slideIn 0.5s ease-out;
                 }
                 
                 /* Smooth scrolling */
