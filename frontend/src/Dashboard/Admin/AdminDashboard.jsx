@@ -448,20 +448,18 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        user.role === 'Client' 
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'Client'
                                                             ? 'bg-blue-100 text-blue-800'
                                                             : 'bg-purple-100 text-purple-800'
-                                                    }`}>
+                                                        }`}>
                                                         {user.role}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        user.status === 'Active'
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'Active'
                                                             ? 'bg-green-100 text-green-800'
                                                             : 'bg-red-100 text-red-800'
-                                                    }`}>
+                                                        }`}>
                                                         {user.status}
                                                     </span>
                                                 </td>
@@ -556,25 +554,22 @@ const AdminDashboard = () => {
                                             <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
                                             <button
                                                 onClick={() => toggleServiceStatus(service.id)}
-                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                                    service.status === 'Active' ? 'bg-rose-500' : 'bg-gray-300'
-                                                }`}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-rose-500' : 'bg-gray-300'
+                                                    }`}
                                             >
                                                 <span
-                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                                        service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
-                                                    }`}
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
                                                 />
                                             </button>
                                         </div>
                                         <p className="text-gray-600 text-sm mb-4">{service.description}</p>
                                         <div className="flex items-center justify-between">
                                             <span className="text-2xl font-bold text-rose-600">{service.price}</span>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                service.status === 'Active'
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
                                                     ? 'bg-green-100 text-green-800'
                                                     : 'bg-red-100 text-red-800'
-                                            }`}>
+                                                }`}>
                                                 {service.status}
                                             </span>
                                         </div>
@@ -728,17 +723,16 @@ const AdminDashboard = () => {
                                         <button
                                             key={range}
                                             onClick={() => setTimeRange(range)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                                                timeRange === range
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
                                                     ? 'bg-rose-500 text-white shadow-lg'
                                                     : 'text-gray-600 hover:text-rose-600'
-                                            }`}
+                                                }`}
                                         >
                                             {range.charAt(0).toUpperCase() + range.slice(1)}
                                         </button>
                                     ))}
                                 </div>
-                                
+
                                 <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
                                     <Filter size={16} />
                                     Filters
@@ -839,7 +833,7 @@ const AdminDashboard = () => {
                                             <div key={i} className="border-t border-gray-100"></div>
                                         ))}
                                     </div>
-                                    
+
                                     {revenueTrend.map((data, index) => (
                                         <div key={index} className="flex-1 flex flex-col items-center group relative">
                                             <div
@@ -850,7 +844,7 @@ const AdminDashboard = () => {
                                             </div>
                                             <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
                                             <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
-                                            
+
                                             {/* Hover Tooltip */}
                                             <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
                                                 <div className="font-semibold">${data.revenue.toLocaleString()}</div>
@@ -879,11 +873,10 @@ const AdminDashboard = () => {
                                                     {metric.value}
                                                 </p>
                                             </div>
-                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                                                metric.positive 
-                                                    ? 'bg-green-100 text-green-700 group-hover:bg-green-200' 
+                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
+                                                    ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
                                                     : 'bg-red-100 text-red-700 group-hover:bg-red-200'
-                                            }`}>
+                                                }`}>
                                                 {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                                                 {metric.change}
                                             </div>
@@ -921,9 +914,8 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className={`flex items-center gap-1 text-sm font-medium ${
-                                                    category.growth >= 0 ? 'text-green-600' : 'text-red-600'
-                                                }`}>
+                                                <div className={`flex items-center gap-1 text-sm font-medium ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'
+                                                    }`}>
                                                     {category.growth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                                                     {category.growth}%
                                                 </div>
@@ -963,11 +955,10 @@ const AdminDashboard = () => {
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-xs text-gray-500">{transaction.date}</span>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                        transaction.status === 'completed'
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
                                                             ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
                                                             : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
-                                                    }`}>
+                                                        }`}>
                                                         {transaction.status}
                                                     </span>
                                                 </div>
@@ -990,7 +981,7 @@ const AdminDashboard = () => {
                                     <Users size={32} className="opacity-80" />
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -1001,7 +992,7 @@ const AdminDashboard = () => {
                                     <TrendingDown size={32} className="opacity-80" />
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
