@@ -223,8 +223,6 @@ const AdminDashboard = () => {
         document.getElementById('profile-image-input').click();
     };
 
-
-
     // Service Management Handlers
     const toggleServiceStatus = (serviceId) => {
         setServices(services.map(service =>
@@ -291,7 +289,6 @@ const AdminDashboard = () => {
 
     const renderContent = () => {
         switch (activeItem) {
-
 
             case 'Service Category Management':
                 return (

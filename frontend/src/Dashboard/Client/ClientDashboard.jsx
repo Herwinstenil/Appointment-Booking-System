@@ -35,9 +35,7 @@ const ClientDashboard = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
-
     const navigate = useNavigate();
-
     const handleLogout = () => {
         // Add your logout logic here
         console.log('Logging out...');
@@ -90,6 +88,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'Manage Availability':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -105,6 +104,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'View Bookings':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -120,6 +120,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'Respond to Reschedule/Cancel':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -135,6 +136,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'User Management':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -311,6 +313,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
+                
             case 'Profile':
                 return (
                     <div className="p-8 animate-fadeIn">
