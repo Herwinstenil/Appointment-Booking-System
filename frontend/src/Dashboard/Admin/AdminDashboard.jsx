@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const [activeItem, setActiveItem] = useState('Service Category Management');
+    const [activeItem, setActiveItem] = useState('Client Management');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -233,7 +233,7 @@ const AdminDashboard = () => {
     };
 
     const sidebarItems = [
-        { name: 'Service Category Management', icon: FolderOpen },
+        { name: 'Client Management', icon: FolderOpen },
         { name: 'Booking Analytics', icon: BarChart3 },
         { name: 'Revenue Dashboard', icon: DollarSign },
         { name: 'Profile', icon: User },
@@ -290,13 +290,13 @@ const AdminDashboard = () => {
     const renderContent = () => {
         switch (activeItem) {
 
-            case 'Service Category Management':
+            case 'Client Management':
                 return (
                     <div className="p-8 animate-fadeIn">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    Service Category Management
+                                    Client Management
                                 </h2>
                                 <p className="text-gray-600">Manage and organize your service offerings</p>
                             </div>
