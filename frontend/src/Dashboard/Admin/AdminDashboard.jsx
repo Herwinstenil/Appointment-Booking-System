@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Users,
     FolderOpen,
     BarChart3,
     DollarSign,
@@ -36,15 +35,12 @@ import {
     MoreVertical,
     ArrowUpRight,
     ArrowDownRight,
-    Search,
     Plus,
-    Eye as ViewIcon,
-    Edit,
-    Trash2
+    Users
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const [activeItem, setActiveItem] = useState('User Management');
+    const [activeItem, setActiveItem] = useState('Service Category Management');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -87,18 +83,6 @@ const AdminDashboard = () => {
         loginAlerts: true,
         deviceManagement: true
     });
-
-    // User Management State
-    const [users, setUsers] = useState([
-        { id: 1, name: 'John Smith', email: 'john@example.com', role: 'Client', status: 'Active', joinDate: '2024-01-10', lastLogin: '2 hours ago' },
-        { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', role: 'User', status: 'Active', joinDate: '2024-01-08', lastLogin: '1 day ago' },
-        { id: 3, name: 'Mike Davis', email: 'mike@example.com', role: 'Client', status: 'Inactive', joinDate: '2024-01-05', lastLogin: '3 days ago' },
-        { id: 4, name: 'Emma Wilson', email: 'emma@example.com', role: 'User', status: 'Active', joinDate: '2024-01-03', lastLogin: '5 hours ago' },
-        { id: 5, name: 'Alex Brown', email: 'alex@example.com', role: 'Client', status: 'Active', joinDate: '2024-01-01', lastLogin: '12 hours ago' }
-    ]);
-
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedUsers, setSelectedUsers] = useState([]);
 
     // Service Category Management State
     const [services, setServices] = useState([
@@ -239,24 +223,7 @@ const AdminDashboard = () => {
         document.getElementById('profile-image-input').click();
     };
 
-    // User Management Handlers
-    const handleUserSelect = (userId) => {
-        setSelectedUsers(prev =>
-            prev.includes(userId)
-                ? prev.filter(id => id !== userId)
-                : [...prev, userId]
-        );
-    };
 
-    const handleSelectAll = () => {
-        setSelectedUsers(selectedUsers.length === users.length ? [] : users.map(user => user.id));
-    };
-
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     // Service Management Handlers
     const toggleServiceStatus = (serviceId) => {
@@ -268,7 +235,6 @@ const AdminDashboard = () => {
     };
 
     const sidebarItems = [
-        { name: 'User Management', icon: Users },
         { name: 'Service Category Management', icon: FolderOpen },
         { name: 'Booking Analytics', icon: BarChart3 },
         { name: 'Revenue Dashboard', icon: DollarSign },
@@ -325,167 +291,7 @@ const AdminDashboard = () => {
 
     const renderContent = () => {
         switch (activeItem) {
-            case 'User Management':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-                            <div>
-                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    User Management
-                                </h2>
-                                <p className="text-gray-600">Manage and monitor all user accounts in the system</p>
-                            </div>
-                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                                    <input
-                                        type="text"
-                                        placeholder="Search users..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                                    <Plus size={16} />
-                                    Add User
-                                </button>
-                            </div>
-                        </div>
 
-                        {/* User Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
-                                    </div>
-                                    <Users className="text-rose-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Active').length}</p>
-                                    </div>
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <CheckCircle size={16} className="text-white" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Clients</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Client').length}</p>
-                                    </div>
-                                    <User className="text-blue-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Regular Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'User').length}</p>
-                                    </div>
-                                    <Users className="text-purple-500" size={32} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Users Table */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-800">All Users</h3>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-600">{filteredUsers.length} users found</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b border-gray-200">
-                                            <th className="px-6 py-3 text-left">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedUsers.length === users.length && users.length > 0}
-                                                    onChange={handleSelectAll}
-                                                    className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
-                                                />
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                        {filteredUsers.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedUsers.includes(user.id)}
-                                                        onChange={() => handleUserSelect(user.id)}
-                                                        className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
-                                                    />
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center">
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                            {user.name.split(' ').map(n => n[0]).join('')}
-                                                        </div>
-                                                        <div className="ml-4">
-                                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                            <div className="text-sm text-gray-500">{user.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'Client'
-                                                            ? 'bg-blue-100 text-blue-800'
-                                                            : 'bg-purple-100 text-purple-800'
-                                                        }`}>
-                                                        {user.role}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'Active'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                        }`}>
-                                                        {user.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900">{user.joinDate}</td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">{user.lastLogin}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
-                                                            <ViewIcon size={16} />
-                                                        </button>
-                                                        <button className="p-1 text-green-600 hover:text-green-800 transition-colors">
-                                                            <Edit size={16} />
-                                                        </button>
-                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                );
 
             case 'Service Category Management':
                 return (
@@ -567,8 +373,8 @@ const AdminDashboard = () => {
                                         <div className="flex items-center justify-between">
                                             <span className="text-2xl font-bold text-rose-600">{service.price}</span>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {service.status}
                                             </span>
@@ -724,8 +530,8 @@ const AdminDashboard = () => {
                                             key={range}
                                             onClick={() => setTimeRange(range)}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
-                                                    ? 'bg-rose-500 text-white shadow-lg'
-                                                    : 'text-gray-600 hover:text-rose-600'
+                                                ? 'bg-rose-500 text-white shadow-lg'
+                                                : 'text-gray-600 hover:text-rose-600'
                                                 }`}
                                         >
                                             {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -874,8 +680,8 @@ const AdminDashboard = () => {
                                                 </p>
                                             </div>
                                             <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
-                                                    ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
-                                                    : 'bg-red-100 text-red-700 group-hover:bg-red-200'
+                                                ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
+                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
                                                 }`}>
                                                 {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                                                 {metric.change}
@@ -956,8 +762,8 @@ const AdminDashboard = () => {
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-xs text-gray-500">{transaction.date}</span>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
-                                                            ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
-                                                            : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
+                                                        ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
+                                                        : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
                                                         }`}>
                                                         {transaction.status}
                                                     </span>
