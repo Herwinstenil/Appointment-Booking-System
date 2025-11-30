@@ -81,7 +81,7 @@ const ClientDashboard = () => {
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                    Service Category Management
+                                    Create your Service
                                 </h2>
                                 <p className="text-gray-600">Manage and organize your service offerings</p>
                             </div>
