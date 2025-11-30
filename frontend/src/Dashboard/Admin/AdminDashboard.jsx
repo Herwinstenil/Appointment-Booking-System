@@ -42,7 +42,7 @@ const AdminDashboard = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('personal');
     const [saveSuccess, setSaveSuccess] = useState(false);
-    
+
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
         firstName: 'Admin',
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
         bio: 'Experienced system administrator with expertise in managing enterprise software solutions and team coordination.'
     });
 
-    const [profileData, setProfileData] = useState({...originalProfileData});
+    const [profileData, setProfileData] = useState({ ...originalProfileData });
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -99,20 +99,20 @@ const AdminDashboard = () => {
     const handleSaveProfile = () => {
         console.log('Saving profile data:', profileData);
         setIsEditing(false);
-        setOriginalProfileData({...profileData}); // Update original data
+        setOriginalProfileData({ ...profileData }); // Update original data
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
     };
 
     const handleCancelEdit = () => {
         // Reset to original data
-        setProfileData({...originalProfileData});
+        setProfileData({ ...originalProfileData });
         setIsEditing(false);
     };
 
     const handleStartEditing = () => {
         // Store current data as original when starting to edit
-        setOriginalProfileData({...profileData});
+        setOriginalProfileData({ ...profileData });
         setIsEditing(true);
     };
 
@@ -189,7 +189,8 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
-                  case 'Service Category Management':
+
+            case 'Service Category Management':
                 return (
                     <div className="p-8 animate-fadeIn">
                         <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Service Category Management</h2>
@@ -204,6 +205,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'Booking Analytics':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -219,6 +221,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 );
+
             case 'Revenue Dashboard':
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -253,12 +256,12 @@ const AdminDashboard = () => {
                                         <span className="text-sm font-medium">Changes saved successfully!</span>
                                     </div>
                                 )}
-                                
+
                                 {isEditing ? (
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500"
                                         >
                                             <XCircle size={20} />
                                             Cancel
@@ -319,11 +322,10 @@ const AdminDashboard = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
-                                            activeTab === tab.id
-                                                ? 'bg-white text-rose-600 shadow-lg'
-                                                : 'text-gray-600 hover:text-rose-600'
-                                        }`}
+                                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
+                                            ? 'bg-white text-rose-600 shadow-lg'
+                                            : 'text-gray-600 hover:text-rose-600'
+                                            }`}
                                     >
                                         <Icon size={18} />
                                         {tab.label}
@@ -376,7 +378,7 @@ const AdminDashboard = () => {
                                                     );
                                                 })}
                                             </div>
-                                            
+
                                             {/* Address Field */}
                                             <div className="mt-6 group">
                                                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -435,16 +437,14 @@ const AdminDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleNotificationChange(key)}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${
-                                                            value 
-                                                                ? 'bg-rose-500 shadow-lg shadow-rose-500/30' 
-                                                                : 'bg-gray-300'
-                                                        }`}
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${value
+                                                            ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
+                                                            : 'bg-gray-300'
+                                                            }`}
                                                     >
                                                         <span
-                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${
-                                                                value ? 'translate-x-6' : 'translate-x-1'
-                                                            }`}
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${value ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
                                                         />
                                                     </button>
                                                 </div>
@@ -472,16 +472,14 @@ const AdminDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleSecurityChange(item.key, !securitySettings[item.key])}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${
-                                                            securitySettings[item.key] 
-                                                                ? 'bg-rose-500 shadow-lg shadow-rose-500/30' 
-                                                                : 'bg-gray-300'
-                                                        }`}
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${securitySettings[item.key]
+                                                            ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
+                                                            : 'bg-gray-300'
+                                                            }`}
                                                     >
                                                         <span
-                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${
-                                                                securitySettings[item.key] ? 'translate-x-6' : 'translate-x-1'
-                                                            }`}
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${securitySettings[item.key] ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
                                                         />
                                                     </button>
                                                 </div>
