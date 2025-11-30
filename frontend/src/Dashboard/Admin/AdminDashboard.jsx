@@ -42,6 +42,8 @@ const AdminDashboard = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('personal');
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
 
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
@@ -114,6 +116,22 @@ const AdminDashboard = () => {
         // Store current data as original when starting to edit
         setOriginalProfileData({ ...profileData });
         setIsEditing(true);
+    };
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setProfileImage(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const triggerFileInput = () => {
+        document.getElementById('profile-image-input').click();
     };
 
     const sidebarItems = [
@@ -290,14 +308,32 @@ const AdminDashboard = () => {
                         <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-2xl p-6 mb-8 text-white transform transition-all duration-500 hover:scale-[1.02]">
                             <div className="flex items-center space-x-6">
                                 <div className="relative">
-                                    <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm border-2 border-white/30">
-                                        {profileData.firstName[0]}{profileData.lastName[0]}
-                                    </div>
+                                    {imagePreview ? (
+                                        <img
+                                            src={imagePreview}
+                                            alt="Profile"
+                                            className="w-24 h-24 rounded-full object-cover border-2 border-white/30"
+                                        />
+                                    ) : (
+                                        <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm border-2 border-white/30">
+                                            {profileData.firstName[0]}{profileData.lastName[0]}
+                                        </div>
+                                    )}
                                     {isEditing && (
-                                        <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-rose-600 shadow-lg hover:scale-110 transition-transform duration-200">
+                                        <button
+                                            onClick={triggerFileInput}
+                                            className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-rose-600 shadow-lg hover:scale-110 transition-transform duration-200 cursor-pointer"
+                                        >
                                             <Camera size={16} />
                                         </button>
                                     )}
+                                    <input
+                                        id="profile-image-input"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-2xl font-bold mb-2">{profileData.firstName} {profileData.lastName}</h3>
