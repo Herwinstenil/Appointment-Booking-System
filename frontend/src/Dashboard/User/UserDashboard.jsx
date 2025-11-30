@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
     FolderOpen,
     Search,
-    Calendar,
     BookOpen,
     User,
     Menu,
@@ -30,7 +29,6 @@ const UserDashboard = () => {
     const sidebarItems = [
         { name: 'View Available Services', icon: FolderOpen },
         { name: 'Search Providers', icon: Search },
-        { name: 'Book Appointment', icon: Calendar },
         { name: 'View Upcoming & Past Appointments', icon: BookOpen },
         { name: 'Booking History', icon: History },
         { name: 'Profile', icon: User },
@@ -63,21 +61,6 @@ const UserDashboard = () => {
                                 <div className="text-center">
                                     <Search size={48} className="mx-auto mb-2 text-violet-500" />
                                     <p className="font-medium">Search tools and provider list will go here.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            case 'Book Appointment':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Book Appointment</h2>
-                        <p className="text-gray-600 mb-6">Schedule and book appointments with providers.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <Calendar size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">Appointment booking form and calendar will go here.</p>
                                 </div>
                             </div>
                         </div>
