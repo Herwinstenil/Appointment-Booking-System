@@ -16,7 +16,9 @@ import {
     Eye as ViewIcon,
     Edit,
     Trash2,
-    CheckCircle
+    CheckCircle,
+    BarChart3,
+    DollarSign
 } from 'lucide-react';
 
 const ClientDashboard = () => {
@@ -76,15 +78,108 @@ const ClientDashboard = () => {
             case 'Create/Edit Services':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Create/Edit Services</h2>
-                        <p className="text-gray-600 mb-6">Create and edit your services here.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <FolderOpen size={48} className="mx-auto mb-2 text-emerald-500" />
-                                    <p className="font-medium">Service creation and editing tools will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                                    Service Category Management
+                                </h2>
+                                <p className="text-gray-600">Manage and organize your service offerings</p>
+                            </div>
+                            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0">
+                                <Plus size={16} />
+                                Add Service
+                            </button>
+                        </div>
+
+                        {/* Service Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Services</p>
+                                        <p className="text-2xl font-bold text-gray-900">5</p>
+                                    </div>
+                                    <FolderOpen className="text-emerald-500" size={32} />
                                 </div>
                             </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active Services</p>
+                                        <p className="text-2xl font-bold text-gray-900">4</p>
+                                    </div>
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={16} className="text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Categories</p>
+                                        <p className="text-2xl font-bold text-gray-900">3</p>
+                                    </div>
+                                    <BarChart3 className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Avg Price</p>
+                                        <p className="text-2xl font-bold text-gray-900">$350</p>
+                                    </div>
+                                    <DollarSign className="text-green-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Services Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[
+                                { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development' },
+                                { id: 2, name: 'Mobile App Development', description: 'iOS and Android app development', status: 'Active', price: '$800', category: 'Development' },
+                                { id: 3, name: 'UI/UX Design', description: 'User interface and experience design', status: 'Active', price: '$300', category: 'Design' },
+                                { id: 4, name: 'Digital Marketing', description: 'SEO and social media marketing', status: 'Inactive', price: '$400', category: 'Marketing' },
+                                { id: 5, name: 'IT Consulting', description: 'Technical consultation services', status: 'Active', price: '$200', category: 'Consulting' }
+                            ].map((service) => (
+                                <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                    <div className="p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                                            <button
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                        </div>
+                                        <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-2xl font-bold text-emerald-600">{service.price}</span>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                {service.status}
+                                            </span>
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                            <span className="text-sm text-gray-500">Category: {service.category}</span>
+                                        </div>
+                                        <div className="mt-4 flex items-center space-x-2">
+                                            <button className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm">
+                                                Edit
+                                            </button>
+                                            <button className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                                                View
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
@@ -313,7 +408,7 @@ const ClientDashboard = () => {
                         </div>
                     </div>
                 );
-                
+
             case 'Profile':
                 return (
                     <div className="p-8 animate-fadeIn">
