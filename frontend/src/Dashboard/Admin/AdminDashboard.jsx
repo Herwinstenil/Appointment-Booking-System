@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+    Users,
     FolderOpen,
     BarChart3,
     DollarSign,
@@ -35,12 +36,28 @@ import {
     MoreVertical,
     ArrowUpRight,
     ArrowDownRight,
+    Search,
     Plus,
-    Users
+    Eye as ViewIcon,
+    Edit,
+    Trash2,
+    Clock,
+    BookOpen,
+    MessageSquare,
+    Star,
+    CalendarDays,
+    Clock4,
+    UserPlus,
+    FileText,
+    TrendingUp as ArrowTrendingUp,
+    TrendingDown as ArrowTrendingDown,
+    Users as UsersIcon,
+    Settings as SettingsIcon,
+    Download as DownloadIcon
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const [activeItem, setActiveItem] = useState('Client Management');
+    const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -84,13 +101,25 @@ const AdminDashboard = () => {
         deviceManagement: true
     });
 
+    // User Management State
+    const [users, setUsers] = useState([
+        { id: 1, name: 'John Smith', email: 'john@example.com', role: 'Admin', status: 'Active', joinDate: '2024-01-10', lastLogin: '2 hours ago', clients: 45, revenue: '$12,500' },
+        { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', role: 'Manager', status: 'Active', joinDate: '2024-01-08', lastLogin: '1 day ago', clients: 32, revenue: '$8,700' },
+        { id: 3, name: 'Mike Davis', email: 'mike@example.com', role: 'Support', status: 'Inactive', joinDate: '2024-01-05', lastLogin: '3 days ago', clients: 18, revenue: '$4,200' },
+        { id: 4, name: 'Emma Wilson', email: 'emma@example.com', role: 'Admin', status: 'Active', joinDate: '2024-01-03', lastLogin: '5 hours ago', clients: 56, revenue: '$15,300' },
+        { id: 5, name: 'Alex Brown', email: 'alex@example.com', role: 'Manager', status: 'Active', joinDate: '2024-01-01', lastLogin: '12 hours ago', clients: 41, revenue: '$11,800' }
+    ]);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUsers, setSelectedUsers] = useState([]);
+
     // Service Category Management State
     const [services, setServices] = useState([
-        { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development' },
-        { id: 2, name: 'Mobile App Development', description: 'iOS and Android app development', status: 'Active', price: '$800', category: 'Development' },
-        { id: 3, name: 'UI/UX Design', description: 'User interface and experience design', status: 'Active', price: '$300', category: 'Design' },
-        { id: 4, name: 'Digital Marketing', description: 'SEO and social media marketing', status: 'Inactive', price: '$400', category: 'Marketing' },
-        { id: 5, name: 'IT Consulting', description: 'Technical consultation services', status: 'Active', price: '$200', category: 'Consulting' }
+        { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
+        { id: 2, name: 'Mobile App Development', description: 'iOS and Android app development', status: 'Active', price: '$800', category: 'Development', clients: 18, rating: 4.9 },
+        { id: 3, name: 'UI/UX Design', description: 'User interface and experience design', status: 'Active', price: '$300', category: 'Design', clients: 32, rating: 4.7 },
+        { id: 4, name: 'Digital Marketing', description: 'SEO and social media marketing', status: 'Inactive', price: '$400', category: 'Marketing', clients: 12, rating: 4.5 },
+        { id: 5, name: 'IT Consulting', description: 'Technical consultation services', status: 'Active', price: '$200', category: 'Consulting', clients: 28, rating: 4.6 }
     ]);
 
     // Revenue Dashboard State
@@ -168,6 +197,16 @@ const AdminDashboard = () => {
         { service: 'Consultation', bookings: 143, revenue: 28600 }
     ];
 
+    // System Analytics Data
+    const systemMetrics = {
+        totalUsers: 1250,
+        activeUsers: 847,
+        newUsers: 45,
+        storageUsed: '2.3 GB',
+        serverUptime: '99.9%',
+        responseTime: '120ms'
+    };
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -223,6 +262,25 @@ const AdminDashboard = () => {
         document.getElementById('profile-image-input').click();
     };
 
+    // User Management Handlers
+    const handleUserSelect = (userId) => {
+        setSelectedUsers(prev =>
+            prev.includes(userId)
+                ? prev.filter(id => id !== userId)
+                : [...prev, userId]
+        );
+    };
+
+    const handleSelectAll = () => {
+        setSelectedUsers(selectedUsers.length === users.length ? [] : users.map(user => user.id));
+    };
+
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     // Service Management Handlers
     const toggleServiceStatus = (serviceId) => {
         setServices(services.map(service =>
@@ -233,9 +291,12 @@ const AdminDashboard = () => {
     };
 
     const sidebarItems = [
-        { name: 'Client Management', icon: FolderOpen },
-        { name: 'Booking Analytics', icon: BarChart3 },
+        { name: 'Dashboard', icon: BarChart3 },
+        { name: 'User Management', icon: Users },
+        { name: 'Service Management', icon: FolderOpen },
+        { name: 'Booking Analytics', icon: BookOpen },
         { name: 'Revenue Dashboard', icon: DollarSign },
+        { name: 'System Analytics', icon: SettingsIcon },
         { name: 'Profile', icon: User },
     ];
 
@@ -274,6 +335,13 @@ const AdminDashboard = () => {
             time: '3 days ago, 2:20 PM',
             status: 'alert',
             icon: AlertCircle
+        },
+        {
+            id: 5,
+            action: 'Generated monthly revenue report',
+            time: '4 days ago, 11:00 AM',
+            status: 'completed',
+            icon: FileText
         }
     ];
 
@@ -282,6 +350,7 @@ const AdminDashboard = () => {
             case 'success': return 'text-green-600 bg-green-50 border-green-200';
             case 'modified': return 'text-blue-600 bg-blue-50 border-blue-200';
             case 'created': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'completed': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
             case 'alert': return 'text-amber-600 bg-amber-50 border-amber-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
         }
@@ -289,14 +358,477 @@ const AdminDashboard = () => {
 
     const renderContent = () => {
         switch (activeItem) {
+            case 'Dashboard':
+                return (
+                    <div className="p-8 animate-fadeIn">
+                        {/* Header Section */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    Admin Dashboard
+                                </h2>
+                                <p className="text-gray-600 text-lg">System overview and performance metrics</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-xl p-1">
+                                    {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
+                                        <button
+                                            key={range}
+                                            onClick={() => setTimeRange(range)}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
+                                                ? 'bg-rose-500 text-white shadow-lg'
+                                                : 'text-gray-600 hover:text-rose-600'
+                                                }`}
+                                        >
+                                            {range.charAt(0).toUpperCase() + range.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                    <Download size={16} />
+                                    Export Report
+                                </button>
+                            </div>
+                        </div>
 
-            case 'Client Management':
+                        {/* Key Metrics Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            {[
+                                {
+                                    title: 'Total Revenue',
+                                    value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
+                                    change: `+${revenueMetrics.growthPercentage}%`,
+                                    positive: true,
+                                    icon: DollarSign,
+                                    gradient: 'from-green-500 to-emerald-600',
+                                    delay: 0
+                                },
+                                {
+                                    title: 'Active Users',
+                                    value: systemMetrics.activeUsers,
+                                    change: '+8.2%',
+                                    positive: true,
+                                    icon: Users,
+                                    gradient: 'from-blue-500 to-cyan-600',
+                                    delay: 100
+                                },
+                                {
+                                    title: 'Total Bookings',
+                                    value: bookingData.totalBookings.toLocaleString(),
+                                    change: '+12.7%',
+                                    positive: true,
+                                    icon: BookOpen,
+                                    gradient: 'from-purple-500 to-violet-600',
+                                    delay: 200
+                                },
+                                {
+                                    title: 'Server Uptime',
+                                    value: systemMetrics.serverUptime,
+                                    change: '+0.1%',
+                                    positive: true,
+                                    icon: CheckCircle,
+                                    gradient: 'from-amber-500 to-orange-600',
+                                    delay: 300
+                                }
+                            ].map((metric, index) => {
+                                const Icon = metric.icon;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`bg-gradient-to-br ${metric.gradient} p-6 rounded-2xl shadow-lg text-white transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-slideIn`}
+                                        style={{ animationDelay: `${metric.delay}ms` }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-white/80 text-sm font-medium mb-1">{metric.title}</p>
+                                                <p className="text-2xl font-bold mb-2">{metric.value}</p>
+                                                <div className={`flex items-center gap-1 text-sm ${metric.positive ? 'text-green-300' : 'text-red-300'}`}>
+                                                    {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                    <span>{metric.change}</span>
+                                                    <span className="text-white/70">from last month</span>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                                                <Icon size={24} className="text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Charts and Performance Section */}
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                            {/* Revenue Trend Chart */}
+                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                            <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
+                                            Revenue
+                                        </div>
+                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="h-64 flex items-end justify-between space-x-2 relative">
+                                    {/* Grid Lines */}
+                                    <div className="absolute inset-0 flex flex-col justify-between">
+                                        {[0, 1, 2, 3, 4].map((i) => (
+                                            <div key={i} className="border-t border-gray-100"></div>
+                                        ))}
+                                    </div>
+
+                                    {revenueTrend.map((data, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-500 hover:from-rose-600 hover:to-pink-600 cursor-pointer relative overflow-hidden"
+                                                style={{ height: `${(data.revenue / 120000) * 100}%` }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
+                                            <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
+
+                                            {/* Hover Tooltip */}
+                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                <div className="font-semibold">${data.revenue.toLocaleString()}</div>
+                                                <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                    {Math.abs(data.growth)}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Performance Metrics */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">System Performance</h3>
+                                <div className="space-y-4">
+                                    {[
+                                        { name: 'Response Time', value: systemMetrics.responseTime, change: '-15ms', positive: true },
+                                        { name: 'Active Services', value: services.filter(s => s.status === 'Active').length, change: '+2', positive: true },
+                                        { name: 'Storage Used', value: systemMetrics.storageUsed, change: '+0.3GB', positive: false },
+                                        { name: 'New Users', value: systemMetrics.newUsers, change: '+12', positive: true }
+                                    ].map((metric, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                        >
+                                            <div>
+                                                <p className="font-medium text-gray-800 group-hover:text-rose-700">{metric.name}</p>
+                                                <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600 mt-1">
+                                                    {metric.value}
+                                                </p>
+                                            </div>
+                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
+                                                ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
+                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
+                                                }`}>
+                                                {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                {metric.change}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* System Overview and Recent Activities */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* System Overview */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">System Overview</h3>
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                        View Details
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: 'Total Users', value: systemMetrics.totalUsers, icon: UsersIcon, color: 'bg-blue-500' },
+                                        { label: 'Active Services', value: services.filter(s => s.status === 'Active').length, icon: FolderOpen, color: 'bg-green-500' },
+                                        { label: 'Monthly Bookings', value: bookingData.totalBookings, icon: Calendar, color: 'bg-purple-500' },
+                                        { label: 'Total Revenue', value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-rose-500' }
+                                    ].map((item, index) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-12 h-12 ${item.color} rounded-xl flex items-center justify-center text-white`}>
+                                                        <Icon size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-rose-700">{item.label}</p>
+                                                        <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600">
+                                                            {item.value}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                                                        <TrendingUp size={14} />
+                                                        +12.5%
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mt-1">Growth</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Recent Activities */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Recent Activities</h3>
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {recentActivities.map((activity) => {
+                                        const ActivityIcon = activity.icon;
+                                        return (
+                                            <div
+                                                key={activity.id}
+                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
+                                                        <ActivityIcon size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-rose-700">{activity.action}</p>
+                                                        <p className="text-sm text-gray-600">{activity.time}</p>
+                                                    </div>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                                    {activity.status}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Additional Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-indigo-100 text-sm font-medium">New Customers</p>
+                                        <p className="text-2xl font-bold">{revenueMetrics.newCustomers}</p>
+                                        <p className="text-indigo-100 text-xs mt-1">This month</p>
+                                    </div>
+                                    <UserPlus size={32} className="opacity-80" />
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-cyan-100 text-sm font-medium">Churn Rate</p>
+                                        <p className="text-2xl font-bold">{revenueMetrics.churnRate}%</p>
+                                        <p className="text-cyan-100 text-xs mt-1">-0.3% from last month</p>
+                                    </div>
+                                    <TrendingDown size={32} className="opacity-80" />
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-emerald-100 text-sm font-medium">Avg Order Value</p>
+                                        <p className="text-2xl font-bold">${revenueMetrics.averageOrderValue}</p>
+                                        <p className="text-emerald-100 text-xs mt-1">Per transaction</p>
+                                    </div>
+                                    <CreditCard size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'User Management':
                 return (
                     <div className="p-8 animate-fadeIn">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    Client Management
+                                    User Management
+                                </h2>
+                                <p className="text-gray-600">Manage and monitor all user accounts in the system</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search users..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Plus size={16} />
+                                    Add User
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* User Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                                    </div>
+                                    <Users className="text-rose-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Active').length}</p>
+                                    </div>
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={16} className="text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Admins</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Admin').length}</p>
+                                    </div>
+                                    <User className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Managers</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Manager').length}</p>
+                                    </div>
+                                    <Users className="text-purple-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Users Table */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-800">All Users</h3>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">{filteredUsers.length} users found</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedUsers.length === users.length && users.length > 0}
+                                                    onChange={handleSelectAll}
+                                                    className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clients</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredUsers.map((user) => (
+                                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedUsers.includes(user.id)}
+                                                        onChange={() => handleUserSelect(user.id)}
+                                                        className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                            {user.name.split(' ').map(n => n[0]).join('')}
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'Admin'
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : user.role === 'Manager'
+                                                            ? 'bg-blue-100 text-blue-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {user.role}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'Active'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {user.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.clients}</td>
+                                                <td className="px-6 py-4 text-sm font-semibold text-rose-600">{user.revenue}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                            <ViewIcon size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-green-600 hover:text-green-800 transition-colors">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'Service Management':
+                return (
+                    <div className="p-8 animate-fadeIn">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    Service Management
                                 </h2>
                                 <p className="text-gray-600">Manage and organize your service offerings</p>
                             </div>
@@ -367,8 +899,11 @@ const AdminDashboard = () => {
                                             </button>
                                         </div>
                                         <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-2xl font-bold text-rose-600">{service.price}</span>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div>
+                                                <span className="text-2xl font-bold text-rose-600">{service.price}</span>
+                                                <span className="text-sm text-gray-500 ml-2">per session</span>
+                                            </div>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-red-100 text-red-800'
@@ -376,15 +911,31 @@ const AdminDashboard = () => {
                                                 {service.status}
                                             </span>
                                         </div>
-                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <Users size={14} />
+                                                <span>{service.clients} clients</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Star size={14} className="text-amber-500" />
+                                                <span>{service.rating}</span>
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 border-t border-gray-200">
                                             <span className="text-sm text-gray-500">Category: {service.category}</span>
                                         </div>
                                         <div className="mt-4 flex items-center space-x-2">
                                             <button className="flex-1 bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors text-sm">
+                                                <Edit size={14} className="inline mr-1" />
                                                 Edit
                                             </button>
-                                            <button className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors text-sm">
+                                            <button className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                                <ViewIcon size={14} className="inline mr-1" />
                                                 View
+                                            </button>
+                                            <button className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                                <Trash2 size={14} className="inline mr-1" />
+                                                Delete
                                             </button>
                                         </div>
                                     </div>
@@ -505,6 +1056,29 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Performance Metrics */}
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-800 mb-6">Booking Performance</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                {[
+                                    { label: 'Conversion Rate', value: '8.5%', change: '+1.2%', positive: true },
+                                    { label: 'Avg Booking Value', value: '$156', change: '+$12', positive: true },
+                                    { label: 'Repeat Bookings', value: '42%', change: '+3.5%', positive: true },
+                                    { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%', positive: true }
+                                ].map((metric, index) => (
+                                    <div key={index} className="bg-gray-50 p-6 rounded-xl hover:bg-rose-50 transition-all duration-300">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-sm text-gray-600">{metric.label}</p>
+                                            <span className={`text-sm font-medium ${metric.positive ? 'text-green-600' : 'text-red-600'}`}>
+                                                {metric.change}
+                                            </span>
+                                        </div>
+                                        <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 );
 
@@ -515,7 +1089,7 @@ const AdminDashboard = () => {
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    Revenue Table
+                                    Revenue Dashboard
                                 </h2>
                                 <p className="text-gray-600 text-lg">Monitor revenue and financial metrics in real-time</p>
                             </div>
@@ -613,84 +1187,8 @@ const AdminDashboard = () => {
                             })}
                         </div>
 
-                        {/* Charts and Performance Section */}
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-                            {/* Revenue Trend Chart */}
-                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
-                                            Revenue
-                                        </div>
-                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                            <MoreVertical size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="h-64 flex items-end justify-between space-x-2 relative">
-                                    {/* Grid Lines */}
-                                    <div className="absolute inset-0 flex flex-col justify-between">
-                                        {[0, 1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="border-t border-gray-100"></div>
-                                        ))}
-                                    </div>
-
-                                    {revenueTrend.map((data, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-500 hover:from-rose-600 hover:to-pink-600 cursor-pointer relative overflow-hidden"
-                                                style={{ height: `${(data.revenue / 120000) * 100}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
-                                            <p className="text-xs text-gray-500">${(data.revenue / 1000).toFixed(0)}k</p>
-
-                                            {/* Hover Tooltip */}
-                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
-                                                <div className="font-semibold">${data.revenue.toLocaleString()}</div>
-                                                <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                                    {Math.abs(data.growth)}%
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Performance Metrics */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">Performance Metrics</h3>
-                                <div className="space-y-4">
-                                    {performanceMetrics.map((metric, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
-                                        >
-                                            <div>
-                                                <p className="font-medium text-gray-800 group-hover:text-rose-700">{metric.name}</p>
-                                                <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600 mt-1">
-                                                    {metric.value}
-                                                </p>
-                                            </div>
-                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
-                                                ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
-                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
-                                                }`}>
-                                                {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                {metric.change}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Revenue Distribution and Transactions */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                             {/* Revenue by Category */}
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
@@ -771,39 +1269,116 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                );
 
-                        {/* Additional Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+            case 'System Analytics':
+                return (
+                    <div className="p-8 animate-fadeIn">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                    System Analytics
+                                </h2>
+                                <p className="text-gray-600">Monitor system performance and server metrics</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                    <Download size={16} />
+                                    Export Logs
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Settings size={16} />
+                                    Settings
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* System Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-indigo-100 text-sm font-medium">New Customers</p>
-                                        <p className="text-2xl font-bold">{revenueMetrics.newCustomers}</p>
-                                        <p className="text-indigo-100 text-xs mt-1">This month</p>
+                                        <p className="text-gray-600 text-sm font-medium">Server Uptime</p>
+                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.serverUptime}</p>
                                     </div>
-                                    <Users size={32} className="opacity-80" />
+                                    <CheckCircle className="text-green-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Response Time</p>
+                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.responseTime}</p>
+                                    </div>
+                                    <Clock className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.activeUsers}</p>
+                                    </div>
+                                    <Users className="text-purple-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Storage Used</p>
+                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.storageUsed}</p>
+                                    </div>
+                                    <DownloadIcon className="text-amber-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Performance Charts */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            {/* System Load */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">System Load</h3>
+                                <div className="h-64 flex items-end justify-between space-x-2">
+                                    {[65, 72, 58, 81, 67, 74, 69].map((load, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg"
+                                                style={{ height: `${load}%` }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-2">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</p>
+                                            <p className="text-xs text-gray-500">{load}%</p>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-cyan-100 text-sm font-medium">Churn Rate</p>
-                                        <p className="text-2xl font-bold">{revenueMetrics.churnRate}%</p>
-                                        <p className="text-cyan-100 text-xs mt-1">-0.3% from last month</p>
-                                    </div>
-                                    <TrendingDown size={32} className="opacity-80" />
-                                </div>
-                            </div>
-
-                            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-emerald-100 text-sm font-medium">Lifetime Value</p>
-                                        <p className="text-2xl font-bold">${revenueMetrics.customerLifetimeValue}</p>
-                                        <p className="text-emerald-100 text-xs mt-1">Per customer</p>
-                                    </div>
-                                    <DollarSign size={32} className="opacity-80" />
+                            {/* User Activity */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">User Activity</h3>
+                                <div className="space-y-4">
+                                    {[
+                                        { time: 'Last 24 hours', users: 847, change: '+12%' },
+                                        { time: 'Last 7 days', users: 1250, change: '+8%' },
+                                        { time: 'Last 30 days', users: 2847, change: '+15%' },
+                                        { time: 'Last 90 days', users: 5123, change: '+22%' }
+                                    ].map((activity, index) => (
+                                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300">
+                                            <div>
+                                                <p className="font-medium text-gray-800">{activity.time}</p>
+                                                <p className="text-2xl font-bold text-rose-600 mt-1">{activity.users.toLocaleString()}</p>
+                                            </div>
+                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${activity.change.startsWith('+')
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
+                                                }`}>
+                                                {activity.change.startsWith('+') ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                {activity.change}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -1262,9 +1837,17 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500">Administrator</p>
                                     </div>
                                     <div className="relative">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
-                                            A
-                                        </div>
+                                        {imagePreview ? (
+                                            <img
+                                                src={imagePreview}
+                                                alt="Profile"
+                                                className="w-12 h-12 rounded-full object-cover border-2 border-rose-300 shadow-lg group-hover:shadow-xl transition-all duration-200"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
+                                                {profileData.firstName[0]}{profileData.lastName[0]}
+                                            </div>
+                                        )}
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
                                             <div className="w-2 h-2 bg-white rounded-full"></div>
                                         </div>
@@ -1279,8 +1862,8 @@ const AdminDashboard = () => {
                                 {showUserDropdown && (
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-gray-800">Admin</p>
-                                            <p className="text-xs text-gray-500 mt-1">admin@roriri.com</p>
+                                            <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{profileData.email}</p>
                                         </div>
 
                                         <div>
