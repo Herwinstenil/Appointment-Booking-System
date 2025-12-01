@@ -366,7 +366,7 @@ const UserDashboard = () => {
                                             <div key={i} className="border-t border-gray-100"></div>
                                         ))}
                                     </div>
-                                    
+
                                     {monthlySpending.map((data, index) => (
                                         <div key={index} className="flex-1 flex flex-col items-center group relative">
                                             <div
@@ -377,7 +377,7 @@ const UserDashboard = () => {
                                             </div>
                                             <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
                                             <p className="text-xs text-gray-500">${data.amount}</p>
-                                            
+
                                             {/* Hover Tooltip */}
                                             <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
                                                 <div className="font-semibold">${data.amount}</div>
@@ -572,15 +572,15 @@ const UserDashboard = () => {
                                 <button
                                     key={tab}
                                     className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${tab === 'All'
-                                            ? 'bg-white text-violet-600 shadow-lg'
-                                            : 'text-gray-600 hover:text-violet-600'
+                                        ? 'bg-white text-violet-600 shadow-lg'
+                                        : 'text-gray-600 hover:text-violet-600'
                                         }`}
                                 >
                                     {tab} ({tab === 'All' ? appointments.length :
                                         tab === 'Upcoming' ? appointments.filter(a => a.status === 'Upcoming').length :
                                             tab === 'Completed' ? appointments.filter(a => a.status === 'Completed').length :
                                                 appointments.filter(a => a.status === 'Cancelled').length
-                                        })
+                                    })
                                 </button>
                             ))}
                         </div>
@@ -602,10 +602,10 @@ const UserDashboard = () => {
                                             </div>
                                             <div className="flex items-center gap-4 mb-4">
                                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Upcoming'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : appointment.status === 'Completed'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : appointment.status === 'Completed'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
                                                     }`}>
                                                     {appointment.status}
                                                 </span>
@@ -757,8 +757,8 @@ const UserDashboard = () => {
                                                 <td className="px-6 py-4 text-sm font-semibold text-violet-600">{booking.amount}</td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Completed'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {booking.status}
                                                     </span>
@@ -910,8 +910,8 @@ const UserDashboard = () => {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
-                                                ? 'bg-white text-violet-600 shadow-lg'
-                                                : 'text-gray-600 hover:text-violet-600'
+                                            ? 'bg-white text-violet-600 shadow-lg'
+                                            : 'text-gray-600 hover:text-violet-600'
                                             }`}
                                     >
                                         <Icon size={18} />
