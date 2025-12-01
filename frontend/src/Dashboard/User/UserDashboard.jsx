@@ -1,79 +1,1190 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    FolderOpen,
-    Search,
     BookOpen,
+    History,
     User,
     Menu,
     X,
     LogOut,
     ChevronDown,
-    History,
-    Home
+    Home,
+    Calendar,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    XCircle,
+    Star,
+    DollarSign,
+    MapPin,
+    Phone,
+    Mail,
+    Settings,
+    Shield,
+    Bell,
+    Camera,
+    Edit3,
+    Save,
+    Download,
+    Filter,
+    Search,
+    Plus,
+    Eye as ViewIcon,
+    Edit,
+    Trash2,
+    TrendingUp,
+    TrendingDown,
+    MoreVertical,
+    CreditCard,
+    Activity,
+    FileText,
+    Globe,
+    Key,
+    Download as DownloadIcon,
+    CalendarDays,
+    Clock4,
+    Users,
+    FolderOpen,
+    MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { logout } = useAuth();
-    const [activeItem, setActiveItem] = useState('View Upcoming & Past Appointments');
+    const { logout, user } = useAuth();
+    const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    // Profile state
+    const [isEditing, setIsEditing] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [activeTab, setActiveTab] = useState('personal');
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+
+    // Store original data for cancel functionality
+    const [originalProfileData, setOriginalProfileData] = useState({
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '+1 (555) 123-4567',
+        address: '123 Main Street, Apt 4B, New York, NY 10001',
+        joinDate: '2023-06-15',
+        lastLogin: '2024-01-15 09:30 AM',
+        bio: 'Regular customer who enjoys booking various services. Always looking for quality and convenience.',
+        preferences: {
+            emailNotifications: true,
+            smsNotifications: true,
+            bookingReminders: true,
+            promotionalOffers: false,
+            newsletter: true
+        }
+    });
+
+    const [profileData, setProfileData] = useState({ ...originalProfileData });
+
+    const [notifications, setNotifications] = useState({
+        emailNotifications: true,
+        smsNotifications: true,
+        bookingReminders: true,
+        promotionalOffers: false,
+        newsletter: true,
+        securityAlerts: true
+    });
+
+    const [securitySettings, setSecuritySettings] = useState({
+        twoFactorAuth: false,
+        sessionTimeout: '60',
+        passwordExpiry: '90',
+        loginAlerts: true
+    });
+
+    // Appointments State
+    const [appointments, setAppointments] = useState([
+        { id: 1, service: 'Web Development Consultation', provider: 'Tech Solutions Inc.', date: '2024-01-20', time: '10:00 AM', status: 'Upcoming', amount: '$150', duration: '1 hour' },
+        { id: 2, service: 'UI/UX Design Review', provider: 'Creative Designs LLC', date: '2024-01-18', time: '2:00 PM', status: 'Completed', amount: '$120', duration: '1.5 hours' },
+        { id: 3, service: 'IT Support Session', provider: 'Tech Support Pro', date: '2024-01-15', time: '11:00 AM', status: 'Completed', amount: '$80', duration: '45 mins' },
+        { id: 4, service: 'Digital Marketing Consultation', provider: 'Growth Marketing Co.', date: '2024-01-22', time: '3:30 PM', status: 'Upcoming', amount: '$200', duration: '2 hours' },
+        { id: 5, service: 'Mobile App Planning', provider: 'App Masters', date: '2024-01-12', time: '9:00 AM', status: 'Cancelled', amount: '$180', duration: '1.5 hours' }
+    ]);
+
+    // Booking History State
+    const [bookingHistory, setBookingHistory] = useState([
+        { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
+        { id: 2, service: 'Graphic Design', provider: 'Creative Studio', date: '2023-12-28', amount: '$300', status: 'Completed', rating: 4 },
+        { id: 3, service: 'SEO Optimization', provider: 'Digital Growth', date: '2023-12-15', amount: '$450', status: 'Completed', rating: 5 },
+        { id: 4, service: 'Content Writing', provider: 'Wordsmith Pro', date: '2023-12-05', amount: '$250', status: 'Completed', rating: 4 },
+        { id: 5, service: 'Social Media Management', provider: 'Social Boost', date: '2023-11-20', amount: '$400', status: 'Completed', rating: 3 }
+    ]);
+
+    // User Stats
+    const userStats = {
+        totalBookings: 15,
+        completedBookings: 12,
+        upcomingBookings: 2,
+        cancelledBookings: 1,
+        totalSpent: 3850,
+        averageRating: 4.4,
+        favoriteCategory: 'Web Development',
+        loyaltyPoints: 1250
+    };
+
+    // Monthly Spending Data
+    const monthlySpending = [
+        { month: 'Jul', amount: 850, bookings: 3 },
+        { month: 'Aug', amount: 920, bookings: 4 },
+        { month: 'Sep', amount: 1010, bookings: 5 },
+        { month: 'Oct', amount: 950, bookings: 4 },
+        { month: 'Nov', amount: 1080, bookings: 5 },
+        { month: 'Dec', amount: 1150, bookings: 6 },
+        { month: 'Jan', amount: 1250, bookings: 7 }
+    ];
+
+    const recentActivities = [
+        {
+            id: 1,
+            action: 'Booked Web Development Consultation',
+            time: 'Today, 09:30 AM',
+            status: 'booking',
+            icon: Calendar
+        },
+        {
+            id: 2,
+            action: 'Rated UI/UX Design service 5 stars',
+            time: 'Yesterday, 3:15 PM',
+            status: 'rating',
+            icon: Star
+        },
+        {
+            id: 3,
+            action: 'Updated profile information',
+            time: '2 days ago, 11:45 AM',
+            status: 'profile',
+            icon: User
+        },
+        {
+            id: 4,
+            action: 'Cancelled Mobile App Planning session',
+            time: '3 days ago, 2:30 PM',
+            status: 'cancellation',
+            icon: XCircle
+        }
+    ];
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'booking': return 'text-blue-600 bg-blue-50 border-blue-200';
+            case 'rating': return 'text-amber-600 bg-amber-50 border-amber-200';
+            case 'profile': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'cancellation': return 'text-red-600 bg-red-50 border-red-200';
+            default: return 'text-gray-600 bg-gray-50 border-gray-200';
+        }
+    };
 
     const handleLogout = () => {
         logout();
         navigate('/');
     };
 
+    const handleNotificationChange = (key) => {
+        setNotifications(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    const handleSecurityChange = (key, value) => {
+        setSecuritySettings(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    const handleSaveProfile = () => {
+        console.log('Saving profile data:', profileData);
+        setIsEditing(false);
+        setOriginalProfileData({ ...profileData });
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+    };
+
+    const handleCancelEdit = () => {
+        setProfileData({ ...originalProfileData });
+        setIsEditing(false);
+    };
+
+    const handleStartEditing = () => {
+        setOriginalProfileData({ ...profileData });
+        setIsEditing(true);
+    };
+
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setProfileImage(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const triggerFileInput = () => {
+        document.getElementById('profile-image-input').click();
+    };
+
+    // Appointment Handlers
+    const cancelAppointment = (appointmentId) => {
+        setAppointments(appointments.map(apt =>
+            apt.id === appointmentId ? { ...apt, status: 'Cancelled' } : apt
+        ));
+    };
+
+    const rescheduleAppointment = (appointmentId) => {
+        // This would open a reschedule modal in a real app
+        alert(`Reschedule appointment ${appointmentId}`);
+    };
+
     const sidebarItems = [
-        { name: 'View Upcoming & Past Appointments', icon: BookOpen },
+        { name: 'Dashboard', icon: Home },
+        { name: 'Appointments', icon: Calendar },
         { name: 'Booking History', icon: History },
         { name: 'Profile', icon: User },
     ];
 
+    const tabs = [
+        { id: 'personal', label: 'Personal Info', icon: User },
+        { id: 'notifications', label: 'Notifications', icon: Bell },
+        { id: 'security', label: 'Security', icon: Shield },
+        { id: 'activity', label: 'Activity', icon: Activity }
+    ];
+
     const renderContent = () => {
         switch (activeItem) {
-            case 'View Upcoming & Past Appointments':
+            case 'Dashboard':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">View Upcoming & Past Appointments</h2>
-                        <p className="text-gray-600 mb-6">View your upcoming and past appointments.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <BookOpen size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">List of upcoming and past appointments will go here.</p>
+                        {/* Header Section */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                    User Dashboard
+                                </h2>
+                                <p className="text-gray-600 text-lg">Welcome back, {profileData.firstName}! Here's your overview.</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                    <Plus size={16} />
+                                    Book New Service
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Key Metrics Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            {[
+                                {
+                                    title: 'Total Bookings',
+                                    value: userStats.totalBookings,
+                                    change: '+3 this month',
+                                    positive: true,
+                                    icon: Calendar,
+                                    gradient: 'from-violet-500 to-fuchsia-600',
+                                    delay: 0
+                                },
+                                {
+                                    title: 'Total Spent',
+                                    value: `$${userStats.totalSpent}`,
+                                    change: '+$450 this month',
+                                    positive: true,
+                                    icon: DollarSign,
+                                    gradient: 'from-blue-500 to-cyan-600',
+                                    delay: 100
+                                },
+                                {
+                                    title: 'Upcoming',
+                                    value: userStats.upcomingBookings,
+                                    change: 'Next: Tomorrow',
+                                    positive: true,
+                                    icon: Clock,
+                                    gradient: 'from-emerald-500 to-teal-600',
+                                    delay: 200
+                                },
+                                {
+                                    title: 'Avg Rating',
+                                    value: userStats.averageRating + '/5',
+                                    change: '+0.2 from last month',
+                                    positive: true,
+                                    icon: Star,
+                                    gradient: 'from-amber-500 to-orange-600',
+                                    delay: 300
+                                }
+                            ].map((metric, index) => {
+                                const Icon = metric.icon;
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`bg-gradient-to-br ${metric.gradient} p-6 rounded-2xl shadow-lg text-white transform transition-all duration-500 hover:scale-105 hover:shadow-2xl animate-slideIn`}
+                                        style={{ animationDelay: `${metric.delay}ms` }}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-white/80 text-sm font-medium mb-1">{metric.title}</p>
+                                                <p className="text-2xl font-bold mb-2">{metric.value}</p>
+                                                <div className={`flex items-center gap-1 text-sm ${metric.positive ? 'text-emerald-300' : 'text-red-300'}`}>
+                                                    <span>{metric.change}</span>
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                                                <Icon size={24} className="text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Charts and Upcoming Appointments */}
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+                            {/* Monthly Spending Chart */}
+                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Monthly Spending</h3>
+                                    <div className="flex items-center gap-4">
+                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                            <MoreVertical size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="h-64 flex items-end justify-between space-x-2 relative">
+                                    {/* Grid Lines */}
+                                    <div className="absolute inset-0 flex flex-col justify-between">
+                                        {[0, 1, 2, 3, 4].map((i) => (
+                                            <div key={i} className="border-t border-gray-100"></div>
+                                        ))}
+                                    </div>
+                                    
+                                    {monthlySpending.map((data, index) => (
+                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                            <div
+                                                className="w-full bg-gradient-to-t from-violet-500 to-fuchsia-500 rounded-t-lg transition-all duration-500 hover:from-violet-600 hover:to-fuchsia-600 cursor-pointer relative overflow-hidden"
+                                                style={{ height: `${(data.amount / 1300) * 100}%` }}
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
+                                            <p className="text-xs text-gray-500">${data.amount}</p>
+                                            
+                                            {/* Hover Tooltip */}
+                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                <div className="font-semibold">${data.amount}</div>
+                                                <div className="text-xs text-gray-300">{data.bookings} bookings</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Upcoming Appointments */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Upcoming Appointments</h3>
+                                <div className="space-y-4">
+                                    {appointments.filter(apt => apt.status === 'Upcoming').map((appointment) => (
+                                        <div
+                                            key={appointment.id}
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                        >
+                                            <div>
+                                                <p className="font-medium text-gray-800 group-hover:text-violet-700">{appointment.service}</p>
+                                                <p className="text-sm text-gray-600">{appointment.provider}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Calendar size={12} className="text-gray-500" />
+                                                    <span className="text-xs text-gray-500">{appointment.date} at {appointment.time}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-lg font-bold text-gray-900 group-hover:text-violet-600">
+                                                    {appointment.amount}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <button
+                                                        onClick={() => rescheduleAppointment(appointment.id)}
+                                                        className="text-xs text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        Reschedule
+                                                    </button>
+                                                    <button
+                                                        onClick={() => cancelAppointment(appointment.id)}
+                                                        className="text-xs text-red-600 hover:text-red-800"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Activities and Stats */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Recent Activities */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Recent Activities</h3>
+                                    <button className="text-violet-600 hover:text-violet-700 text-sm font-medium transition-colors">
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {recentActivities.map((activity) => {
+                                        const ActivityIcon = activity.icon;
+                                        return (
+                                            <div
+                                                key={activity.id}
+                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
+                                                        <ActivityIcon size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-violet-700">{activity.action}</p>
+                                                        <p className="text-sm text-gray-600">{activity.time}</p>
+                                                    </div>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                                    {activity.status}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* User Stats */}
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">Your Stats</h3>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: 'Completed Bookings', value: userStats.completedBookings, icon: CheckCircle, color: 'text-emerald-600' },
+                                        { label: 'Cancelled Bookings', value: userStats.cancelledBookings, icon: XCircle, color: 'text-red-600' },
+                                        { label: 'Loyalty Points', value: userStats.loyaltyPoints, icon: Star, color: 'text-amber-600' },
+                                        { label: 'Favorite Category', value: userStats.favoriteCategory, icon: FolderOpen, color: 'text-violet-600' }
+                                    ].map((stat, index) => {
+                                        const Icon = stat.icon;
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <Icon size={20} className={stat.color} />
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-violet-700">{stat.label}</p>
+                                                        <p className="text-2xl font-bold text-gray-900 group-hover:text-violet-600">
+                                                            {stat.value}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
                     </div>
                 );
+
+            case 'Appointments':
+                return (
+                    <div className="p-8 animate-fadeIn">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                    My Appointments
+                                </h2>
+                                <p className="text-gray-600">Manage your upcoming and past appointments</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search appointments..."
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Plus size={16} />
+                                    New Booking
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Appointment Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Upcoming</p>
+                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => a.status === 'Upcoming').length}</p>
+                                    </div>
+                                    <Calendar className="text-violet-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Completed</p>
+                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => a.status === 'Completed').length}</p>
+                                    </div>
+                                    <CheckCircle className="text-emerald-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Spent</p>
+                                        <p className="text-2xl font-bold text-gray-900">${userStats.totalSpent}</p>
+                                    </div>
+                                    <DollarSign className="text-blue-500" size={32} />
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
+                                        <p className="text-2xl font-bold text-gray-900">{userStats.averageRating}/5</p>
+                                    </div>
+                                    <Star className="text-amber-500" size={32} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Appointments Tabs */}
+                        <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
+                            {['All', 'Upcoming', 'Completed', 'Cancelled'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${tab === 'All'
+                                            ? 'bg-white text-violet-600 shadow-lg'
+                                            : 'text-gray-600 hover:text-violet-600'
+                                        }`}
+                                >
+                                    {tab} ({tab === 'All' ? appointments.length :
+                                        tab === 'Upcoming' ? appointments.filter(a => a.status === 'Upcoming').length :
+                                            tab === 'Completed' ? appointments.filter(a => a.status === 'Completed').length :
+                                                appointments.filter(a => a.status === 'Cancelled').length
+                                        })
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Appointments List */}
+                        <div className="space-y-4">
+                            {appointments.map((appointment) => (
+                                <div key={appointment.id} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
+                                                    <Calendar size={24} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
+                                                    <p className="text-sm text-gray-600">{appointment.provider} • {appointment.duration}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Upcoming'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : appointment.status === 'Completed'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {appointment.status}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    <Calendar size={14} className="inline mr-1" />
+                                                    {appointment.date}
+                                                </span>
+                                                <span className="text-sm text-gray-600">
+                                                    <Clock size={14} className="inline mr-1" />
+                                                    {appointment.time}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-2 mt-4 lg:mt-0 lg:ml-6">
+                                            <div className="text-right">
+                                                <p className="text-2xl font-bold text-violet-600">{appointment.amount}</p>
+                                                <p className="text-sm text-gray-500">Total</p>
+                                            </div>
+                                            {appointment.status === 'Upcoming' && (
+                                                <div className="flex gap-2 mt-2">
+                                                    <button
+                                                        onClick={() => rescheduleAppointment(appointment.id)}
+                                                        className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                                    >
+                                                        Reschedule
+                                                    </button>
+                                                    <button
+                                                        onClick={() => cancelAppointment(appointment.id)}
+                                                        className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {appointment.status === 'Completed' && (
+                                                <button className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors">
+                                                    Rate Service
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+
             case 'Booking History':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Booking History</h2>
-                        <p className="text-gray-600 mb-6">View your complete booking history and past appointments.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <History size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">Complete booking history and records will go here.</p>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                    Booking History
+                                </h2>
+                                <p className="text-gray-600">View your complete booking history and past appointments</p>
+                            </div>
+                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                    <Download size={16} />
+                                    Export History
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    <Filter size={16} />
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Booking Stats */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-gradient-to-br from-violet-500 to-fuchsia-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-violet-100 text-sm font-medium">Total Bookings</p>
+                                        <p className="text-2xl font-bold">{userStats.totalBookings}</p>
+                                        <p className="text-violet-100 text-xs mt-1">All time</p>
+                                    </div>
+                                    <History size={32} className="opacity-80" />
                                 </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-emerald-100 text-sm font-medium">Completed</p>
+                                        <p className="text-2xl font-bold">{userStats.completedBookings}</p>
+                                        <p className="text-emerald-100 text-xs mt-1">Successful bookings</p>
+                                    </div>
+                                    <CheckCircle size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-100 text-sm font-medium">Total Spent</p>
+                                        <p className="text-2xl font-bold">${userStats.totalSpent}</p>
+                                        <p className="text-blue-100 text-xs mt-1">All bookings</p>
+                                    </div>
+                                    <DollarSign size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-amber-100 text-sm font-medium">Avg Rating</p>
+                                        <p className="text-2xl font-bold">{userStats.averageRating}/5</p>
+                                        <p className="text-amber-100 text-xs mt-1">Your average rating</p>
+                                    </div>
+                                    <Star size={32} className="opacity-80" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Booking History Table */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">{bookingHistory.length} bookings found</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {bookingHistory.map((booking) => (
+                                            <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm font-medium text-gray-900">{booking.service}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900">{booking.provider}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900">{booking.date}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm font-semibold text-violet-600">{booking.amount}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Completed'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {booking.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                size={14}
+                                                                className={i < booking.rating ? "text-amber-500 fill-amber-500" : "text-gray-300"}
+                                                            />
+                                                        ))}
+                                                        <span className="ml-2 text-sm text-gray-600">{booking.rating}/5</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                            <ViewIcon size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-violet-600 hover:text-violet-800 transition-colors">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 );
+
             case 'Profile':
                 return (
                     <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Profile</h2>
-                        <p className="text-gray-600 mb-6">Manage your user profile settings and preferences.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <User size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">Profile settings and information will go here.</p>
+                        {/* Header Section */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                            <div className="mb-4 lg:mb-0">
+                                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                                    User Profile
+                                </h2>
+                                <p className="text-gray-600 text-lg">Manage your personal information and account settings</p>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                {saveSuccess && (
+                                    <div className="flex items-center space-x-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg animate-bounce">
+                                        <CheckCircle size={16} />
+                                        <span className="text-sm font-medium">Changes saved successfully!</span>
+                                    </div>
+                                )}
+
+                                {isEditing ? (
+                                    <div className="flex items-center space-x-3">
+                                        <button
+                                            onClick={handleCancelEdit}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500"
+                                        >
+                                            <XCircle size={20} />
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleSaveProfile}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25"
+                                        >
+                                            <Save size={20} />
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={handleStartEditing}
+                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white hover:shadow-violet-500/25"
+                                    >
+                                        <Edit3 size={20} />
+                                        Edit Profile
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Profile Overview Card */}
+                        <div className="bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-2xl shadow-2xl p-6 mb-8 text-white transform transition-all duration-500 hover:scale-[1.02]">
+                            <div className="flex items-center space-x-6">
+                                <div className="relative">
+                                    {imagePreview ? (
+                                        <img
+                                            src={imagePreview}
+                                            alt="Profile"
+                                            className="w-24 h-24 rounded-full object-cover border-2 border-white/30"
+                                        />
+                                    ) : (
+                                        <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm border-2 border-white/30">
+                                            {profileData.firstName[0]}{profileData.lastName[0]}
+                                        </div>
+                                    )}
+                                    {isEditing && (
+                                        <button
+                                            onClick={triggerFileInput}
+                                            className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-violet-600 shadow-lg hover:scale-110 transition-transform duration-200 cursor-pointer"
+                                        >
+                                            <Camera size={16} />
+                                        </button>
+                                    )}
+                                    <input
+                                        id="profile-image-input"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold mb-2">{profileData.firstName} {profileData.lastName}</h3>
+                                    <p className="text-violet-100 mb-1">Premium Customer</p>
+                                    <p className="text-violet-100 text-sm opacity-90">{profileData.email}</p>
+                                    <div className="flex items-center gap-4 mt-2">
+                                        <span className="flex items-center gap-1 text-sm">
+                                            <Calendar size={14} />
+                                            Member since {profileData.joinDate}
+                                        </span>
+                                        <span className="flex items-center gap-1 text-sm">
+                                            <Star size={14} />
+                                            {userStats.loyaltyPoints} loyalty points
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="inline-flex items-center px-3 py-1 bg-white/20 rounded-full text-sm backdrop-blur-sm">
+                                        <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></div>
+                                        Active
+                                    </div>
+                                    <p className="text-violet-100 text-sm mt-2">Last login: {profileData.lastLogin}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tab Navigation */}
+                        <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-8">
+                            {tabs.map((tab) => {
+                                const Icon = tab.icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
+                                                ? 'bg-white text-violet-600 shadow-lg'
+                                                : 'text-gray-600 hover:text-violet-600'
+                                            }`}
+                                    >
+                                        <Icon size={18} />
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Tab Content */}
+                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                            {/* Main Content */}
+                            <div className="xl:col-span-2 space-y-6">
+                                {activeTab === 'personal' && (
+                                    <div className="space-y-6">
+                                        {/* Personal Information */}
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                                                <User className="text-violet-500" size={24} />
+                                                Personal Information
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {[
+                                                    { label: 'First Name', key: 'firstName', icon: User },
+                                                    { label: 'Last Name', key: 'lastName', icon: User },
+                                                    { label: 'Email', key: 'email', icon: Mail },
+                                                    { label: 'Phone', key: 'phone', icon: Phone },
+                                                    { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true },
+                                                    { label: 'Last Login', key: 'lastLogin', icon: Clock, readOnly: true }
+                                                ].map((field) => {
+                                                    const FieldIcon = field.icon;
+                                                    return (
+                                                        <div key={field.key} className="group">
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                                                <FieldIcon size={16} className="text-violet-500" />
+                                                                {field.label}
+                                                            </label>
+                                                            {isEditing && !field.readOnly ? (
+                                                                <input
+                                                                    type="text"
+                                                                    value={profileData[field.key]}
+                                                                    onChange={(e) => setProfileData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                                                />
+                                                            ) : (
+                                                                <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-violet-100 transition-all duration-300">
+                                                                    <p className="text-gray-900">{profileData[field.key]}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Address Field */}
+                                            <div className="mt-6 group">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                                    <MapPin size={16} className="text-violet-500" />
+                                                    Address
+                                                </label>
+                                                {isEditing ? (
+                                                    <textarea
+                                                        value={profileData.address}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                                                        rows="3"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                                    />
+                                                ) : (
+                                                    <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-violet-100 transition-all duration-300">
+                                                        <p className="text-gray-900">{profileData.address}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Bio Field */}
+                                            <div className="mt-6 group">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
+                                                {isEditing ? (
+                                                    <textarea
+                                                        value={profileData.bio}
+                                                        onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                                                        rows="4"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                                        placeholder="Tell us about yourself..."
+                                                    />
+                                                ) : (
+                                                    <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-violet-100 transition-all duration-300">
+                                                        <p className="text-gray-900 whitespace-pre-line">{profileData.bio}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'notifications' && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                                            <Bell className="text-violet-500" size={24} />
+                                            Notification Preferences
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {Object.entries(notifications).map(([key, value]) => (
+                                                <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 group">
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-violet-700 transition-colors">
+                                                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                                        </p>
+                                                        <p className="text-sm text-gray-600">Receive {key.toLowerCase()} notifications</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleNotificationChange(key)}
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${value
+                                                            ? 'bg-violet-500 shadow-lg shadow-violet-500/30'
+                                                            : 'bg-gray-300'
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${value ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'security' && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                                            <Shield className="text-violet-500" size={24} />
+                                            Security Settings
+                                        </h3>
+                                        <div className="space-y-6">
+                                            {[
+                                                { key: 'twoFactorAuth', label: 'Two-Factor Authentication', description: 'Add an extra layer of security to your account' },
+                                                { key: 'loginAlerts', label: 'Login Alerts', description: 'Get notified of new sign-ins' }
+                                            ].map((item) => (
+                                                <div key={item.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 group">
+                                                    <div>
+                                                        <p className="font-medium text-gray-800 group-hover:text-violet-700">{item.label}</p>
+                                                        <p className="text-sm text-gray-600">{item.description}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleSecurityChange(item.key, !securitySettings[item.key])}
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 ${securitySettings[item.key]
+                                                            ? 'bg-violet-500 shadow-lg shadow-violet-500/30'
+                                                            : 'bg-gray-300'
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ${securitySettings[item.key] ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            ))}
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="group">
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Session Timeout</label>
+                                                    <select
+                                                        value={securitySettings.sessionTimeout}
+                                                        onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                                    >
+                                                        <option value="15">15 minutes</option>
+                                                        <option value="30">30 minutes</option>
+                                                        <option value="60">1 hour</option>
+                                                        <option value="120">2 hours</option>
+                                                    </select>
+                                                </div>
+                                                <div className="group">
+                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password Expiry</label>
+                                                    <select
+                                                        value={securitySettings.passwordExpiry}
+                                                        onChange={(e) => handleSecurityChange('passwordExpiry', e.target.value)}
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                                    >
+                                                        <option value="30">30 days</option>
+                                                        <option value="60">60 days</option>
+                                                        <option value="90">90 days</option>
+                                                        <option value="180">180 days</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-[1.02]">
+                                                <Key size={20} />
+                                                Change Password
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeTab === 'activity' && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                                            <Activity className="text-violet-500" size={24} />
+                                            Recent Activity
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {recentActivities.map((activity) => {
+                                                const ActivityIcon = activity.icon;
+                                                return (
+                                                    <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 group transform hover:scale-[1.02]">
+                                                        <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
+                                                            <ActivityIcon size={20} />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-medium text-gray-800 group-hover:text-violet-700">{activity.action}</p>
+                                                            <p className="text-sm text-gray-600">{activity.time}</p>
+                                                        </div>
+                                                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                                            {activity.status}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Sidebar */}
+                            <div className="space-y-6">
+                                {/* Quick Actions */}
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
+                                    <div className="space-y-3">
+                                        {[
+                                            { icon: FileText, label: 'Download Invoices', color: 'text-blue-600' },
+                                            { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600' },
+                                            { icon: Download, label: 'Export Data', color: 'text-purple-600' },
+                                            { icon: Settings, label: 'Settings', color: 'text-amber-600' }
+                                        ].map((action, index) => {
+                                            const ActionIcon = action.icon;
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-violet-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group"
+                                                >
+                                                    <ActionIcon size={20} className={`${action.color} group-hover:scale-110 transition-transform`} />
+                                                    <span className="font-medium group-hover:text-violet-700">{action.label}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* User Stats */}
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">Your Stats</h3>
+                                    <div className="space-y-4">
+                                        {[
+                                            { label: 'Total Bookings', value: userStats.totalBookings, icon: Calendar },
+                                            { label: 'Completed', value: userStats.completedBookings, icon: CheckCircle },
+                                            { label: 'Loyalty Points', value: userStats.loyaltyPoints, icon: Star },
+                                            { label: 'Total Spent', value: `$${userStats.totalSpent}`, icon: DollarSign }
+                                        ].map((stat, index) => {
+                                            const StatIcon = stat.icon;
+                                            return (
+                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-violet-50 transition-all duration-300">
+                                                    <div className="flex items-center gap-3">
+                                                        <StatIcon size={18} className="text-violet-500" />
+                                                        <span className="text-gray-700 group-hover:text-violet-700">{stat.label}</span>
+                                                    </div>
+                                                    <span className="font-semibold text-gray-900 group-hover:text-violet-600">{stat.value}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -149,14 +1260,22 @@ const UserDashboard = () => {
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-800">User</p>
-                                        <p className="text-xs text-gray-500">Customer</p>
+                                        <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
+                                        <p className="text-xs text-gray-500">Premium Customer</p>
                                     </div>
                                     <div className="relative">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
-                                            U
-                                        </div>
-                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                        {imagePreview ? (
+                                            <img
+                                                src={imagePreview}
+                                                alt="Profile"
+                                                className="w-12 h-12 rounded-full object-cover border-2 border-violet-300 shadow-lg group-hover:shadow-xl transition-all duration-200"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
+                                                {profileData.firstName[0]}{profileData.lastName[0]}
+                                            </div>
+                                        )}
+                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
                                             <div className="w-2 h-2 bg-white rounded-full"></div>
                                         </div>
                                     </div>
@@ -170,8 +1289,8 @@ const UserDashboard = () => {
                                 {showUserDropdown && (
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-gray-800">User</p>
-                                            <p className="text-xs text-gray-500 mt-1">user@example.com</p>
+                                            <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{profileData.email}</p>
                                         </div>
 
                                         <div>
@@ -228,12 +1347,27 @@ const UserDashboard = () => {
                     }
                 }
                 
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
                 }
                 
                 .animate-dropdown {
                     animation: dropdown 0.2s ease-out;
+                }
+                
+                .animate-slideIn {
+                    animation: slideIn 0.5s ease-out;
                 }
                 
                 /* Smooth scrolling */
