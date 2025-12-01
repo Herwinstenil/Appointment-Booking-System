@@ -275,12 +275,6 @@ const UserDashboard = () => {
                                 </h2>
                                 <p className="text-gray-600 text-lg">Welcome back, {profileData.firstName}! Here's your overview.</p>
                             </div>
-                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
-                                    <Plus size={16} />
-                                    Book New Service
-                                </button>
-                            </div>
                         </div>
 
                         {/* Key Metrics Cards */}
@@ -521,7 +515,7 @@ const UserDashboard = () => {
                                 </div>
                                 <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                                     <Plus size={16} />
-                                    New Booking
+                                    Book New Service
                                 </button>
                             </div>
                         </div>
