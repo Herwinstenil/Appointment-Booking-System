@@ -17,7 +17,7 @@ import { useAuth } from '../../Context/AuthContext.jsx';
 const UserDashboard = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();
-    const [activeItem, setActiveItem] = useState('View Available Services');
+    const [activeItem, setActiveItem] = useState('View Upcoming & Past Appointments');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -27,8 +27,6 @@ const UserDashboard = () => {
     };
 
     const sidebarItems = [
-        { name: 'View Available Services', icon: FolderOpen },
-        { name: 'Search Providers', icon: Search },
         { name: 'View Upcoming & Past Appointments', icon: BookOpen },
         { name: 'Booking History', icon: History },
         { name: 'Profile', icon: User },
@@ -36,36 +34,6 @@ const UserDashboard = () => {
 
     const renderContent = () => {
         switch (activeItem) {
-            case 'View Available Services':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">View Available Services</h2>
-                        <p className="text-gray-600 mb-6">Browse and view all available services.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <FolderOpen size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">List of available services will go here.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            case 'Search Providers':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Search Providers</h2>
-                        <p className="text-gray-600 mb-6">Search for service providers based on your needs.</p>
-                        <div className="mt-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-center justify-center h-32 text-gray-500">
-                                <div className="text-center">
-                                    <Search size={48} className="mx-auto mb-2 text-violet-500" />
-                                    <p className="font-medium">Search tools and provider list will go here.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
             case 'View Upcoming & Past Appointments':
                 return (
                     <div className="p-8 animate-fadeIn">
