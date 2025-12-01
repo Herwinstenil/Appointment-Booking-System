@@ -394,8 +394,8 @@ const ClientDashboard = () => {
                                             key={range}
                                             onClick={() => setTimeRange(range)}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
-                                                    ? 'bg-emerald-500 text-white shadow-lg'
-                                                    : 'text-gray-600 hover:text-emerald-600'
+                                                ? 'bg-emerald-500 text-white shadow-lg'
+                                                : 'text-gray-600 hover:text-emerald-600'
                                                 }`}
                                         >
                                             {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -498,7 +498,7 @@ const ClientDashboard = () => {
                                             <div key={i} className="border-t border-gray-100"></div>
                                         ))}
                                     </div>
-                                    
+
                                     {revenueTrend.map((data, index) => (
                                         <div key={index} className="flex-1 flex flex-col items-center group relative">
                                             <div
@@ -509,7 +509,7 @@ const ClientDashboard = () => {
                                             </div>
                                             <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
                                             <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
-                                            
+
                                             {/* Hover Tooltip */}
                                             <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
                                                 <div className="font-semibold">${data.revenue.toLocaleString()}</div>
@@ -539,8 +539,8 @@ const ClientDashboard = () => {
                                                 </p>
                                             </div>
                                             <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
-                                                    ? 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
-                                                    : 'bg-red-100 text-red-700 group-hover:bg-red-200'
+                                                ? 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
+                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
                                                 }`}>
                                                 {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                                                 {metric.change}
@@ -621,8 +621,8 @@ const ClientDashboard = () => {
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-xs text-gray-500">{transaction.date}</span>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
-                                                            ? 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
-                                                            : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
+                                                        ? 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
+                                                        : 'bg-amber-100 text-amber-700 group-hover:bg-amber-200'
                                                         }`}>
                                                         {transaction.status}
                                                     </span>
@@ -646,7 +646,7 @@ const ClientDashboard = () => {
                                     <CheckCircle size={32} className="opacity-80" />
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -657,7 +657,7 @@ const ClientDashboard = () => {
                                     <DollarSign size={32} className="opacity-80" />
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-6 rounded-2xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -755,8 +755,8 @@ const ClientDashboard = () => {
                                                 <span className="text-sm text-gray-500 ml-2">per session</span>
                                             </div>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
-                                                    ? 'bg-emerald-100 text-emerald-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                ? 'bg-emerald-100 text-emerald-800'
+                                                : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {service.status}
                                             </span>
@@ -894,8 +894,8 @@ const ClientDashboard = () => {
                                         key={slot.id}
                                         onClick={() => toggleTimeSlot(slot.id)}
                                         className={`p-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 ${slot.available
-                                                ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-200'
-                                                : 'bg-red-100 text-red-700 border-2 border-red-300 hover:bg-red-200'
+                                            ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-200'
+                                            : 'bg-red-100 text-red-700 border-2 border-red-300 hover:bg-red-200'
                                             }`}
                                     >
                                         <div className="font-medium">{slot.time}</div>
@@ -1020,10 +1020,10 @@ const ClientDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Confirmed' || booking.status === 'Completed'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : booking.status === 'Pending'
-                                                                ? 'bg-amber-100 text-amber-800'
-                                                                : 'bg-red-100 text-red-800'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : booking.status === 'Pending'
+                                                            ? 'bg-amber-100 text-amber-800'
+                                                            : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {booking.status}
                                                     </span>
@@ -1138,16 +1138,16 @@ const ClientDashboard = () => {
                                             </div>
                                             <div className="flex items-center gap-4 mb-4">
                                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${request.type === 'Reschedule'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-red-100 text-red-800'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-red-100 text-red-800'
                                                     }`}>
                                                     {request.type} Request
                                                 </span>
                                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${request.status === 'Pending'
-                                                        ? 'bg-amber-100 text-amber-800'
-                                                        : request.status === 'Approved'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                    ? 'bg-amber-100 text-amber-800'
+                                                    : request.status === 'Approved'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
                                                     }`}>
                                                     {request.status}
                                                 </span>
@@ -1190,7 +1190,7 @@ const ClientDashboard = () => {
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                    Client Management
+                                    User Management
                                 </h2>
                                 <p className="text-gray-600">Manage and monitor all your client accounts</p>
                             </div>
@@ -1308,8 +1308,8 @@ const ClientDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'Active'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {user.status}
                                                     </span>
@@ -1455,8 +1455,8 @@ const ClientDashboard = () => {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
-                                                ? 'bg-white text-emerald-600 shadow-lg'
-                                                : 'text-gray-600 hover:text-emerald-600'
+                                            ? 'bg-white text-emerald-600 shadow-lg'
+                                            : 'text-gray-600 hover:text-emerald-600'
                                             }`}
                                     >
                                         <Icon size={18} />
