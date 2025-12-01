@@ -513,7 +513,10 @@ const UserDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                <button
+                                    onClick={() => navigate('/appointment')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
                                     <Plus size={16} />
                                     Book New Service
                                 </button>
