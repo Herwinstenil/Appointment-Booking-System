@@ -292,11 +292,9 @@ const AdminDashboard = () => {
 
     const sidebarItems = [
         { name: 'Dashboard', icon: BarChart3 },
-        { name: 'User Management', icon: Users },
-        { name: 'Service Management', icon: FolderOpen },
+        { name: 'Client Management', icon: Users },
         { name: 'Booking Analytics', icon: BookOpen },
         { name: 'Revenue Dashboard', icon: DollarSign },
-        { name: 'System Analytics', icon: SettingsIcon },
         { name: 'Profile', icon: User },
     ];
 
@@ -658,13 +656,13 @@ const AdminDashboard = () => {
                     </div>
                 );
 
-            case 'User Management':
+            case 'Client Management':
                 return (
                     <div className="p-8 animate-fadeIn">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    User Management
+                                    Client Management
                                 </h2>
                                 <p className="text-gray-600">Manage and monitor all user accounts in the system</p>
                             </div>
@@ -673,7 +671,7 @@ const AdminDashboard = () => {
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                     <input
                                         type="text"
-                                        placeholder="Search users..."
+                                        placeholder="Search cliet..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
@@ -681,7 +679,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                                     <Plus size={16} />
-                                    Add User
+                                    Add Client
                                 </button>
                             </div>
                         </div>
@@ -818,129 +816,6 @@ const AdminDashboard = () => {
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
-                );
-
-            case 'Service Management':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-                            <div>
-                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    Service Management
-                                </h2>
-                                <p className="text-gray-600">Manage and organize your service offerings</p>
-                            </div>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0">
-                                <Plus size={16} />
-                                Add Service
-                            </button>
-                        </div>
-
-                        {/* Service Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Total Services</p>
-                                        <p className="text-2xl font-bold text-gray-900">{services.length}</p>
-                                    </div>
-                                    <FolderOpen className="text-rose-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Active Services</p>
-                                        <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.status === 'Active').length}</p>
-                                    </div>
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <CheckCircle size={16} className="text-white" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Categories</p>
-                                        <p className="text-2xl font-bold text-gray-900">{[...new Set(services.map(s => s.category))].length}</p>
-                                    </div>
-                                    <BarChart3 className="text-blue-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Avg Price</p>
-                                        <p className="text-2xl font-bold text-gray-900">$440</p>
-                                    </div>
-                                    <DollarSign className="text-green-500" size={32} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Services Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {services.map((service) => (
-                                <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <div className="p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
-                                            <button
-                                                onClick={() => toggleServiceStatus(service.id)}
-                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-rose-500' : 'bg-gray-300'
-                                                    }`}
-                                            >
-                                                <span
-                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
-                                                        }`}
-                                                />
-                                            </button>
-                                        </div>
-                                        <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <span className="text-2xl font-bold text-rose-600">{service.price}</span>
-                                                <span className="text-sm text-gray-500 ml-2">per session</span>
-                                            </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {service.status}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                            <div className="flex items-center gap-2">
-                                                <Users size={14} />
-                                                <span>{service.clients} clients</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Star size={14} className="text-amber-500" />
-                                                <span>{service.rating}</span>
-                                            </div>
-                                        </div>
-                                        <div className="pt-4 border-t border-gray-200">
-                                            <span className="text-sm text-gray-500">Category: {service.category}</span>
-                                        </div>
-                                        <div className="mt-4 flex items-center space-x-2">
-                                            <button className="flex-1 bg-rose-500 text-white py-2 px-4 rounded-lg hover:bg-rose-600 transition-colors text-sm">
-                                                <Edit size={14} className="inline mr-1" />
-                                                Edit
-                                            </button>
-                                            <button className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                                                <ViewIcon size={14} className="inline mr-1" />
-                                                View
-                                            </button>
-                                            <button className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm">
-                                                <Trash2 size={14} className="inline mr-1" />
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </div>
                 );
@@ -1263,119 +1138,6 @@ const AdminDashboard = () => {
                                                         {transaction.status}
                                                     </span>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-
-            case 'System Analytics':
-                return (
-                    <div className="p-8 animate-fadeIn">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-                            <div>
-                                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    System Analytics
-                                </h2>
-                                <p className="text-gray-600">Monitor system performance and server metrics</p>
-                            </div>
-                            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
-                                    <Download size={16} />
-                                    Export Logs
-                                </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                                    <Settings size={16} />
-                                    Settings
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* System Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Server Uptime</p>
-                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.serverUptime}</p>
-                                    </div>
-                                    <CheckCircle className="text-green-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Response Time</p>
-                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.responseTime}</p>
-                                    </div>
-                                    <Clock className="text-blue-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.activeUsers}</p>
-                                    </div>
-                                    <Users className="text-purple-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Storage Used</p>
-                                        <p className="text-2xl font-bold text-gray-900">{systemMetrics.storageUsed}</p>
-                                    </div>
-                                    <DownloadIcon className="text-amber-500" size={32} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Performance Charts */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                            {/* System Load */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">System Load</h3>
-                                <div className="h-64 flex items-end justify-between space-x-2">
-                                    {[65, 72, 58, 81, 67, 74, 69].map((load, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg"
-                                                style={{ height: `${load}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</p>
-                                            <p className="text-xs text-gray-500">{load}%</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* User Activity */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">User Activity</h3>
-                                <div className="space-y-4">
-                                    {[
-                                        { time: 'Last 24 hours', users: 847, change: '+12%' },
-                                        { time: 'Last 7 days', users: 1250, change: '+8%' },
-                                        { time: 'Last 30 days', users: 2847, change: '+15%' },
-                                        { time: 'Last 90 days', users: 5123, change: '+22%' }
-                                    ].map((activity, index) => (
-                                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300">
-                                            <div>
-                                                <p className="font-medium text-gray-800">{activity.time}</p>
-                                                <p className="text-2xl font-bold text-rose-600 mt-1">{activity.users.toLocaleString()}</p>
-                                            </div>
-                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${activity.change.startsWith('+')
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-red-100 text-red-700'
-                                                }`}>
-                                                {activity.change.startsWith('+') ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                {activity.change}
                                             </div>
                                         </div>
                                     ))}
