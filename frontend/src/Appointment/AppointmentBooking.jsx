@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, Home } from 'lucide-react';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
 export default function AppointmentBooking() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [formData, setFormData] = useState({
@@ -16,6 +17,11 @@ export default function AppointmentBooking() {
         date: '',
         time: ''
     });
+
+    // Determine where to navigate back to based on the origin
+    const from = location.state?.from;
+    const backPath = from === 'dashboard' ? '/dashboard/user' : '/';
+    const backText = from === 'dashboard' ? 'Back to Dashboard' : 'Back to Home';
 
     const handleSubmit = () => {
         if (formData.name && formData.email && formData.phone && formData.service && formData.date && formData.time) {
@@ -38,11 +44,11 @@ export default function AppointmentBooking() {
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl">
                     <div className="flex justify-start mb-4">
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={() => navigate(backPath)}
                             className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
                         >
                             <Home className="w-4 h-4" />
-                            Back to Home
+                            {backText}
                         </button>
                     </div>
                     <h2 className="text-4xl font-bold text-center mb-2">Book Your Appointment</h2>
