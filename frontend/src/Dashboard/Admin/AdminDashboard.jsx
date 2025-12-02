@@ -351,10 +351,10 @@ const AdminDashboard = () => {
 
         // Add to users array
         setUsers(prev => [newClientObj, ...prev]);
-        
+
         // Close modal and reset form
         handleCloseAddClientModal();
-        
+
         // Show success message
         alert(`Client "${newClient.name}" added successfully!`);
     };
@@ -1003,7 +1003,7 @@ const AdminDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleAddClient}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                                 >
@@ -1129,19 +1129,19 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4 text-sm font-semibold text-rose-600">{user.revenue}</td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <button 
+                                                        <button
                                                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
                                                             title="View Details"
                                                         >
                                                             <ViewIcon size={16} />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             className="p-1 text-green-600 hover:text-green-800 transition-colors"
                                                             title="Edit"
                                                         >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDeleteUser(user.id)}
                                                             className="p-1 text-red-600 hover:text-red-800 transition-colors"
                                                             title="Delete"
