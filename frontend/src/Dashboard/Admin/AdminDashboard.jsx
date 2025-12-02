@@ -113,6 +113,19 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
 
+    // Add Client Modal State
+    const [showAddClientModal, setShowAddClientModal] = useState(false);
+    const [newClient, setNewClient] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        role: 'Client',
+        status: 'Active',
+        address: '',
+        notes: ''
+    });
+
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
@@ -281,6 +294,86 @@ const AdminDashboard = () => {
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Add Client Handlers
+    const handleAddClient = () => {
+        setShowAddClientModal(true);
+    };
+
+    const handleCloseAddClientModal = () => {
+        setShowAddClientModal(false);
+        resetNewClientForm();
+    };
+
+    const resetNewClientForm = () => {
+        setNewClient({
+            name: '',
+            email: '',
+            phone: '',
+            company: '',
+            role: 'Client',
+            status: 'Active',
+            address: '',
+            notes: ''
+        });
+    };
+
+    const handleSaveClient = () => {
+        // Basic validation
+        if (!newClient.name.trim() || !newClient.email.trim()) {
+            alert('Please fill in all required fields (Name and Email)');
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newClient.email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        // Create new client object
+        const clientId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+        const newClientObj = {
+            id: clientId,
+            name: newClient.name,
+            email: newClient.email,
+            role: newClient.role,
+            status: newClient.status,
+            joinDate: new Date().toISOString().split('T')[0],
+            lastLogin: 'Just now',
+            clients: Math.floor(Math.random() * 50) + 1,
+            revenue: `$${Math.floor(Math.random() * 20000) + 1000}`,
+            company: newClient.company,
+            phone: newClient.phone,
+            address: newClient.address,
+            notes: newClient.notes
+        };
+
+        // Add to users array
+        setUsers(prev => [newClientObj, ...prev]);
+        
+        // Close modal and reset form
+        handleCloseAddClientModal();
+        
+        // Show success message
+        alert(`Client "${newClient.name}" added successfully!`);
+    };
+
+    const handleNewClientChange = (field, value) => {
+        setNewClient(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    // Delete user handler
+    const handleDeleteUser = (userId) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            setUsers(prev => prev.filter(user => user.id !== userId));
+            setSelectedUsers(prev => prev.filter(id => id !== userId));
+        }
+    };
+
     // Service Management Handlers
     const toggleServiceStatus = (serviceId) => {
         setServices(services.map(service =>
@@ -353,6 +446,239 @@ const AdminDashboard = () => {
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
         }
     };
+
+    // Add Client Modal Component
+    const AddClientModal = () => (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                {/* Modal Header */}
+                <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-2xl font-bold text-gray-900">Add New Client</h3>
+                            <p className="text-gray-600 mt-1">Fill in the details to add a new client to the system</p>
+                        </div>
+                        <button
+                            onClick={handleCloseAddClientModal}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Basic Information */}
+                        <div className="space-y-4">
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <User size={16} className="text-rose-500" />
+                                    Full Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newClient.name}
+                                    onChange={(e) => handleNewClientChange('name', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Enter client name"
+                                    required
+                                />
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <Mail size={16} className="text-rose-500" />
+                                    Email Address *
+                                </label>
+                                <input
+                                    type="email"
+                                    value={newClient.email}
+                                    onChange={(e) => handleNewClientChange('email', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="client@example.com"
+                                    required
+                                />
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <Phone size={16} className="text-rose-500" />
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={newClient.phone}
+                                    onChange={(e) => handleNewClientChange('phone', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="+1 (555) 123-4567"
+                                />
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <Building size={16} className="text-rose-500" />
+                                    Company
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newClient.company}
+                                    onChange={(e) => handleNewClientChange('company', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Company name"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Role & Status */}
+                        <div className="space-y-4">
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                                <select
+                                    value={newClient.role}
+                                    onChange={(e) => handleNewClientChange('role', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                >
+                                    <option value="Client">Client</option>
+                                    <option value="VIP Client">VIP Client</option>
+                                    <option value="Enterprise">Enterprise</option>
+                                    <option value="Partner">Partner</option>
+                                </select>
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => handleNewClientChange('status', 'Active')}
+                                        className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${newClient.status === 'Active'
+                                            ? 'border-green-500 bg-green-50 text-green-700'
+                                            : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${newClient.status === 'Active' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                            Active
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => handleNewClientChange('status', 'Inactive')}
+                                        className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${newClient.status === 'Inactive'
+                                            ? 'border-red-500 bg-red-50 text-red-700'
+                                            : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${newClient.status === 'Inactive' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                                            Inactive
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <MapPin size={16} className="text-rose-500" />
+                                    Address
+                                </label>
+                                <textarea
+                                    value={newClient.address}
+                                    onChange={(e) => handleNewClientChange('address', e.target.value)}
+                                    rows="3"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Enter client address"
+                                />
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                <textarea
+                                    value={newClient.notes}
+                                    onChange={(e) => handleNewClientChange('notes', e.target.value)}
+                                    rows="4"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Additional notes about the client..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Client Preview */}
+                    <div className="mt-8 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-100">
+                        <h4 className="text-sm font-semibold text-rose-700 mb-3">Client Preview</h4>
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                {newClient.name ? newClient.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'CN'}
+                            </div>
+                            <div>
+                                <p className="font-medium text-gray-900">
+                                    {newClient.name || 'Client Name'}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    {newClient.email || 'email@example.com'}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${newClient.status === 'Active'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {newClient.status || 'Active'}
+                                    </span>
+                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                        {newClient.role || 'Client'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                            Fields marked with * are required
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <button
+                                onClick={handleCloseAddClientModal}
+                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveClient}
+                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <UserPlus size={18} />
+                                    Add Client
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    // Building icon component
+    const Building = ({ size, className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+            <path d="M9 22v-4h6v4"></path>
+            <path d="M8 6h.01"></path>
+            <path d="M16 6h.01"></path>
+            <path d="M12 6h.01"></path>
+            <path d="M12 10h.01"></path>
+            <path d="M12 14h.01"></path>
+            <path d="M16 10h.01"></path>
+            <path d="M16 14h.01"></path>
+            <path d="M8 10h.01"></path>
+            <path d="M8 14h.01"></path>
+        </svg>
+    );
 
     const renderContent = () => {
         switch (activeItem) {
@@ -671,13 +997,16 @@ const AdminDashboard = () => {
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                     <input
                                         type="text"
-                                        placeholder="Search cliet..."
+                                        placeholder="Search clients..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                <button 
+                                    onClick={handleAddClient}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
                                     <Plus size={16} />
                                     Add Client
                                 </button>
@@ -800,13 +1129,23 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4 text-sm font-semibold text-rose-600">{user.revenue}</td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                        <button 
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            title="View Details"
+                                                        >
                                                             <ViewIcon size={16} />
                                                         </button>
-                                                        <button className="p-1 text-green-600 hover:text-green-800 transition-colors">
+                                                        <button 
+                                                            className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                                                            title="Edit"
+                                                        >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                        <button 
+                                                            onClick={() => handleDeleteUser(user.id)}
+                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                                            title="Delete"
+                                                        >
                                                             <Trash2 size={16} />
                                                         </button>
                                                     </div>
@@ -1650,6 +1989,9 @@ const AdminDashboard = () => {
                 </main>
             </div>
 
+            {/* Add Client Modal */}
+            {showAddClientModal && <AddClientModal />}
+
             {/* Overlay for mobile */}
             {sidebarOpen && (
                 <div
@@ -1693,6 +2035,17 @@ const AdminDashboard = () => {
                     }
                 }
                 
+                @keyframes modalSlideIn {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.95) translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                }
+                
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
                 }
@@ -1705,9 +2058,22 @@ const AdminDashboard = () => {
                     animation: slideIn 0.5s ease-out;
                 }
                 
+                .animate-modalSlideIn {
+                    animation: modalSlideIn 0.3s ease-out;
+                }
+                
                 /* Smooth scrolling */
                 .overflow-y-auto {
                     scroll-behavior: smooth;
+                }
+                
+                /* Custom hover colors */
+                .hover\\:bg-red-25:hover {
+                    background-color: rgba(254, 202, 202, 0.1);
+                }
+                
+                .hover\\:bg-green-25:hover {
+                    background-color: rgba(187, 247, 208, 0.1);
                 }
             `}</style>
         </div>
