@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -448,220 +449,283 @@ const AdminDashboard = () => {
     };
 
     // Add Client Modal Component
-    const AddClientModal = () => (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                {/* Modal Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900">Add New Client</h3>
-                            <p className="text-gray-600 mt-1">Fill in the details to add a new client to the system</p>
-                        </div>
-                        <button
-                            onClick={handleCloseAddClientModal}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        >
-                            <X size={24} />
-                        </button>
-                    </div>
-                </div>
+    const AddClientModal = () => {
+        const [localClient, setLocalClient] = useState(newClient);
 
-                {/* Modal Body */}
-                <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Basic Information */}
-                        <div className="space-y-4">
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <User size={16} className="text-rose-500" />
-                                    Full Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newClient.name}
-                                    onChange={(e) => handleNewClientChange('name', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Enter client name"
-                                    required
-                                />
-                            </div>
+        // Sync with parent state when modal opens
+        React.useEffect(() => {
+            setLocalClient(newClient);
+        }, [newClient]);
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Mail size={16} className="text-rose-500" />
-                                    Email Address *
-                                </label>
-                                <input
-                                    type="email"
-                                    value={newClient.email}
-                                    onChange={(e) => handleNewClientChange('email', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="client@example.com"
-                                    required
-                                />
-                            </div>
+        const handleLocalChange = (field, value) => {
+            setLocalClient(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        };
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Phone size={16} className="text-rose-500" />
-                                    Phone Number
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={newClient.phone}
-                                    onChange={(e) => handleNewClientChange('phone', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="+1 (555) 123-4567"
-                                />
-                            </div>
+        const handleSave = () => {
+            // Basic validation
+            if (!localClient.name.trim() || !localClient.email.trim()) {
+                alert('Please fill in all required fields (Name and Email)');
+                return;
+            }
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Building size={16} className="text-rose-500" />
-                                    Company
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newClient.company}
-                                    onChange={(e) => handleNewClientChange('company', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Company name"
-                                />
-                            </div>
-                        </div>
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(localClient.email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
 
-                        {/* Role & Status */}
-                        <div className="space-y-4">
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
-                                <select
-                                    value={newClient.role}
-                                    onChange={(e) => handleNewClientChange('role', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                >
-                                    <option value="Client">Client</option>
-                                    <option value="VIP Client">VIP Client</option>
-                                    <option value="Enterprise">Enterprise</option>
-                                    <option value="Partner">Partner</option>
-                                </select>
-                            </div>
+            // Update parent state
+            Object.keys(localClient).forEach(key => {
+                handleNewClientChange(key, localClient[key]);
+            });
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                                <div className="flex space-x-2">
-                                    <button
-                                        onClick={() => handleNewClientChange('status', 'Active')}
-                                        className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${newClient.status === 'Active'
-                                            ? 'border-green-500 bg-green-50 text-green-700'
-                                            : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${newClient.status === 'Active' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                            Active
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => handleNewClientChange('status', 'Inactive')}
-                                        className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${newClient.status === 'Inactive'
-                                            ? 'border-red-500 bg-red-50 text-red-700'
-                                            : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${newClient.status === 'Inactive' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                                            Inactive
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
+            // Create new client object
+            const clientId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+            const newClientObj = {
+                id: clientId,
+                name: localClient.name,
+                email: localClient.email,
+                role: localClient.role,
+                status: localClient.status,
+                joinDate: new Date().toISOString().split('T')[0],
+                lastLogin: 'Just now',
+                clients: Math.floor(Math.random() * 50) + 1,
+                revenue: `$${Math.floor(Math.random() * 20000) + 1000}`,
+                company: localClient.company,
+                phone: localClient.phone,
+                address: localClient.address,
+                notes: localClient.notes
+            };
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <MapPin size={16} className="text-rose-500" />
-                                    Address
-                                </label>
-                                <textarea
-                                    value={newClient.address}
-                                    onChange={(e) => handleNewClientChange('address', e.target.value)}
-                                    rows="3"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Enter client address"
-                                />
-                            </div>
+            // Add to users array
+            setUsers(prev => [newClientObj, ...prev]);
 
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-                                <textarea
-                                    value={newClient.notes}
-                                    onChange={(e) => handleNewClientChange('notes', e.target.value)}
-                                    rows="4"
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Additional notes about the client..."
-                                />
-                            </div>
-                        </div>
-                    </div>
+            // Close modal and reset form
+            handleCloseAddClientModal();
 
-                    {/* Client Preview */}
-                    <div className="mt-8 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-100">
-                        <h4 className="text-sm font-semibold text-rose-700 mb-3">Client Preview</h4>
-                        <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                {newClient.name ? newClient.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'CN'}
-                            </div>
+            // Show success message
+            alert(`Client "${localClient.name}" added successfully!`);
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-medium text-gray-900">
-                                    {newClient.name || 'Client Name'}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                    {newClient.email || 'email@example.com'}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${newClient.status === 'Active'
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {newClient.status || 'Active'}
-                                    </span>
-                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                                        {newClient.role || 'Client'}
-                                    </span>
-                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900">Add New Client</h3>
+                                <p className="text-gray-600 mt-1">Fill in the details to add a new client to the system</p>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Modal Footer */}
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                    <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-500">
-                            Fields marked with * are required
-                        </div>
-                        <div className="flex items-center space-x-3">
                             <button
                                 onClick={handleCloseAddClientModal}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                             >
-                                Cancel
+                                <X size={24} />
                             </button>
-                            <button
-                                onClick={handleSaveClient}
-                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <UserPlus size={18} />
-                                    Add Client
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Basic Information */}
+                            <div className="space-y-4">
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <User size={16} className="text-rose-500" />
+                                        Full Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={localClient.name}
+                                        onChange={(e) => handleLocalChange('name', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Enter client name"
+                                        required
+                                    />
                                 </div>
-                            </button>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Mail size={16} className="text-rose-500" />
+                                        Email Address *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={localClient.email}
+                                        onChange={(e) => handleLocalChange('email', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="client@example.com"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Phone size={16} className="text-rose-500" />
+                                        Phone Number
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        value={localClient.phone}
+                                        onChange={(e) => handleLocalChange('phone', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="+1 (555) 123-4567"
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Building size={16} className="text-rose-500" />
+                                        Company
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={localClient.company}
+                                        onChange={(e) => handleLocalChange('company', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Company name"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Role & Status */}
+                            <div className="space-y-4">
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                                    <select
+                                        value={localClient.role}
+                                        onChange={(e) => handleLocalChange('role', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    >
+                                        <option value="Client">Client</option>
+                                        <option value="VIP Client">VIP Client</option>
+                                        <option value="Enterprise">Enterprise</option>
+                                        <option value="Partner">Partner</option>
+                                    </select>
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                    <div className="flex space-x-2">
+                                        <button
+                                            onClick={() => handleLocalChange('status', 'Active')}
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${localClient.status === 'Active'
+                                                ? 'border-green-500 bg-green-50 text-green-700'
+                                                : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${localClient.status === 'Active' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                                Active
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => handleLocalChange('status', 'Inactive')}
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${localClient.status === 'Inactive'
+                                                ? 'border-red-500 bg-red-50 text-red-700'
+                                                : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${localClient.status === 'Inactive' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                                                Inactive
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <MapPin size={16} className="text-rose-500" />
+                                        Address
+                                    </label>
+                                    <textarea
+                                        value={localClient.address}
+                                        onChange={(e) => handleLocalChange('address', e.target.value)}
+                                        rows="3"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Enter client address"
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                    <textarea
+                                        value={localClient.notes}
+                                        onChange={(e) => handleLocalChange('notes', e.target.value)}
+                                        rows="4"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Additional notes about the client..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Client Preview */}
+                        <div className="mt-8 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-100">
+                            <h4 className="text-sm font-semibold text-rose-700 mb-3">Client Preview</h4>
+                            <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                    {localClient.name ? localClient.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'CN'}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-900">
+                                        {localClient.name || 'Client Name'}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        {localClient.email || 'email@example.com'}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${localClient.status === 'Active'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
+                                            }`}>
+                                            {localClient.status || 'Active'}
+                                        </span>
+                                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                            {localClient.role || 'Client'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Fields marked with * are required
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={handleCloseAddClientModal}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <UserPlus size={18} />
+                                        Add Client
+                                    </div>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     // Building icon component
     const Building = ({ size, className }) => (
