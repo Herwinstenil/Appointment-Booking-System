@@ -451,6 +451,7 @@ const AdminDashboard = () => {
     // Add Client Modal Component
     const AddClientModal = () => {
         const [localClient, setLocalClient] = useState(newClient);
+        const [errors, setErrors] = useState({});
 
         // Sync with parent state when modal opens
         React.useEffect(() => {
@@ -478,16 +479,43 @@ const AdminDashboard = () => {
         };
 
         const handleSave = () => {
-            // Basic validation
-            if (!localClient.name.trim() || !localClient.email.trim()) {
-                alert('Please fill in all required fields (Name and Email)');
-                return;
+            // Reset errors
+            setErrors({});
+
+            const newErrors = {};
+
+            // Check required fields
+            if (!localClient.name.trim()) {
+                newErrors.name = 'Full name is required';
+            }
+            if (!localClient.email.trim()) {
+                newErrors.email = 'Email address is required';
+            } else {
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(localClient.email)) {
+                    newErrors.email = 'Please enter a valid email address';
+                }
+            }
+            if (!localClient.phone.trim()) {
+                newErrors.phone = 'Phone number is required';
+            }
+            if (!localClient.company.trim()) {
+                newErrors.company = 'Company is required';
+            }
+            if (!localClient.role.trim()) {
+                newErrors.role = 'Role is required';
+            }
+            if (!localClient.status.trim()) {
+                newErrors.status = 'Status is required';
+            }
+            if (!localClient.address.trim()) {
+                newErrors.address = 'Address is required';
             }
 
-            // Email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(localClient.email)) {
-                alert('Please enter a valid email address');
+            // If there are errors, set them and return
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
                 return;
             }
 
@@ -520,7 +548,7 @@ const AdminDashboard = () => {
             // Close modal and reset form
             handleCloseAddClientModal();
 
-            // Show success message
+            // Show success message (you can replace this with a toast notification if preferred)
             alert(`Client "${localClient.name}" added successfully!`);
         };
 
@@ -557,10 +585,11 @@ const AdminDashboard = () => {
                                         type="text"
                                         value={localClient.name}
                                         onChange={(e) => handleLocalChange('name', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                         placeholder="Enter client name"
                                         required
                                     />
+                                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                                 </div>
 
                                 <div className="group">
@@ -572,59 +601,63 @@ const AdminDashboard = () => {
                                         type="email"
                                         value={localClient.email}
                                         onChange={(e) => handleLocalChange('email', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                         placeholder="client@example.com"
                                         required
                                     />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                 </div>
 
                                 <div className="group">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                         <Phone size={16} className="text-rose-500" />
-                                        Phone Number
+                                        Phone Number *
                                     </label>
                                     <input
                                         type="tel"
                                         value={localClient.phone}
                                         onChange={(e) => handleLocalChange('phone', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.phone ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                         placeholder="+91 1234567890"
                                     />
+                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                                 </div>
 
                                 <div className="group">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                         <Building size={16} className="text-rose-500" />
-                                        Company
+                                        Company *
                                     </label>
                                     <input
                                         type="text"
                                         value={localClient.company}
                                         onChange={(e) => handleLocalChange('company', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.company ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                         placeholder="Company name"
                                     />
+                                    {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
                                 </div>
                             </div>
 
                             {/* Role & Status */}
                             <div className="space-y-4">
                                 <div className="group">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
                                     <select
                                         value={localClient.role}
                                         onChange={(e) => handleLocalChange('role', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                     >
                                         <option value="Client">Client</option>
                                         <option value="VIP Client">VIP Client</option>
                                         <option value="Enterprise">Enterprise</option>
                                         <option value="Partner">Partner</option>
                                     </select>
+                                    {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
 
                                 <div className="group">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => handleLocalChange('status', 'Active')}
@@ -651,20 +684,22 @@ const AdminDashboard = () => {
                                             </div>
                                         </button>
                                     </div>
+                                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
                                 </div>
 
                                 <div className="group">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                                         <MapPin size={16} className="text-rose-500" />
-                                        Address
+                                        Address *
                                     </label>
                                     <textarea
                                         value={localClient.address}
                                         onChange={(e) => handleLocalChange('address', e.target.value)}
                                         rows="3"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.address ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                         placeholder="Enter client address"
                                     />
+                                    {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
                                 </div>
 
                                 <div className="group">
