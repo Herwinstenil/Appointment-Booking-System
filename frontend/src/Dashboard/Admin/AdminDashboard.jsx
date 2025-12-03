@@ -119,7 +119,7 @@ const AdminDashboard = () => {
     const [newClient, setNewClient] = useState({
         name: '',
         email: '',
-        phone: '',
+        phone: '+91 ',
         company: '',
         role: 'Client',
         status: 'Active',
@@ -309,7 +309,7 @@ const AdminDashboard = () => {
         setNewClient({
             name: '',
             email: '',
-            phone: '',
+            phone: '+91 ',
             company: '',
             role: 'Client',
             status: 'Active',
@@ -458,6 +458,19 @@ const AdminDashboard = () => {
         }, [newClient]);
 
         const handleLocalChange = (field, value) => {
+            if (field === 'phone') {
+                // Enforce +91 prefix and allow only 10 digits after space
+                if (value.startsWith('+91 ')) {
+                    const digits = value.slice(4).replace(/\D/g, ''); // Remove non-digits after +91
+                    if (digits.length <= 10) {
+                        value = '+91 ' + digits;
+                    } else {
+                        value = '+91 ' + digits.slice(0, 10);
+                    }
+                } else {
+                    value = '+91 ';
+                }
+            }
             setLocalClient(prev => ({
                 ...prev,
                 [field]: value
@@ -575,7 +588,7 @@ const AdminDashboard = () => {
                                         value={localClient.phone}
                                         onChange={(e) => handleLocalChange('phone', e.target.value)}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                        placeholder="+1 (555) 123-4567"
+                                        placeholder="+91 1234567890"
                                     />
                                 </div>
 
