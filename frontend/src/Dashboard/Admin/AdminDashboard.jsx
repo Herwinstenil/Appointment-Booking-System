@@ -451,10 +451,10 @@ const AdminDashboard = () => {
             if (!localClient.email.trim()) {
                 newErrors.email = 'Email address is required';
             } else {
-                // Email validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                // Email validation - must be Gmail
+                const emailRegex = /^[^\s@]+@gmail\.com$/;
                 if (!emailRegex.test(localClient.email)) {
-                    newErrors.email = 'Please enter a valid email address';
+                    newErrors.email = 'Please enter a valid Gmail address (@gmail.com)';
                 }
             }
             if (localClient.phone === '+91 ' || localClient.phone.length < 7) {
@@ -608,6 +608,7 @@ const AdminDashboard = () => {
                                         onChange={(e) => handleLocalChange('role', e.target.value)}
                                         className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                     >
+                                        <option value="" disabled>Select Role</option>
                                         <option value="Client">Client</option>
                                         <option value="VIP Client">VIP Client</option>
                                         <option value="Enterprise">Enterprise</option>
