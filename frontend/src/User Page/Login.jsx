@@ -152,7 +152,7 @@ export default function Login() {
                                 className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white ${focusedField === 'role' ? 'border-purple-600' : 'border-gray-200'
                                     } focus:border-purple-600 focus:outline-none`}
                             >
-                                <option value="">Select your role</option>
+                                <option value="" disabled>Select your role</option>
                                 {roles.map((role) => (
                                     <option key={role.value} value={role.value}>
                                         {role.label}
