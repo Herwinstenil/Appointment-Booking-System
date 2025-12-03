@@ -121,7 +121,7 @@ const AdminDashboard = () => {
         email: '',
         phone: '+91 ',
         company: '',
-        role: 'Client',
+        role: '',
         status: 'Active',
         address: '',
         notes: ''
@@ -311,54 +311,14 @@ const AdminDashboard = () => {
             email: '',
             phone: '+91 ',
             company: '',
-            role: 'Client',
+            role: '',
             status: 'Active',
             address: '',
             notes: ''
         });
     };
 
-    const handleSaveClient = () => {
-        // Basic validation
-        if (!newClient.name.trim() || !newClient.email.trim()) {
-            alert('Please fill in all required fields (Name and Email)');
-            return;
-        }
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(newClient.email)) {
-            alert('Please enter a valid email address');
-            return;
-        }
-
-        // Create new client object
-        const clientId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-        const newClientObj = {
-            id: clientId,
-            name: newClient.name,
-            email: newClient.email,
-            role: newClient.role,
-            status: newClient.status,
-            joinDate: new Date().toISOString().split('T')[0],
-            lastLogin: 'Just now',
-            clients: Math.floor(Math.random() * 50) + 1,
-            revenue: `$${Math.floor(Math.random() * 20000) + 1000}`,
-            company: newClient.company,
-            phone: newClient.phone,
-            address: newClient.address,
-            notes: newClient.notes
-        };
-
-        // Add to users array
-        setUsers(prev => [newClientObj, ...prev]);
-
-        // Close modal and reset form
-        handleCloseAddClientModal();
-
-        // Show success message
-        alert(`Client "${newClient.name}" added successfully!`);
-    };
 
     const handleNewClientChange = (field, value) => {
         setNewClient(prev => ({
@@ -497,7 +457,7 @@ const AdminDashboard = () => {
                     newErrors.email = 'Please enter a valid email address';
                 }
             }
-            if (!localClient.phone.trim()) {
+            if (localClient.phone === '+91 ' || localClient.phone.length < 7) {
                 newErrors.phone = 'Phone number is required';
             }
             if (!localClient.company.trim()) {
