@@ -1565,7 +1565,7 @@ const AdminDashboard = () => {
                                                     <div className="flex items-center space-x-2">
                                                         <button
                                                             onClick={() => handleViewUser(user)}
-                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                                                             title="View Details"
                                                         >
                                                             <ViewIcon size={16} />
