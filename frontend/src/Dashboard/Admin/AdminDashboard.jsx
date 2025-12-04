@@ -127,6 +127,11 @@ const AdminDashboard = () => {
         notes: ''
     });
 
+    // View and Edit User Modal State
+    const [showViewUserModal, setShowViewUserModal] = useState(false);
+    const [showEditUserModal, setShowEditUserModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
@@ -333,6 +338,39 @@ const AdminDashboard = () => {
             setUsers(prev => prev.filter(user => user.id !== userId));
             setSelectedUsers(prev => prev.filter(id => id !== userId));
         }
+    };
+
+    // View user handler
+    const handleViewUser = (user) => {
+        setSelectedUser(user);
+        setShowViewUserModal(true);
+    };
+
+    // Edit user handler
+    const handleEditUser = (user) => {
+        setSelectedUser(user);
+        setShowEditUserModal(true);
+    };
+
+    // Close view modal
+    const handleCloseViewModal = () => {
+        setShowViewUserModal(false);
+        setSelectedUser(null);
+    };
+
+    // Close edit modal
+    const handleCloseEditModal = () => {
+        setShowEditUserModal(false);
+        setSelectedUser(null);
+    };
+
+    // Save edited user
+    const handleSaveEditedUser = (editedUser) => {
+        setUsers(prev => prev.map(user =>
+            user.id === editedUser.id ? editedUser : user
+        ));
+        handleCloseEditModal();
+        alert(`User "${editedUser.name}" updated successfully!`);
     };
 
     // Service Management Handlers
@@ -726,6 +764,329 @@ const AdminDashboard = () => {
                                     <div className="flex items-center gap-2">
                                         <UserPlus size={18} />
                                         Add Client
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // View User Modal Component
+    const ViewUserModal = () => {
+        if (!selectedUser) return null;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">User Details</h3>
+                                <p className="text-gray-600 mt-1">View complete information about this user</p>
+                            </div>
+                            <button
+                                onClick={handleCloseViewModal}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* User Profile Header */}
+                        <div className="flex items-center space-x-6 mb-8">
+                            <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                                {selectedUser.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                                <h4 className="text-2xl font-bold text-gray-900">{selectedUser.name}</h4>
+                                <p className="text-gray-600">{selectedUser.email}</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedUser.role === 'Admin'
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : selectedUser.role === 'Manager'
+                                            ? 'bg-blue-100 text-blue-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                        {selectedUser.role}
+                                    </span>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedUser.status === 'Active'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {selectedUser.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* User Information Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                                    <p className="text-gray-900">{selectedUser.name}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                    <p className="text-gray-900">{selectedUser.email}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                                    <p className="text-gray-900">{selectedUser.role}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                    <p className="text-gray-900">{selectedUser.status}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Join Date</label>
+                                    <p className="text-gray-900">{selectedUser.joinDate}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Last Login</label>
+                                    <p className="text-gray-900">{selectedUser.lastLogin}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Clients</label>
+                                    <p className="text-gray-900">{selectedUser.clients}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Revenue</label>
+                                    <p className="text-rose-600 font-semibold">{selectedUser.revenue}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-end space-x-3">
+                            <button
+                                onClick={handleCloseViewModal}
+                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Edit User Modal Component
+    const EditUserModal = () => {
+        const [editedUser, setEditedUser] = useState(selectedUser || {});
+        const [errors, setErrors] = useState({});
+
+        React.useEffect(() => {
+            if (selectedUser) {
+                setEditedUser({ ...selectedUser });
+            }
+        }, [selectedUser]);
+
+        const handleEditChange = (field, value) => {
+            setEditedUser(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        };
+
+        const handleSave = () => {
+            // Reset errors
+            setErrors({});
+
+            const newErrors = {};
+
+            // Check required fields
+            if (!editedUser.name.trim()) {
+                newErrors.name = 'Full name is required';
+            }
+            if (!editedUser.email.trim()) {
+                newErrors.email = 'Email address is required';
+            } else {
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(editedUser.email)) {
+                    newErrors.email = 'Please enter a valid email address';
+                }
+            }
+            if (!editedUser.role.trim()) {
+                newErrors.role = 'Role is required';
+            }
+            if (!editedUser.status.trim()) {
+                newErrors.status = 'Status is required';
+            }
+
+            // If there are errors, set them and return
+            if (Object.keys(newErrors).length > 0) {
+                setErrors(newErrors);
+                return;
+            }
+
+            // Save the edited user
+            handleSaveEditedUser(editedUser);
+        };
+
+        if (!selectedUser) return null;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
+                                <p className="text-gray-600 mt-1">Update user information and settings</p>
+                            </div>
+                            <button
+                                onClick={handleCloseEditModal}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <User size={16} className="text-rose-500" />
+                                        Full Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editedUser.name || ''}
+                                        onChange={(e) => handleEditChange('name', e.target.value)}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                        placeholder="Enter full name"
+                                    />
+                                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Mail size={16} className="text-rose-500" />
+                                        Email Address *
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={editedUser.email || ''}
+                                        onChange={(e) => handleEditChange('email', e.target.value)}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                        placeholder="user@example.com"
+                                    />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Role *</label>
+                                    <select
+                                        value={editedUser.role || ''}
+                                        onChange={(e) => handleEditChange('role', e.target.value)}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                    >
+                                        <option value="" disabled>Select Role</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Manager">Manager</option>
+                                        <option value="Support">Support</option>
+                                        <option value="Client">Client</option>
+                                    </select>
+                                    {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+                                    <div className="flex space-x-2">
+                                        <button
+                                            onClick={() => handleEditChange('status', 'Active')}
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${editedUser.status === 'Active'
+                                                ? 'border-green-500 bg-green-50 text-green-700'
+                                                : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${editedUser.status === 'Active' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                                Active
+                                            </div>
+                                        </button>
+                                        <button
+                                            onClick={() => handleEditChange('status', 'Inactive')}
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${editedUser.status === 'Inactive'
+                                                ? 'border-red-500 bg-red-50 text-red-700'
+                                                : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${editedUser.status === 'Inactive' ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                                                Inactive
+                                            </div>
+                                        </button>
+                                    </div>
+                                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Clients</label>
+                                    <input
+                                        type="number"
+                                        value={editedUser.clients || ''}
+                                        onChange={(e) => handleEditChange('clients', parseInt(e.target.value) || 0)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Number of clients"
+                                        min="0"
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Revenue</label>
+                                    <input
+                                        type="text"
+                                        value={editedUser.revenue || ''}
+                                        onChange={(e) => handleEditChange('revenue', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="$0"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Fields marked with * are required
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={handleCloseEditModal}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Save size={18} />
+                                        Save Changes
                                     </div>
                                 </button>
                             </div>
@@ -1203,12 +1564,14 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
                                                         <button
+                                                            onClick={() => handleViewUser(user)}
                                                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
                                                             title="View Details"
                                                         >
                                                             <ViewIcon size={16} />
                                                         </button>
                                                         <button
+                                                            onClick={() => handleEditUser(user)}
                                                             className="p-1 text-green-600 hover:text-green-800 transition-colors"
                                                             title="Edit"
                                                         >
@@ -2080,6 +2443,12 @@ const AdminDashboard = () => {
 
             {/* Add Client Modal */}
             {showAddClientModal && <AddClientModal />}
+
+            {/* View User Modal */}
+            {showViewUserModal && <ViewUserModal />}
+
+            {/* Edit User Modal */}
+            {showEditUserModal && <EditUserModal />}
 
             {/* Overlay for mobile */}
             {sidebarOpen && (
