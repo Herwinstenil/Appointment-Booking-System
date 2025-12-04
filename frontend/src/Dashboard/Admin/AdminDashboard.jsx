@@ -1579,7 +1579,7 @@ const AdminDashboard = () => {
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteUser(user.id)}
-                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                                                             title="Delete"
                                                         >
                                                             <Trash2 size={16} />
