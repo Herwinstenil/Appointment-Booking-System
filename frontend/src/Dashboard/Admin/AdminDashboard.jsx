@@ -1572,7 +1572,7 @@ const AdminDashboard = () => {
                                                         </button>
                                                         <button
                                                             onClick={() => handleEditUser(user)}
-                                                            className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                                                            className="p-1 text-green-600 hover:text-green-800 transition-colors cursor-pointer"
                                                             title="Edit"
                                                         >
                                                             <Edit size={16} />
