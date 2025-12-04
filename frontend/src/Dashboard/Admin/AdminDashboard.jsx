@@ -1762,7 +1762,7 @@ const AdminDashboard = () => {
 
                                 <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
                                     <Filter size={16} />
-                                    Filters
+                                    Filter
                                 </button>
                                 <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                                     <Download size={16} />
