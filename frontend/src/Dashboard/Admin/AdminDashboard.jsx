@@ -1602,7 +1602,7 @@ const AdminDashboard = () => {
                                 <p className="text-gray-600">Track and analyze booking patterns and trends</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                                     <Download size={16} />
                                     Export Data
                                 </button>
