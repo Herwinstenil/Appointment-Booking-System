@@ -124,15 +124,6 @@ const AdminDashboard = () => {
         revenueMax: ''
     });
 
-    const [serviceFilters, setServiceFilters] = useState({
-        category: '',
-        status: '',
-        priceMin: '',
-        priceMax: '',
-        ratingMin: '',
-        ratingMax: ''
-    });
-
     const [bookingFilters, setBookingFilters] = useState({
         dateFrom: '',
         dateTo: '',
