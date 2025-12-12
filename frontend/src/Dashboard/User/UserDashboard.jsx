@@ -661,7 +661,7 @@ const UserDashboard = () => {
                                 <p className="text-gray-600">View your complete booking history and past appointments</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105">
+                                <button className="flex items-center gap-2 px-4 py-2  bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                                     <Download size={16} />
                                     Export History
                                 </button>
