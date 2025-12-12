@@ -114,6 +114,48 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
 
+    // Filter States
+    const [userFilters, setUserFilters] = useState({
+        role: '',
+        status: '',
+        joinDateFrom: '',
+        joinDateTo: '',
+        revenueMin: '',
+        revenueMax: ''
+    });
+
+    const [serviceFilters, setServiceFilters] = useState({
+        category: '',
+        status: '',
+        priceMin: '',
+        priceMax: '',
+        ratingMin: '',
+        ratingMax: ''
+    });
+
+    const [bookingFilters, setBookingFilters] = useState({
+        dateFrom: '',
+        dateTo: '',
+        status: '',
+        serviceType: '',
+        amountMin: '',
+        amountMax: ''
+    });
+
+    const [revenueFilters, setRevenueFilters] = useState({
+        dateFrom: '',
+        dateTo: '',
+        category: '',
+        amountMin: '',
+        amountMax: ''
+    });
+
+    // Filter Modal States
+    const [showUserFilterModal, setShowUserFilterModal] = useState(false);
+    const [showServiceFilterModal, setShowServiceFilterModal] = useState(false);
+    const [showBookingFilterModal, setShowBookingFilterModal] = useState(false);
+    const [showRevenueFilterModal, setShowRevenueFilterModal] = useState(false);
+
     // Add Client Modal State
     const [showAddClientModal, setShowAddClientModal] = useState(false);
     const [newClient, setNewClient] = useState({
@@ -294,11 +336,31 @@ const AdminDashboard = () => {
         setSelectedUsers(selectedUsers.length === users.length ? [] : users.map(user => user.id));
     };
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(user => {
+        // Search term filter
+        const matchesSearch = searchTerm === '' ||
+            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.role.toLowerCase().includes(searchTerm.toLowerCase());
+
+        // Role filter
+        const matchesRole = userFilters.role === '' || user.role === userFilters.role;
+
+        // Status filter
+        const matchesStatus = userFilters.status === '' || user.status === userFilters.status;
+
+        // Join date range filter
+        const userJoinDate = new Date(user.joinDate);
+        const matchesJoinDateFrom = userFilters.joinDateFrom === '' || userJoinDate >= new Date(userFilters.joinDateFrom);
+        const matchesJoinDateTo = userFilters.joinDateTo === '' || userJoinDate <= new Date(userFilters.joinDateTo);
+
+        // Revenue range filter
+        const userRevenue = parseFloat(user.revenue.replace(/[$,]/g, ''));
+        const matchesRevenueMin = userFilters.revenueMin === '' || userRevenue >= parseFloat(userFilters.revenueMin);
+        const matchesRevenueMax = userFilters.revenueMax === '' || userRevenue <= parseFloat(userFilters.revenueMax);
+
+        return matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
+    });
 
     // Add Client Handlers
     const handleAddClient = () => {
@@ -1097,6 +1159,186 @@ const AdminDashboard = () => {
         );
     };
 
+    // User Filter Modal Component
+    const UserFilterModal = () => {
+        const [localFilters, setLocalFilters] = useState(userFilters);
+
+        const handleLocalFilterChange = (field, value) => {
+            setLocalFilters(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        };
+
+        const handleApplyFilters = () => {
+            setUserFilters(localFilters);
+            setShowUserFilterModal(false);
+        };
+
+        const handleClearFilters = () => {
+            const clearedFilters = {
+                role: '',
+                status: '',
+                joinDateFrom: '',
+                joinDateTo: '',
+                revenueMin: '',
+                revenueMax: ''
+            };
+            setLocalFilters(clearedFilters);
+            setUserFilters(clearedFilters);
+            setShowUserFilterModal(false);
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Filter Users</h3>
+                                <p className="text-gray-600 mt-1">Apply filters to narrow down the user list</p>
+                            </div>
+                            <button
+                                onClick={() => setShowUserFilterModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        <div className="space-y-6">
+                            {/* Role Filter */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <User size={16} className="text-rose-500" />
+                                    Role
+                                </label>
+                                <select
+                                    value={localFilters.role}
+                                    onChange={(e) => handleLocalFilterChange('role', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                >
+                                    <option value="">All Roles</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Support">Support</option>
+                                    <option value="Client">Client</option>
+                                </select>
+                            </div>
+
+                            {/* Status Filter */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <CheckCircle size={16} className="text-rose-500" />
+                                    Status
+                                </label>
+                                <select
+                                    value={localFilters.status}
+                                    onChange={(e) => handleLocalFilterChange('status', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            {/* Join Date Range */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <Calendar size={16} className="text-rose-500" />
+                                    Join Date Range
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">From</label>
+                                        <input
+                                            type="date"
+                                            value={localFilters.joinDateFrom}
+                                            onChange={(e) => handleLocalFilterChange('joinDateFrom', e.target.value)}
+                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">To</label>
+                                        <input
+                                            type="date"
+                                            value={localFilters.joinDateTo}
+                                            onChange={(e) => handleLocalFilterChange('joinDateTo', e.target.value)}
+                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Revenue Range */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <DollarSign size={16} className="text-rose-500" />
+                                    Revenue Range
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">Min ($)</label>
+                                        <input
+                                            type="number"
+                                            value={localFilters.revenueMin}
+                                            onChange={(e) => handleLocalFilterChange('revenueMin', e.target.value)}
+                                            placeholder="0"
+                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1">Max ($)</label>
+                                        <input
+                                            type="number"
+                                            value={localFilters.revenueMax}
+                                            onChange={(e) => handleLocalFilterChange('revenueMax', e.target.value)}
+                                            placeholder="No limit"
+                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
+                                            min="0"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <button
+                                onClick={handleClearFilters}
+                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                            >
+                                Clear All
+                            </button>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowUserFilterModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleApplyFilters}
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     // Building icon component
     const Building = ({ size, className }) => (
         <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -1433,6 +1675,13 @@ const AdminDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
                                     />
                                 </div>
+                                <button
+                                    onClick={() => setShowUserFilterModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    <Filter size={16} />
+                                    Filter
+                                </button>
                                 <button
                                     onClick={handleAddClient}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
@@ -2445,6 +2694,9 @@ const AdminDashboard = () => {
 
             {/* Edit User Modal */}
             {showEditUserModal && <EditUserModal />}
+
+            {/* User Filter Modal */}
+            {showUserFilterModal && <UserFilterModal />}
 
             {/* Overlay for mobile */}
             {sidebarOpen && (
