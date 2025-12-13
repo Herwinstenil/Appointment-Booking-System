@@ -320,6 +320,7 @@ const AdminDashboard = () => {
         const baseMetrics = {
             totalUsers: 1250,
             activeUsers: 847,
+            activeServices: 4,
             newUsers: 45,
             storageUsed: '2.3 GB',
             serverUptime: '99.9%',
@@ -338,6 +339,7 @@ const AdminDashboard = () => {
             ...baseMetrics,
             totalUsers: Math.round(baseMetrics.totalUsers * multiplier[range]),
             activeUsers: Math.round(baseMetrics.activeUsers * multiplier[range]),
+            activeServices: Math.round(baseMetrics.activeServices * multiplier[range]),
             newUsers: Math.round(baseMetrics.newUsers * multiplier[range])
         };
     };
@@ -2021,7 +2023,7 @@ const AdminDashboard = () => {
                                 <div className="space-y-4">
                                     {[
                                         { name: 'Response Time', value: systemMetrics.responseTime, change: '-15ms', positive: true },
-                                        { name: 'Active Services', value: services.filter(s => s.status === 'Active').length, change: '+2', positive: true },
+                                        { name: 'Active Services', value: systemMetrics.activeServices, change: '+2', positive: true },
                                         { name: 'Storage Used', value: systemMetrics.storageUsed, change: '+0.3GB', positive: false },
                                         { name: 'New Users', value: systemMetrics.newUsers, change: '+12', positive: true }
                                     ].map((metric, index) => (
@@ -2061,7 +2063,7 @@ const AdminDashboard = () => {
                                 <div className="space-y-4">
                                     {[
                                         { label: 'Total Users', value: systemMetrics.totalUsers, icon: UsersIcon, color: 'bg-blue-500' },
-                                        { label: 'Active Services', value: services.filter(s => s.status === 'Active').length, icon: FolderOpen, color: 'bg-green-500' },
+                                        { label: 'Active Services', value: systemMetrics.activeServices, icon: FolderOpen, color: 'bg-green-500' },
                                         { label: 'Total Bookings', value: bookingData.totalBookings, icon: Calendar, color: 'bg-purple-500' },
                                         { label: 'Total Revenue', value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-rose-500' }
                                     ].map((item, index) => {
