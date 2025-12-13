@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import {
     Users,
     FolderOpen,
@@ -1855,6 +1856,133 @@ const AdminDashboard = () => {
         );
     };
 
+    // PDF Export Functions
+    const exportBookingAnalyticsToPDF = () => {
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(219, 39, 119); // Rose color
+        doc.text('Booking Analytics Report', 20, 30);
+
+        // Generated date
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128); // Gray
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+        // Key Metrics
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39); // Dark gray
+        doc.text('Key Metrics', 20, 65);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81); // Medium gray
+        let yPos = 80;
+        doc.text(`Total Bookings: ${bookingData.totalBookings.toLocaleString()}`, 20, yPos);
+        doc.text(`Completed Bookings: ${bookingData.completedBookings.toLocaleString()}`, 20, yPos + 10);
+        doc.text(`Pending Bookings: ${bookingData.pendingBookings}`, 20, yPos + 20);
+        doc.text(`Cancelled Bookings: ${bookingData.cancelledBookings}`, 20, yPos + 30);
+        doc.text(`Completion Rate: ${bookingData.bookingRate}%`, 20, yPos + 40);
+
+        // Popular Services
+        yPos += 60;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Popular Services', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        filteredPopularServices.forEach((service, index) => {
+            doc.text(`${index + 1}. ${service.service}: ${service.bookings} bookings - $${service.revenue.toLocaleString()}`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Performance Metrics
+        yPos += 20;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Performance Metrics', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        const metrics = [
+            { label: 'Conversion Rate', value: '8.5%', change: '+1.2%' },
+            { label: 'Avg Booking Value', value: '$156', change: '+$12' },
+            { label: 'Repeat Bookings', value: '42%', change: '+3.5%' },
+            { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' }
+        ];
+
+        metrics.forEach((metric) => {
+            doc.text(`${metric.label}: ${metric.value} (${metric.change})`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Save the PDF
+        doc.save('booking-analytics-report.pdf');
+    };
+
+    const exportRevenueDashboardToPDF = () => {
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(219, 39, 119); // Rose color
+        doc.text('Revenue Dashboard Report', 20, 30);
+
+        // Generated date
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128); // Gray
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+        // Key Metrics
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39); // Dark gray
+        doc.text('Key Metrics', 20, 65);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81); // Medium gray
+        let yPos = 80;
+        doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
+        doc.text(`Monthly Revenue: $${revenueMetrics.monthlyRevenue.toLocaleString()}`, 20, yPos + 10);
+        doc.text(`Growth: +${revenueMetrics.growthPercentage}%`, 20, yPos + 20);
+        doc.text(`Active Subscriptions: ${revenueMetrics.activeSubscriptions.toLocaleString()}`, 20, yPos + 30);
+        doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 40);
+        doc.text(`New Customers: ${revenueMetrics.newCustomers}`, 20, yPos + 50);
+
+        // Revenue by Category
+        yPos += 70;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Revenue by Category', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        filteredRevenueByCategory.forEach((category) => {
+            doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage}%) - Growth: ${category.growth}%`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Recent Transactions
+        yPos += 20;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Recent Transactions', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        filteredRecentTransactions.slice(0, 10).forEach((transaction) => {
+            doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount} (${transaction.date})`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Save the PDF
+        doc.save('revenue-dashboard-report.pdf');
+    };
+
     // Building icon component
     const Building = ({ size, className }) => (
         <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -2367,7 +2495,10 @@ const AdminDashboard = () => {
                                 <p className="text-gray-600">Track and analyze booking patterns and trends</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <button
+                                    onClick={exportBookingAnalyticsToPDF}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                >
                                     <Download size={16} />
                                     Export Report
                                 </button>
@@ -2531,7 +2662,10 @@ const AdminDashboard = () => {
                                     <Filter size={16} />
                                     Filter
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                                <button
+                                    onClick={exportRevenueDashboardToPDF}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                >
                                     <Download size={16} />
                                     Export Report
                                 </button>
