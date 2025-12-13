@@ -353,6 +353,44 @@ const AdminDashboard = () => {
         return matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
     });
 
+    const filteredPopularServices = popularServices.filter(service => {
+        // Service type filter
+        const matchesServiceType = bookingFilters.serviceType === '' || service.service === bookingFilters.serviceType;
+
+        // Amount range filter
+        const serviceRevenue = parseFloat(service.revenue.toString().replace(/[$,]/g, ''));
+        const matchesAmountMin = bookingFilters.amountMin === '' || serviceRevenue >= parseFloat(bookingFilters.amountMin);
+        const matchesAmountMax = bookingFilters.amountMax === '' || serviceRevenue <= parseFloat(bookingFilters.amountMax);
+
+        return matchesServiceType && matchesAmountMin && matchesAmountMax;
+    });
+
+    const filteredRevenueByCategory = revenueByCategory.filter(category => {
+        // Category filter
+        const matchesCategory = revenueFilters.category === '' || category.category === revenueFilters.category;
+
+        // Amount range filter
+        const categoryAmount = parseFloat(category.amount.toString().replace(/[$,]/g, ''));
+        const matchesAmountMin = revenueFilters.amountMin === '' || categoryAmount >= parseFloat(revenueFilters.amountMin);
+        const matchesAmountMax = revenueFilters.amountMax === '' || categoryAmount <= parseFloat(revenueFilters.amountMax);
+
+        return matchesCategory && matchesAmountMin && matchesAmountMax;
+    });
+
+    const filteredRecentTransactions = recentTransactions.filter(transaction => {
+        // Date range filter
+        const transactionDate = new Date(transaction.date);
+        const matchesDateFrom = revenueFilters.dateFrom === '' || transactionDate >= new Date(revenueFilters.dateFrom);
+        const matchesDateTo = revenueFilters.dateTo === '' || transactionDate <= new Date(revenueFilters.dateTo);
+
+        // Amount range filter
+        const transactionAmount = parseFloat(transaction.amount.toString().replace(/[$,]/g, ''));
+        const matchesAmountMin = revenueFilters.amountMin === '' || transactionAmount >= parseFloat(revenueFilters.amountMin);
+        const matchesAmountMax = revenueFilters.amountMax === '' || transactionAmount <= parseFloat(revenueFilters.amountMax);
+
+        return matchesDateFrom && matchesDateTo && matchesAmountMin && matchesAmountMax;
+    });
+
     // Add Client Handlers
     const handleAddClient = () => {
         setShowAddClientModal(true);
@@ -2269,7 +2307,7 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
                                 <h3 className="text-xl font-bold text-gray-800 mb-6">Popular Services</h3>
                                 <div className="space-y-4">
-                                    {popularServices.map((service, index) => (
+                                    {filteredPopularServices.map((service, index) => (
                                         <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
@@ -2434,7 +2472,7 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {revenueByCategory.map((category, index) => (
+                                    {filteredRevenueByCategory.map((category, index) => (
                                         <div
                                             key={index}
                                             className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
@@ -2472,7 +2510,7 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {recentTransactions.map((transaction) => (
+                                    {filteredRecentTransactions.map((transaction) => (
                                         <div
                                             key={transaction.id}
                                             className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
