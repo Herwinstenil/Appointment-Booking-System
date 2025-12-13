@@ -178,28 +178,144 @@ const AdminDashboard = () => {
     const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
 
-    // Revenue Dashboard Data
-    const revenueMetrics = {
-        totalRevenue: 1254300,
-        monthlyRevenue: 98750,
-        growthPercentage: 12.5,
-        activeSubscriptions: 2847,
-        averageOrderValue: 156,
-        topCategory: 'Premium Services',
-        newCustomers: 342,
-        churnRate: 2.3,
-        customerLifetimeValue: 2450
+    // Function to get date labels based on time range
+    const getDateLabels = (range) => {
+        const now = new Date();
+        const labels = [];
+
+        switch (range) {
+            case 'daily':
+                // Last 7 days
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                }
+                break;
+            case 'weekly':
+                // Last 4 weeks
+                for (let i = 3; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - (i * 7));
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    labels.push(`W${Math.ceil((now - weekStart) / (7 * 24 * 60 * 60 * 1000)) - i}`);
+                }
+                break;
+            case 'monthly':
+                // Last 12 months
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(now.getMonth() - i);
+                    labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+                }
+                break;
+            case 'yearly':
+                // Last 5 years
+                for (let i = 4; i >= 0; i--) {
+                    const year = now.getFullYear() - i;
+                    labels.push(year.toString());
+                }
+                break;
+            default:
+                labels.push('N/A');
+        }
+        return labels;
     };
 
-    const revenueTrend = [
-        { month: 'Jan', revenue: 85000, growth: 5.2 },
-        { month: 'Feb', revenue: 92000, growth: 8.2 },
-        { month: 'Mar', revenue: 101000, growth: 9.8 },
-        { month: 'Apr', revenue: 95000, growth: -5.9 },
-        { month: 'May', revenue: 108000, growth: 13.7 },
-        { month: 'Jun', revenue: 115000, growth: 6.5 },
-        { month: 'Jul', revenue: 98750, growth: -14.1 }
-    ];
+    // Function to generate revenue trend data based on time range
+    const getRevenueTrend = (range) => {
+        const labels = getDateLabels(range);
+        const baseRevenue = 85000;
+        const data = [];
+
+        for (let i = 0; i < labels.length; i++) {
+            const variation = (Math.random() - 0.5) * 0.3; // -15% to +15% variation
+            const revenue = Math.round(baseRevenue * (1 + variation + (i * 0.05))); // Slight upward trend
+            const prevRevenue = i > 0 ? data[i-1].revenue : baseRevenue;
+            const growth = ((revenue - prevRevenue) / prevRevenue * 100);
+
+            data.push({
+                label: labels[i],
+                revenue: revenue,
+                growth: Math.round(growth * 10) / 10
+            });
+        }
+
+        return data;
+    };
+
+    // Function to generate booking trend data based on time range
+    const getBookingTrend = (range) => {
+        const labels = getDateLabels(range);
+        const data = [];
+
+        for (let i = 0; i < labels.length; i++) {
+            let bookings;
+            switch (range) {
+                case 'daily':
+                    bookings = Math.floor(Math.random() * 20) + 25; // 25-45 bookings per day
+                    break;
+                case 'weekly':
+                    bookings = Math.floor(Math.random() * 50) + 100; // 100-150 bookings per week
+                    break;
+                case 'monthly':
+                    bookings = Math.floor(Math.random() * 200) + 300; // 300-500 bookings per month
+                    break;
+                case 'yearly':
+                    bookings = Math.floor(Math.random() * 1000) + 2000; // 2000-3000 bookings per year
+                    break;
+                default:
+                    bookings = 0;
+            }
+
+            data.push({
+                label: labels[i],
+                bookings: bookings
+            });
+        }
+
+        return data;
+    };
+
+    // Dynamic data based on time range
+    const revenueTrend = getRevenueTrend(timeRange);
+    const bookingTrend = getBookingTrend(timeRange);
+
+    // Revenue Dashboard Data (dynamic based on time range)
+    const getRevenueMetrics = (range) => {
+        const baseMetrics = {
+            totalRevenue: 1254300,
+            monthlyRevenue: 98750,
+            growthPercentage: 12.5,
+            activeSubscriptions: 2847,
+            averageOrderValue: 156,
+            topCategory: 'Premium Services',
+            newCustomers: 342,
+            churnRate: 2.3,
+            customerLifetimeValue: 2450
+        };
+
+        // Adjust metrics based on time range
+        const multiplier = {
+            daily: 0.03, // Daily values are smaller
+            weekly: 0.12,
+            monthly: 1,
+            yearly: 12
+        };
+
+        return {
+            ...baseMetrics,
+            totalRevenue: Math.round(baseMetrics.totalRevenue * multiplier[range]),
+            monthlyRevenue: Math.round(baseMetrics.monthlyRevenue * multiplier[range]),
+            newCustomers: Math.round(baseMetrics.newCustomers * multiplier[range]),
+            activeSubscriptions: Math.round(baseMetrics.activeSubscriptions * multiplier[range])
+        };
+    };
+
+    const revenueMetrics = getRevenueMetrics(timeRange);
 
     const revenueByCategory = [
         { category: 'Premium Services', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-rose-500' },
@@ -232,15 +348,7 @@ const AdminDashboard = () => {
         bookingRate: 78.9
     };
 
-    const bookingTrend = [
-        { day: 'Mon', bookings: 45 },
-        { day: 'Tue', bookings: 52 },
-        { day: 'Wed', bookings: 48 },
-        { day: 'Thu', bookings: 61 },
-        { day: 'Fri', bookings: 55 },
-        { day: 'Sat', bookings: 38 },
-        { day: 'Sun', bookings: 29 }
-    ];
+
 
     const popularServices = [
         { service: 'Web Development', bookings: 234, revenue: 117000 },
