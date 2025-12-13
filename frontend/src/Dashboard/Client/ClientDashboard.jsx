@@ -130,7 +130,7 @@ const ClientDashboard = () => {
     ]);
 
     // Revenue Dashboard State
-    const [timeRange, setTimeRange] = useState('monthly');
+    const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
 
     // Revenue Dashboard Data
