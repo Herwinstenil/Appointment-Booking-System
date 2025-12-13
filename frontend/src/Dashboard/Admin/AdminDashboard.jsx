@@ -315,7 +315,63 @@ const AdminDashboard = () => {
         };
     };
 
+    // System Metrics Data (dynamic based on time range)
+    const getSystemMetrics = (range) => {
+        const baseMetrics = {
+            totalUsers: 1250,
+            activeUsers: 847,
+            newUsers: 45,
+            storageUsed: '2.3 GB',
+            serverUptime: '99.9%',
+            responseTime: '120ms'
+        };
+
+        // Adjust metrics based on time range
+        const multiplier = {
+            daily: 0.03, // Daily values are smaller
+            weekly: 0.12,
+            monthly: 1,
+            yearly: 12
+        };
+
+        return {
+            ...baseMetrics,
+            totalUsers: Math.round(baseMetrics.totalUsers * multiplier[range]),
+            activeUsers: Math.round(baseMetrics.activeUsers * multiplier[range]),
+            newUsers: Math.round(baseMetrics.newUsers * multiplier[range])
+        };
+    };
+
+    // Booking Data (dynamic based on time range)
+    const getBookingData = (range) => {
+        const baseData = {
+            totalBookings: 1247,
+            completedBookings: 984,
+            pendingBookings: 187,
+            cancelledBookings: 76,
+            bookingRate: 78.9
+        };
+
+        // Adjust metrics based on time range
+        const multiplier = {
+            daily: 0.03, // Daily values are smaller
+            weekly: 0.12,
+            monthly: 1,
+            yearly: 12
+        };
+
+        return {
+            ...baseData,
+            totalBookings: Math.round(baseData.totalBookings * multiplier[range]),
+            completedBookings: Math.round(baseData.completedBookings * multiplier[range]),
+            pendingBookings: Math.round(baseData.pendingBookings * multiplier[range]),
+            cancelledBookings: Math.round(baseData.cancelledBookings * multiplier[range])
+        };
+    };
+
     const revenueMetrics = getRevenueMetrics(timeRange);
+    const systemMetrics = getSystemMetrics(timeRange);
+    const bookingData = getBookingData(timeRange);
 
     const revenueByCategory = [
         { category: 'Premium Services', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-rose-500' },
@@ -339,33 +395,12 @@ const AdminDashboard = () => {
         { name: 'Customer Satisfaction', value: '4.8/5', change: '+0.2', positive: true }
     ];
 
-    // Booking Analytics Data
-    const bookingData = {
-        totalBookings: 1247,
-        completedBookings: 984,
-        pendingBookings: 187,
-        cancelledBookings: 76,
-        bookingRate: 78.9
-    };
-
-
-
     const popularServices = [
         { service: 'Web Development', bookings: 234, revenue: 117000 },
         { service: 'Mobile App Development', bookings: 189, revenue: 151200 },
         { service: 'UI/UX Design', bookings: 156, revenue: 46800 },
         { service: 'Consultation', bookings: 143, revenue: 28600 }
     ];
-
-    // System Analytics Data
-    const systemMetrics = {
-        totalUsers: 1250,
-        activeUsers: 847,
-        newUsers: 45,
-        storageUsed: '2.3 GB',
-        serverUptime: '99.9%',
-        responseTime: '120ms'
-    };
 
     const navigate = useNavigate();
 
