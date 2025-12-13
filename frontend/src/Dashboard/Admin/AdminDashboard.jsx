@@ -175,7 +175,7 @@ const AdminDashboard = () => {
     ]);
 
     // Revenue Dashboard State
-    const [timeRange, setTimeRange] = useState('monthly');
+    const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
 
     // Revenue Dashboard Data
@@ -413,8 +413,6 @@ const AdminDashboard = () => {
             notes: ''
         });
     };
-
-
 
     const handleNewClientChange = (field, value) => {
         setNewClient(prev => ({
