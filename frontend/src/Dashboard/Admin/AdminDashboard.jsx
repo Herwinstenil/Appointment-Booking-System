@@ -166,6 +166,12 @@ const AdminDashboard = () => {
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
+    // System Details and Activities Modal State
+    const [showSystemDetailsModal, setShowSystemDetailsModal] = useState(false);
+    const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
+    const [showActivityDetailModal, setShowActivityDetailModal] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState(null);
+
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
@@ -414,17 +420,15 @@ const AdminDashboard = () => {
 
     // Dashboard button handlers
     const handleViewSystemDetails = () => {
-        // Navigate to system details page or open modal
+        // Open system details modal
         console.log('Viewing system details...');
-        // You can add navigation or modal logic here
-        alert('System Details: This would show detailed system metrics and performance data.');
+        setShowSystemDetailsModal(true);
     };
 
     const handleViewAllActivities = () => {
-        // Navigate to activities page or expand view
+        // Open all activities modal
         console.log('Viewing all activities...');
-        // You can add navigation or expanded view logic here
-        alert('All Activities: This would show the complete activity log with filtering options.');
+        setShowAllActivitiesModal(true);
     };
 
     const handleNotificationChange = (key) => {
@@ -1864,6 +1868,356 @@ const AdminDashboard = () => {
                                     Apply Filters
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // System Details Modal Component
+    const SystemDetailsModal = () => {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">System Details</h3>
+                                <p className="text-gray-600 mt-1">Comprehensive system performance and metrics overview</p>
+                            </div>
+                            <button
+                                onClick={() => setShowSystemDetailsModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* System Metrics Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            {[
+                                { label: 'Total Users', value: systemMetrics.totalUsers, icon: UsersIcon, color: 'bg-blue-500', description: 'Registered users in the system' },
+                                { label: 'Active Users', value: systemMetrics.activeUsers, icon: Users, color: 'bg-green-500', description: 'Currently active users' },
+                                { label: 'Active Services', value: systemMetrics.activeServices, icon: FolderOpen, color: 'bg-purple-500', description: 'Services currently running' },
+                                { label: 'New Users', value: systemMetrics.newUsers, icon: UserPlus, color: 'bg-rose-500', description: 'New registrations this period' },
+                                { label: 'Storage Used', value: systemMetrics.storageUsed, icon: Download, color: 'bg-amber-500', description: 'Current storage utilization' },
+                                { label: 'Server Uptime', value: systemMetrics.serverUptime, icon: CheckCircle, color: 'bg-emerald-500', description: 'System availability percentage' },
+                                { label: 'Response Time', value: systemMetrics.responseTime, icon: Clock, color: 'bg-cyan-500', description: 'Average response time' },
+                                { label: 'Total Bookings', value: bookingData.totalBookings.toLocaleString(), icon: BookOpen, color: 'bg-indigo-500', description: 'Total booking transactions' },
+                                { label: 'Total Revenue', value: `$${revenueMetrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-teal-500', description: 'Total revenue generated' }
+                            ].map((metric, index) => {
+                                const Icon = metric.icon;
+                                return (
+                                    <div
+                                        key={index}
+                                        className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 ${metric.color} rounded-xl flex items-center justify-center text-white`}>
+                                                <Icon size={24} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-600 font-medium">{metric.label}</p>
+                                                <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{metric.description}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Performance Overview */}
+                        <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-2xl border border-rose-100">
+                            <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <BarChart3 size={20} className="text-rose-500" />
+                                Performance Overview
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="text-sm text-gray-600">Conversion Rate</p>
+                                            <p className="text-lg font-bold text-gray-900">3.2%</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-green-600 text-sm">
+                                                <TrendingUp size={14} />
+                                                +0.4%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="text-sm text-gray-600">Avg Session Duration</p>
+                                            <p className="text-lg font-bold text-gray-900">4m 12s</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-green-600 text-sm">
+                                                <TrendingUp size={14} />
+                                                +23s
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="text-sm text-gray-600">Bounce Rate</p>
+                                            <p className="text-lg font-bold text-gray-900">42%</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-green-600 text-sm">
+                                                <TrendingDown size={14} />
+                                                -3.2%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
+                                        <div>
+                                            <p className="text-sm text-gray-600">Customer Satisfaction</p>
+                                            <p className="text-lg font-bold text-gray-900">4.8/5</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-green-600 text-sm">
+                                                <TrendingUp size={14} />
+                                                +0.2
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-end space-x-3">
+                            <button
+                                onClick={() => setShowSystemDetailsModal(false)}
+                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // All Activities Modal Component
+    const AllActivitiesModal = () => {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">All Activities</h3>
+                                <p className="text-gray-600 mt-1">Complete activity log and system events</p>
+                            </div>
+                            <button
+                                onClick={() => setShowAllActivitiesModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Activity Filters */}
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Filter by:</span>
+                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                                    <option value="all">All Activities</option>
+                                    <option value="success">Success</option>
+                                    <option value="modified">Modified</option>
+                                    <option value="created">Created</option>
+                                    <option value="alert">Alerts</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Time:</span>
+                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Activities List */}
+                        <div className="space-y-4">
+                            {recentActivities.map((activity) => {
+                                const ActivityIcon = activity.icon;
+                                return (
+                                    <div
+                                        key={activity.id}
+                                        className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-4 rounded-xl ${getStatusColor(activity.status)}`}>
+                                                <ActivityIcon size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-800 group-hover:text-rose-700 text-lg">{activity.action}</p>
+                                                <p className="text-gray-600 mt-1">{activity.time}</p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                                        {activity.status}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500">Activity ID: #{activity.id}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedActivity(activity);
+                                                    setShowActivityDetailModal(true);
+                                                }}
+                                                className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors"
+                                            >
+                                                View Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Load More */}
+                        <div className="text-center mt-8">
+                            <button className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
+                                Load More Activities
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Showing {recentActivities.length} of {recentActivities.length} activities
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowAllActivitiesModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    <Download size={18} className="inline mr-2" />
+                                    Export Log
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Activity Detail Modal Component
+    const ActivityDetailModal = () => {
+        if (!selectedActivity) return null;
+
+        const ActivityIcon = selectedActivity.icon;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Activity Details</h3>
+                                <p className="text-gray-600 mt-1">Detailed information about this activity</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowActivityDetailModal(false);
+                                    setSelectedActivity(null);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Activity Header */}
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className={`p-4 rounded-xl ${getStatusColor(selectedActivity.status)}`}>
+                                <ActivityIcon size={32} />
+                            </div>
+                            <div>
+                                <h4 className="text-xl font-bold text-gray-900">{selectedActivity.action}</h4>
+                                <p className="text-gray-600">{selectedActivity.time}</p>
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedActivity.status)}`}>
+                                    {selectedActivity.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Activity Details */}
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Activity ID</label>
+                                <p className="text-gray-900">#{selectedActivity.id}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                <p className="text-gray-900">{selectedActivity.action}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Timestamp</label>
+                                <p className="text-gray-900">{selectedActivity.time}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <p className="text-gray-900 capitalize">{selectedActivity.status}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                                <p className="text-gray-900">
+                                    {selectedActivity.status === 'success' ? 'System Operation' :
+                                     selectedActivity.status === 'modified' ? 'Data Modification' :
+                                     selectedActivity.status === 'created' ? 'Resource Creation' :
+                                     selectedActivity.status === 'alert' ? 'Security Alert' : 'General'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-end space-x-3">
+                            <button
+                                onClick={() => {
+                                    setShowActivityDetailModal(false);
+                                    setSelectedActivity(null);
+                                }}
+                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                            >
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -3380,6 +3734,12 @@ const AdminDashboard = () => {
 
             {/* Revenue Filter Modal */}
             {showRevenueFilterModal && <RevenueFilterModal />}
+
+            {/* System Details Modal */}
+            {showSystemDetailsModal && <SystemDetailsModal />}
+
+            {/* All Activities Modal */}
+            {showAllActivitiesModal && <AllActivitiesModal />}
 
             {/* Overlay for mobile */}
             {sidebarOpen && (
