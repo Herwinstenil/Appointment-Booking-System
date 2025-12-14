@@ -412,6 +412,21 @@ const AdminDashboard = () => {
         navigate('/user/login');
     };
 
+    // Dashboard button handlers
+    const handleViewSystemDetails = () => {
+        // Navigate to system details page or open modal
+        console.log('Viewing system details...');
+        // You can add navigation or modal logic here
+        alert('System Details: This would show detailed system metrics and performance data.');
+    };
+
+    const handleViewAllActivities = () => {
+        // Navigate to activities page or expand view
+        console.log('Viewing all activities...');
+        // You can add navigation or expanded view logic here
+        alert('All Activities: This would show the complete activity log with filtering options.');
+    };
+
     const handleNotificationChange = (key) => {
         setNotifications(prev => ({
             ...prev,
@@ -2184,7 +2199,10 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">System Overview</h3>
-                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                    <button
+                                        onClick={handleViewSystemDetails}
+                                        className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                                    >
                                         View Details
                                     </button>
                                 </div>
@@ -2229,7 +2247,10 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Recent Activities</h3>
-                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                    <button 
+                                      onClick={handleViewAllActivities}
+                                      className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                                      >
                                         View All
                                     </button>
                                 </div>
