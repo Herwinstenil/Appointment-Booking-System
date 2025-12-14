@@ -169,8 +169,6 @@ const AdminDashboard = () => {
     // System Details and Activities Modal State
     const [showSystemDetailsModal, setShowSystemDetailsModal] = useState(false);
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
-    const [showActivityDetailModal, setShowActivityDetailModal] = useState(false);
-    const [selectedActivity, setSelectedActivity] = useState(null);
 
     // Service Category Management State
     const [services, setServices] = useState([
