@@ -14,6 +14,7 @@ import {
     Search,
     Plus,
     Eye as ViewIcon,
+    Eye,
     Edit,
     Trash2,
     CheckCircle,
@@ -132,6 +133,9 @@ const ClientDashboard = () => {
     // Revenue Dashboard State
     const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
+    const [chartType, setChartType] = useState('line'); // 'bar', 'line', 'area'
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const [showChartMenu, setShowChartMenu] = useState(false);
 
     // Function to get date labels based on time range
     const getDateLabels = (range) => {
@@ -451,6 +455,25 @@ const ClientDashboard = () => {
         ));
     };
 
+    // Chart Handlers
+    const handleChartTypeChange = (type) => {
+        setChartType(type);
+        setShowChartMenu(false);
+    };
+
+    const handleFullScreen = () => {
+        setIsFullScreen(!isFullScreen);
+        setShowChartMenu(false);
+    };
+
+    const handleRefreshData = () => {
+        // Simulate data refresh by regenerating the data
+        const newRevenueTrend = getRevenueTrend(timeRange);
+        // In a real app, this would trigger a data fetch
+        console.log('Data refreshed');
+        setShowChartMenu(false);
+    };
+
     const sidebarItems = [
         { name: 'Dashboard', icon: BarChart3 },
         { name: 'Services', icon: FolderOpen },
@@ -622,9 +645,64 @@ const ClientDashboard = () => {
                                             <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
                                             Revenue
                                         </div>
-                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                            <MoreVertical size={16} />
-                                        </button>
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setShowChartMenu(!showChartMenu)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+
+                                            {/* Chart Menu Dropdown */}
+                                            {showChartMenu && (
+                                                <div className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
+                                                    <div className="px-4 py-2 border-b border-gray-100">
+                                                        <p className="text-sm font-semibold text-gray-800">Chart Options</p>
+                                                    </div>
+
+                                                    <div className="py-1">
+                                                        <button
+                                                            onClick={() => handleChartTypeChange('bar')}
+                                                            className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${chartType === 'bar' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <BarChart3 size={16} className="mr-3" />
+                                                            Bar Chart
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleChartTypeChange('line')}
+                                                            className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${chartType === 'line' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <TrendingUp size={16} className="mr-3" />
+                                                            Line Chart
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleChartTypeChange('area')}
+                                                            className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <Activity size={16} className="mr-3" />
+                                                            Area Chart
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="border-t border-gray-100 py-1">
+                                                        <button
+                                                            onClick={handleFullScreen}
+                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <Eye size={16} className="mr-3" />
+                                                            {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                                                        </button>
+                                                        <button
+                                                            onClick={handleRefreshData}
+                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <Download size={16} className="mr-3" />
+                                                            Refresh Data
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="h-64 flex items-end justify-between space-x-2 relative">
