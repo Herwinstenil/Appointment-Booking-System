@@ -133,49 +133,172 @@ const ClientDashboard = () => {
     const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
 
-    // Revenue Dashboard Data
-    const revenueMetrics = {
-        totalRevenue: 87500,
-        monthlyRevenue: 12500,
-        growthPercentage: 8.5,
-        activeClients: 47,
-        averageBookingValue: 320,
-        topService: 'Web Development',
-        newBookings: 12,
-        completionRate: 92.3,
-        clientSatisfaction: 4.8
+    // Revenue Dashboard Data by Time Range
+    const dataByTimeRange = {
+        daily: {
+            revenueMetrics: {
+                totalRevenue: 2100,
+                monthlyRevenue: 2100,
+                growthPercentage: 12.5,
+                activeClients: 15,
+                averageBookingValue: 280,
+                topService: 'Web Development',
+                newBookings: 8,
+                completionRate: 94.2,
+                clientSatisfaction: 4.9
+            },
+            revenueTrend: [
+                { label: 'Mon', revenue: 250, growth: 8.2 },
+                { label: 'Tue', revenue: 320, growth: 28.0 },
+                { label: 'Wed', revenue: 280, growth: -12.5 },
+                { label: 'Thu', revenue: 410, growth: 46.4 },
+                { label: 'Fri', revenue: 380, growth: -7.3 },
+                { label: 'Sat', revenue: 220, growth: -42.1 },
+                { label: 'Sun', revenue: 240, growth: 9.1 }
+            ],
+            revenueByService: [
+                { service: 'Web Development', amount: 850, percentage: 40.5, growth: 15.2, color: 'bg-emerald-500' },
+                { service: 'Mobile App Development', amount: 650, percentage: 31.0, growth: 22.1, color: 'bg-blue-500' },
+                { service: 'UI/UX Design', amount: 400, percentage: 19.0, growth: 8.7, color: 'bg-purple-500' },
+                { service: 'IT Consulting', amount: 200, percentage: 9.5, growth: -5.3, color: 'bg-amber-500' }
+            ],
+            recentTransactions: [
+                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
+                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
+                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: 'Yesterday', status: 'pending', avatar: 'MD' },
+                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'completed', avatar: 'EW' }
+            ],
+            performanceMetrics: [
+                { name: 'Response Time', value: '1.8 hours', change: '-0.4h', positive: true },
+                { name: 'Booking Rate', value: '82%', change: '+7.1%', positive: true },
+                { name: 'Client Rating', value: '4.9/5', change: '+0.1', positive: true },
+                { name: 'Repeat Clients', value: '68%', change: '+2.3%', positive: true }
+            ]
+        },
+        weekly: {
+            revenueMetrics: {
+                totalRevenue: 15200,
+                monthlyRevenue: 15200,
+                growthPercentage: 18.7,
+                activeClients: 28,
+                averageBookingValue: 310,
+                topService: 'Web Development',
+                newBookings: 49,
+                completionRate: 91.8,
+                clientSatisfaction: 4.7
+            },
+            revenueTrend: [
+                { label: 'Week 1', revenue: 3200, growth: 12.3 },
+                { label: 'Week 2', revenue: 3800, growth: 18.8 },
+                { label: 'Week 3', revenue: 4100, growth: 7.9 },
+                { label: 'Week 4', revenue: 4100, growth: 0.0 }
+            ],
+            revenueByService: [
+                { service: 'Web Development', amount: 5800, percentage: 38.2, growth: 14.8, color: 'bg-emerald-500' },
+                { service: 'Mobile App Development', amount: 4600, percentage: 30.3, growth: 21.5, color: 'bg-blue-500' },
+                { service: 'UI/UX Design', amount: 3800, percentage: 25.0, growth: 11.2, color: 'bg-purple-500' },
+                { service: 'IT Consulting', amount: 1000, percentage: 6.5, growth: -8.9, color: 'bg-amber-500' }
+            ],
+            recentTransactions: [
+                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'This Week', status: 'completed', avatar: 'JS' },
+                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'This Week', status: 'completed', avatar: 'SJ' },
+                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: 'Last Week', status: 'pending', avatar: 'MD' },
+                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: 'Last Week', status: 'completed', avatar: 'EW' }
+            ],
+            performanceMetrics: [
+                { name: 'Response Time', value: '2.1 hours', change: '-0.6h', positive: true },
+                { name: 'Booking Rate', value: '79%', change: '+6.2%', positive: true },
+                { name: 'Client Rating', value: '4.8/5', change: '+0.2', positive: true },
+                { name: 'Repeat Clients', value: '66%', change: '+5.8%', positive: true }
+            ]
+        },
+        monthly: {
+            revenueMetrics: {
+                totalRevenue: 87500,
+                monthlyRevenue: 12500,
+                growthPercentage: 8.5,
+                activeClients: 47,
+                averageBookingValue: 320,
+                topService: 'Web Development',
+                newBookings: 12,
+                completionRate: 92.3,
+                clientSatisfaction: 4.8
+            },
+            revenueTrend: [
+                { label: 'Jul', revenue: 8500, growth: 5.2 },
+                { label: 'Aug', revenue: 9200, growth: 8.2 },
+                { label: 'Sep', revenue: 10100, growth: 9.8 },
+                { label: 'Oct', revenue: 9500, growth: -5.9 },
+                { label: 'Nov', revenue: 10800, growth: 13.7 },
+                { label: 'Dec', revenue: 11500, growth: 6.5 },
+                { label: 'Jan', revenue: 12500, growth: 8.7 }
+            ],
+            revenueByService: [
+                { service: 'Web Development', amount: 28000, percentage: 32.0, growth: 12.5, color: 'bg-emerald-500' },
+                { service: 'Mobile App Development', amount: 22500, percentage: 25.7, growth: 18.2, color: 'bg-blue-500' },
+                { service: 'UI/UX Design', amount: 19500, percentage: 22.3, growth: 5.4, color: 'bg-purple-500' },
+                { service: 'IT Consulting', amount: 17500, percentage: 20.0, growth: 8.1, color: 'bg-amber-500' }
+            ],
+            recentTransactions: [
+                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: '2024-01-15', status: 'completed', avatar: 'JS' },
+                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: '2024-01-14', status: 'completed', avatar: 'SJ' },
+                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: '2024-01-14', status: 'pending', avatar: 'MD' },
+                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: '2024-01-13', status: 'completed', avatar: 'EW' }
+            ],
+            performanceMetrics: [
+                { name: 'Response Time', value: '2.4 hours', change: '-0.8h', positive: true },
+                { name: 'Booking Rate', value: '78%', change: '+5.2%', positive: true },
+                { name: 'Client Rating', value: '4.8/5', change: '+0.3', positive: true },
+                { name: 'Repeat Clients', value: '65%', change: '+8.7%', positive: true }
+            ]
+        },
+        yearly: {
+            revenueMetrics: {
+                totalRevenue: 425000,
+                monthlyRevenue: 35417,
+                growthPercentage: 15.2,
+                activeClients: 156,
+                averageBookingValue: 350,
+                topService: 'Web Development',
+                newBookings: 1217,
+                completionRate: 89.7,
+                clientSatisfaction: 4.6
+            },
+            revenueTrend: [
+                { label: '2019', revenue: 285000, growth: 12.5 },
+                { label: '2020', revenue: 320000, growth: 12.3 },
+                { label: '2021', revenue: 365000, growth: 14.1 },
+                { label: '2022', revenue: 395000, growth: 8.2 },
+                { label: '2023', revenue: 425000, growth: 7.6 }
+            ],
+            revenueByService: [
+                { service: 'Web Development', amount: 152000, percentage: 35.8, growth: 18.5, color: 'bg-emerald-500' },
+                { service: 'Mobile App Development', amount: 128000, percentage: 30.1, growth: 22.8, color: 'bg-blue-500' },
+                { service: 'UI/UX Design', amount: 95000, percentage: 22.4, growth: 12.3, color: 'bg-purple-500' },
+                { service: 'IT Consulting', amount: 50000, percentage: 11.7, growth: 5.9, color: 'bg-amber-500' }
+            ],
+            recentTransactions: [
+                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: '2024', status: 'completed', avatar: 'JS' },
+                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: '2024', status: 'completed', avatar: 'SJ' },
+                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: '2023', status: 'pending', avatar: 'MD' },
+                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: '2023', status: 'completed', avatar: 'EW' }
+            ],
+            performanceMetrics: [
+                { name: 'Response Time', value: '2.8 hours', change: '-1.2h', positive: true },
+                { name: 'Booking Rate', value: '74%', change: '+3.8%', positive: true },
+                { name: 'Client Rating', value: '4.7/5', change: '+0.4', positive: true },
+                { name: 'Repeat Clients', value: '62%', change: '+12.1%', positive: true }
+            ]
+        }
     };
 
-    const revenueTrend = [
-        { month: 'Jul', revenue: 8500, growth: 5.2 },
-        { month: 'Aug', revenue: 9200, growth: 8.2 },
-        { month: 'Sep', revenue: 10100, growth: 9.8 },
-        { month: 'Oct', revenue: 9500, growth: -5.9 },
-        { month: 'Nov', revenue: 10800, growth: 13.7 },
-        { month: 'Dec', revenue: 11500, growth: 6.5 },
-        { month: 'Jan', revenue: 12500, growth: 8.7 }
-    ];
-
-    const revenueByService = [
-        { service: 'Web Development', amount: 28000, percentage: 32.0, growth: 12.5, color: 'bg-emerald-500' },
-        { service: 'Mobile App Development', amount: 22500, percentage: 25.7, growth: 18.2, color: 'bg-blue-500' },
-        { service: 'UI/UX Design', amount: 19500, percentage: 22.3, growth: 5.4, color: 'bg-purple-500' },
-        { service: 'IT Consulting', amount: 17500, percentage: 20.0, growth: 8.1, color: 'bg-amber-500' }
-    ];
-
-    const recentTransactions = [
-        { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: '2024-01-15', status: 'completed', avatar: 'JS' },
-        { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: '2024-01-14', status: 'completed', avatar: 'SJ' },
-        { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: '2024-01-14', status: 'pending', avatar: 'MD' },
-        { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: '2024-01-13', status: 'completed', avatar: 'EW' }
-    ];
-
-    const performanceMetrics = [
-        { name: 'Response Time', value: '2.4 hours', change: '-0.8h', positive: true },
-        { name: 'Booking Rate', value: '78%', change: '+5.2%', positive: true },
-        { name: 'Client Rating', value: '4.8/5', change: '+0.3', positive: true },
-        { name: 'Repeat Clients', value: '65%', change: '+8.7%', positive: true }
-    ];
+    // Get current data based on timeRange
+    const currentData = dataByTimeRange[timeRange];
+    const revenueMetrics = currentData.revenueMetrics;
+    const revenueTrend = currentData.revenueTrend;
+    const revenueByService = currentData.revenueByService;
+    const recentTransactions = currentData.recentTransactions;
+    const performanceMetrics = currentData.performanceMetrics;
 
     // Availability Management State
     const [availability, setAvailability] = useState({
@@ -499,27 +622,30 @@ const ClientDashboard = () => {
                                         ))}
                                     </div>
 
-                                    {revenueTrend.map((data, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
-                                                style={{ height: `${(data.revenue / 13000) * 100}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
-                                            <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
+                                    {(() => {
+                                        const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                        return revenueTrend.map((data, index) => (
+                                            <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                                <div
+                                                    className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
+                                                    style={{ height: `${(data.revenue / maxRevenue) * 100}%` }}
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                                </div>
+                                                <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
+                                                <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
 
-                                            {/* Hover Tooltip */}
-                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
-                                                <div className="font-semibold">${data.revenue.toLocaleString()}</div>
-                                                <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                    {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                                    {Math.abs(data.growth)}%
+                                                {/* Hover Tooltip */}
+                                                <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                    <div className="font-semibold">${data.revenue.toLocaleString()}</div>
+                                                    <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                        {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                        {Math.abs(data.growth)}%
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ));
+                                    })()}
                                 </div>
                             </div>
 
