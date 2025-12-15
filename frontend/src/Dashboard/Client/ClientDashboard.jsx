@@ -296,10 +296,20 @@ const ClientDashboard = () => {
             yearly: { responseTime: '2.2 hours', bookingRate: '78%', clientRating: '4.7/5', repeatClients: '65%' }
         };
 
-        return baseMetrics.map(metric => ({
-            ...metric,
-            value: adjustments[range][metric.name.toLowerCase().replace(' ', '')] || metric.value
-        }));
+        return baseMetrics.map(metric => {
+            const keyMap = {
+                'Response Time': 'responseTime',
+                'Booking Rate': 'bookingRate',
+                'Client Rating': 'clientRating',
+                'Repeat Clients': 'repeatClients'
+            };
+
+            const key = keyMap[metric.name];
+            return {
+                ...metric,
+                value: adjustments[range][key] || metric.value
+            };
+        });
     };
 
     // Dynamic data based on time range
