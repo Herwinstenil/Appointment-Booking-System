@@ -133,172 +133,181 @@ const ClientDashboard = () => {
     const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
 
-    // Revenue Dashboard Data by Time Range
-    const dataByTimeRange = {
-        daily: {
-            revenueMetrics: {
-                totalRevenue: 2100,
-                monthlyRevenue: 2100,
-                growthPercentage: 12.5,
-                activeClients: 15,
-                averageBookingValue: 280,
-                topService: 'Web Development',
-                newBookings: 8,
-                completionRate: 94.2,
-                clientSatisfaction: 4.9
-            },
-            revenueTrend: [
-                { label: 'Mon', revenue: 250, growth: 8.2 },
-                { label: 'Tue', revenue: 320, growth: 28.0 },
-                { label: 'Wed', revenue: 280, growth: -12.5 },
-                { label: 'Thu', revenue: 410, growth: 46.4 },
-                { label: 'Fri', revenue: 380, growth: -7.3 },
-                { label: 'Sat', revenue: 220, growth: -42.1 },
-                { label: 'Sun', revenue: 240, growth: 9.1 }
-            ],
-            revenueByService: [
-                { service: 'Web Development', amount: 850, percentage: 40.5, growth: 15.2, color: 'bg-emerald-500' },
-                { service: 'Mobile App Development', amount: 650, percentage: 31.0, growth: 22.1, color: 'bg-blue-500' },
-                { service: 'UI/UX Design', amount: 400, percentage: 19.0, growth: 8.7, color: 'bg-purple-500' },
-                { service: 'IT Consulting', amount: 200, percentage: 9.5, growth: -5.3, color: 'bg-amber-500' }
-            ],
-            recentTransactions: [
-                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
-                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
-                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: 'Yesterday', status: 'pending', avatar: 'MD' },
-                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'completed', avatar: 'EW' }
-            ],
-            performanceMetrics: [
-                { name: 'Response Time', value: '1.8 hours', change: '-0.4h', positive: true },
-                { name: 'Booking Rate', value: '82%', change: '+7.1%', positive: true },
-                { name: 'Client Rating', value: '4.9/5', change: '+0.1', positive: true },
-                { name: 'Repeat Clients', value: '68%', change: '+2.3%', positive: true }
-            ]
-        },
-        weekly: {
-            revenueMetrics: {
-                totalRevenue: 15200,
-                monthlyRevenue: 15200,
-                growthPercentage: 18.7,
-                activeClients: 28,
-                averageBookingValue: 310,
-                topService: 'Web Development',
-                newBookings: 49,
-                completionRate: 91.8,
-                clientSatisfaction: 4.7
-            },
-            revenueTrend: [
-                { label: 'Week 1', revenue: 3200, growth: 12.3 },
-                { label: 'Week 2', revenue: 3800, growth: 18.8 },
-                { label: 'Week 3', revenue: 4100, growth: 7.9 },
-                { label: 'Week 4', revenue: 4100, growth: 0.0 }
-            ],
-            revenueByService: [
-                { service: 'Web Development', amount: 5800, percentage: 38.2, growth: 14.8, color: 'bg-emerald-500' },
-                { service: 'Mobile App Development', amount: 4600, percentage: 30.3, growth: 21.5, color: 'bg-blue-500' },
-                { service: 'UI/UX Design', amount: 3800, percentage: 25.0, growth: 11.2, color: 'bg-purple-500' },
-                { service: 'IT Consulting', amount: 1000, percentage: 6.5, growth: -8.9, color: 'bg-amber-500' }
-            ],
-            recentTransactions: [
-                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'This Week', status: 'completed', avatar: 'JS' },
-                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'This Week', status: 'completed', avatar: 'SJ' },
-                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: 'Last Week', status: 'pending', avatar: 'MD' },
-                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: 'Last Week', status: 'completed', avatar: 'EW' }
-            ],
-            performanceMetrics: [
-                { name: 'Response Time', value: '2.1 hours', change: '-0.6h', positive: true },
-                { name: 'Booking Rate', value: '79%', change: '+6.2%', positive: true },
-                { name: 'Client Rating', value: '4.8/5', change: '+0.2', positive: true },
-                { name: 'Repeat Clients', value: '66%', change: '+5.8%', positive: true }
-            ]
-        },
-        monthly: {
-            revenueMetrics: {
-                totalRevenue: 87500,
-                monthlyRevenue: 12500,
-                growthPercentage: 8.5,
-                activeClients: 47,
-                averageBookingValue: 320,
-                topService: 'Web Development',
-                newBookings: 12,
-                completionRate: 92.3,
-                clientSatisfaction: 4.8
-            },
-            revenueTrend: [
-                { label: 'Jul', revenue: 8500, growth: 5.2 },
-                { label: 'Aug', revenue: 9200, growth: 8.2 },
-                { label: 'Sep', revenue: 10100, growth: 9.8 },
-                { label: 'Oct', revenue: 9500, growth: -5.9 },
-                { label: 'Nov', revenue: 10800, growth: 13.7 },
-                { label: 'Dec', revenue: 11500, growth: 6.5 },
-                { label: 'Jan', revenue: 12500, growth: 8.7 }
-            ],
-            revenueByService: [
-                { service: 'Web Development', amount: 28000, percentage: 32.0, growth: 12.5, color: 'bg-emerald-500' },
-                { service: 'Mobile App Development', amount: 22500, percentage: 25.7, growth: 18.2, color: 'bg-blue-500' },
-                { service: 'UI/UX Design', amount: 19500, percentage: 22.3, growth: 5.4, color: 'bg-purple-500' },
-                { service: 'IT Consulting', amount: 17500, percentage: 20.0, growth: 8.1, color: 'bg-amber-500' }
-            ],
-            recentTransactions: [
-                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: '2024-01-15', status: 'completed', avatar: 'JS' },
-                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: '2024-01-14', status: 'completed', avatar: 'SJ' },
-                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: '2024-01-14', status: 'pending', avatar: 'MD' },
-                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: '2024-01-13', status: 'completed', avatar: 'EW' }
-            ],
-            performanceMetrics: [
-                { name: 'Response Time', value: '2.4 hours', change: '-0.8h', positive: true },
-                { name: 'Booking Rate', value: '78%', change: '+5.2%', positive: true },
-                { name: 'Client Rating', value: '4.8/5', change: '+0.3', positive: true },
-                { name: 'Repeat Clients', value: '65%', change: '+8.7%', positive: true }
-            ]
-        },
-        yearly: {
-            revenueMetrics: {
-                totalRevenue: 425000,
-                monthlyRevenue: 35417,
-                growthPercentage: 15.2,
-                activeClients: 156,
-                averageBookingValue: 350,
-                topService: 'Web Development',
-                newBookings: 1217,
-                completionRate: 89.7,
-                clientSatisfaction: 4.6
-            },
-            revenueTrend: [
-                { label: '2019', revenue: 285000, growth: 12.5 },
-                { label: '2020', revenue: 320000, growth: 12.3 },
-                { label: '2021', revenue: 365000, growth: 14.1 },
-                { label: '2022', revenue: 395000, growth: 8.2 },
-                { label: '2023', revenue: 425000, growth: 7.6 }
-            ],
-            revenueByService: [
-                { service: 'Web Development', amount: 152000, percentage: 35.8, growth: 18.5, color: 'bg-emerald-500' },
-                { service: 'Mobile App Development', amount: 128000, percentage: 30.1, growth: 22.8, color: 'bg-blue-500' },
-                { service: 'UI/UX Design', amount: 95000, percentage: 22.4, growth: 12.3, color: 'bg-purple-500' },
-                { service: 'IT Consulting', amount: 50000, percentage: 11.7, growth: 5.9, color: 'bg-amber-500' }
-            ],
-            recentTransactions: [
-                { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: '2024', status: 'completed', avatar: 'JS' },
-                { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: '2024', status: 'completed', avatar: 'SJ' },
-                { id: 3, client: 'Mike Davis', service: 'IT Consulting', amount: 200, date: '2023', status: 'pending', avatar: 'MD' },
-                { id: 4, client: 'Emma Wilson', service: 'Mobile App Development', amount: 800, date: '2023', status: 'completed', avatar: 'EW' }
-            ],
-            performanceMetrics: [
-                { name: 'Response Time', value: '2.8 hours', change: '-1.2h', positive: true },
-                { name: 'Booking Rate', value: '74%', change: '+3.8%', positive: true },
-                { name: 'Client Rating', value: '4.7/5', change: '+0.4', positive: true },
-                { name: 'Repeat Clients', value: '62%', change: '+12.1%', positive: true }
-            ]
+    // Function to get date labels based on time range
+    const getDateLabels = (range) => {
+        const now = new Date();
+        const labels = [];
+
+        switch (range) {
+            case 'daily':
+                // Last 7 days
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                }
+                break;
+            case 'weekly':
+                // Last 4 weeks
+                for (let i = 3; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - (i * 7));
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    labels.push(`W${Math.ceil((now - weekStart) / (7 * 24 * 60 * 60 * 1000)) - i}`);
+                }
+                break;
+            case 'monthly':
+                // Last 7 months
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date(now);
+                    date.setMonth(now.getMonth() - i);
+                    labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+                }
+                break;
+            case 'yearly':
+                // Last 5 years
+                for (let i = 4; i >= 0; i--) {
+                    const year = now.getFullYear() - i;
+                    labels.push(year.toString());
+                }
+                break;
+            default:
+                labels.push('N/A');
         }
+        return labels;
     };
 
-    // Get current data based on timeRange
-    const currentData = dataByTimeRange[timeRange];
-    const revenueMetrics = currentData.revenueMetrics;
-    const revenueTrend = currentData.revenueTrend;
-    const revenueByService = currentData.revenueByService;
-    const recentTransactions = currentData.recentTransactions;
-    const performanceMetrics = currentData.performanceMetrics;
+    // Function to generate revenue trend data based on time range
+    const getRevenueTrend = (range) => {
+        const labels = getDateLabels(range);
+        const baseRevenue = 85000;
+        const data = [];
+
+        for (let i = 0; i < labels.length; i++) {
+            const variation = (Math.random() - 0.5) * 0.3; // -15% to +15% variation
+            const revenue = Math.round(baseRevenue * (1 + variation + (i * 0.05))); // Slight upward trend
+            const prevRevenue = i > 0 ? data[i - 1].revenue : baseRevenue;
+            const growth = ((revenue - prevRevenue) / prevRevenue * 100);
+
+            data.push({
+                label: labels[i],
+                revenue: revenue,
+                growth: Math.round(growth * 10) / 10
+            });
+        }
+
+        return data;
+    };
+
+    // Function to generate revenue metrics based on time range
+    const getRevenueMetrics = (range) => {
+        const baseMetrics = {
+            totalRevenue: 1254300,
+            monthlyRevenue: 98750,
+            growthPercentage: 12.5,
+            activeClients: 2847,
+            averageBookingValue: 156,
+            topService: 'Web Development',
+            newBookings: 342,
+            completionRate: 94.2,
+            clientSatisfaction: 4.9
+        };
+
+        // Adjust metrics based on time range
+        const multiplier = {
+            daily: 0.03, // Daily values are smaller
+            weekly: 0.12,
+            monthly: 1,
+            yearly: 12
+        };
+
+        return {
+            ...baseMetrics,
+            totalRevenue: Math.round(baseMetrics.totalRevenue * multiplier[range]),
+            monthlyRevenue: Math.round(baseMetrics.monthlyRevenue * multiplier[range]),
+            newBookings: Math.round(baseMetrics.newBookings * multiplier[range]),
+            activeClients: Math.round(baseMetrics.activeClients * multiplier[range])
+        };
+    };
+
+    // Function to generate revenue by service data
+    const getRevenueByService = (range) => {
+        const baseData = [
+            { service: 'Web Development', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-emerald-500' },
+            { service: 'Mobile App Development', amount: 320000, percentage: 25.5, growth: 8.7, color: 'bg-blue-500' },
+            { service: 'UI/UX Design', amount: 280000, percentage: 22.3, growth: 3.2, color: 'bg-green-500' },
+            { service: 'Add-ons', amount: 203000, percentage: 16.2, growth: 12.8, color: 'bg-purple-500' }
+        ];
+
+        // Adjust amounts based on time range
+        const multiplier = {
+            daily: 0.03,
+            weekly: 0.12,
+            monthly: 1,
+            yearly: 12
+        };
+
+        return baseData.map(service => ({
+            ...service,
+            amount: Math.round(service.amount * multiplier[range])
+        }));
+    };
+
+    // Function to generate recent transactions
+    const getRecentTransactions = (range) => {
+        const baseTransactions = [
+            { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
+            { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
+            { id: 3, client: 'Mike Davis', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'pending', avatar: 'MD' },
+            { id: 4, client: 'Emma Wilson', service: 'Consultation', amount: 200, date: 'Yesterday', status: 'completed', avatar: 'EW' }
+        ];
+
+        // Adjust dates based on time range
+        const dateLabels = {
+            daily: ['Today', 'Today', 'Yesterday', 'Yesterday'],
+            weekly: ['This Week', 'This Week', 'Last Week', 'Last Week'],
+            monthly: ['2024-01-15', '2024-01-14', '2024-01-13', '2024-01-12'],
+            yearly: ['2024', '2024', '2023', '2023']
+        };
+
+        return baseTransactions.map((transaction, index) => ({
+            ...transaction,
+            date: dateLabels[range][index] || transaction.date
+        }));
+    };
+
+    // Function to generate performance metrics
+    const getPerformanceMetrics = (range) => {
+        const baseMetrics = [
+            { name: 'Response Time', value: '1.8 hours', change: '-0.4h', positive: true },
+            { name: 'Booking Rate', value: '82%', change: '+7.1%', positive: true },
+            { name: 'Client Rating', value: '4.9/5', change: '+0.1', positive: true },
+            { name: 'Repeat Clients', value: '68%', change: '+2.3%', positive: true }
+        ];
+
+        // Adjust values based on time range
+        const adjustments = {
+            daily: { responseTime: '1.2 hours', bookingRate: '85%', clientRating: '4.9/5', repeatClients: '72%' },
+            weekly: { responseTime: '1.5 hours', bookingRate: '83%', clientRating: '4.8/5', repeatClients: '70%' },
+            monthly: { responseTime: '1.8 hours', bookingRate: '82%', clientRating: '4.9/5', repeatClients: '68%' },
+            yearly: { responseTime: '2.2 hours', bookingRate: '78%', clientRating: '4.7/5', repeatClients: '65%' }
+        };
+
+        return baseMetrics.map(metric => ({
+            ...metric,
+            value: adjustments[range][metric.name.toLowerCase().replace(' ', '')] || metric.value
+        }));
+    };
+
+    // Dynamic data based on time range
+    const revenueTrend = getRevenueTrend(timeRange);
+    const revenueMetrics = getRevenueMetrics(timeRange);
+    const revenueByService = getRevenueByService(timeRange);
+    const recentTransactions = getRecentTransactions(timeRange);
+    const performanceMetrics = getPerformanceMetrics(timeRange);
 
     // Availability Management State
     const [availability, setAvailability] = useState({
