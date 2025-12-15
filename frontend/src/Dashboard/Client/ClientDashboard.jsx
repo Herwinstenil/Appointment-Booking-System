@@ -155,7 +155,7 @@ const ClientDashboard = () => {
                 break;
             case 'monthly':
                 // Last 7 months
-                for (let i = 6; i >= 0; i--) {
+                for (let i = 11; i >= 0; i--) {
                     const date = new Date(now);
                     date.setMonth(now.getMonth() - i);
                     labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
