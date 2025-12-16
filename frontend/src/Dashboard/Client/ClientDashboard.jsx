@@ -30,6 +30,7 @@ import {
     MapPin,
     Camera,
     Download,
+    RefreshCw,
     Filter,
     MoreVertical,
     Star,
@@ -682,7 +683,7 @@ const ClientDashboard = () => {
                                                             onClick={handleRefreshData}
                                                             className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                                                         >
-                                                            <Download size={16} className="mr-3" />
+                                                            <RefreshCw  size={16} className="mr-3" />
                                                             Refresh Data
                                                         </button>
                                                     </div>
