@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     FolderOpen,
@@ -310,12 +310,12 @@ const ClientDashboard = () => {
         });
     };
 
-    // Dynamic data based on time range
-    const revenueTrend = getRevenueTrend(timeRange);
-    const revenueMetrics = getRevenueMetrics(timeRange);
-    const revenueByService = getRevenueByService(timeRange);
-    const recentTransactions = getRecentTransactions(timeRange);
-    const performanceMetrics = getPerformanceMetrics(timeRange);
+    // Dynamic data based on time range - memoized to prevent unnecessary re-generation
+    const revenueTrend = useMemo(() => getRevenueTrend(timeRange), [timeRange]);
+    const revenueMetrics = useMemo(() => getRevenueMetrics(timeRange), [timeRange]);
+    const revenueByService = useMemo(() => getRevenueByService(timeRange), [timeRange]);
+    const recentTransactions = useMemo(() => getRecentTransactions(timeRange), [timeRange]);
+    const performanceMetrics = useMemo(() => getPerformanceMetrics(timeRange), [timeRange]);
 
     // Availability Management State
     const [availability, setAvailability] = useState({
