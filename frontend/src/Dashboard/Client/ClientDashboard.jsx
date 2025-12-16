@@ -524,20 +524,6 @@ const ClientDashboard = () => {
             yPos += 10;
         });
 
-        // Performance Metrics
-        yPos += 20;
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39);
-        doc.text('Performance Metrics', 20, yPos);
-
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81);
-        yPos += 15;
-        performanceMetrics.forEach((metric) => {
-            doc.text(`${metric.name}: ${metric.value} (${metric.change})`, 20, yPos);
-            yPos += 10;
-        });
-
         // Save the PDF
         doc.save('client-dashboard-report.pdf');
     };
