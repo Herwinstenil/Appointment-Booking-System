@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import {
     FolderOpen,
     Calendar,
@@ -465,6 +466,80 @@ const ClientDashboard = () => {
     const handleFullScreen = () => {
         setIsFullScreen(!isFullScreen);
         setShowChartMenu(false);
+    };
+
+    // PDF Export Function
+    const exportDashboardToPDF = () => {
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(16, 185, 129); // Emerald color
+        doc.text('Client Dashboard Report', 20, 30);
+
+        // Generated date
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128); // Gray
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+        // Key Metrics
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39); // Dark gray
+        doc.text('Key Metrics', 20, 65);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81); // Medium gray
+        let yPos = 80;
+        doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
+        doc.text(`Active Clients: ${revenueMetrics.activeClients}`, 20, yPos + 10);
+        doc.text(`Monthly Bookings: ${revenueMetrics.newBookings}`, 20, yPos + 20);
+        doc.text(`Client Satisfaction: ${revenueMetrics.clientSatisfaction}/5`, 20, yPos + 30);
+        doc.text(`Completion Rate: ${revenueMetrics.completionRate}%`, 20, yPos + 40);
+
+        // Revenue by Service
+        yPos += 60;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Revenue by Service', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        revenueByService.forEach((service) => {
+            doc.text(`${service.service}: $${service.amount.toLocaleString()} (${service.percentage}%)`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Recent Transactions
+        yPos += 20;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Recent Transactions', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        recentTransactions.slice(0, 5).forEach((transaction) => {
+            doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount}`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Performance Metrics
+        yPos += 20;
+        doc.setFontSize(14);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Performance Metrics', 20, yPos);
+
+        doc.setFontSize(10);
+        doc.setTextColor(55, 65, 81);
+        yPos += 15;
+        performanceMetrics.forEach((metric) => {
+            doc.text(`${metric.name}: ${metric.value} (${metric.change})`, 20, yPos);
+            yPos += 10;
+        });
+
+        // Save the PDF
+        doc.save('client-dashboard-report.pdf');
     };
 
     const sidebarItems = [
