@@ -467,14 +467,6 @@ const ClientDashboard = () => {
         setShowChartMenu(false);
     };
 
-    const handleRefreshData = () => {
-        // Simulate data refresh by regenerating the data
-        const newRevenueTrend = getRevenueTrend(timeRange);
-        // In a real app, this would trigger a data fetch
-        console.log('Data refreshed');
-        setShowChartMenu(false);
-    };
-
     const sidebarItems = [
         { name: 'Dashboard', icon: BarChart3 },
         { name: 'Services', icon: FolderOpen },
@@ -638,7 +630,7 @@ const ClientDashboard = () => {
                         {/* Charts and Performance Section */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
                             {/* Revenue Trend Chart */}
-                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className={`xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
                                     <div className="flex items-center gap-4">
@@ -678,13 +670,6 @@ const ClientDashboard = () => {
                                                         >
                                                             <Eye size={16} className="mr-3" />
                                                             {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                                                        </button>
-                                                        <button
-                                                            onClick={handleRefreshData}
-                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                                        >
-                                                            <RefreshCw  size={16} className="mr-3" />
-                                                            Refresh Data
                                                         </button>
                                                     </div>
                                                 </div>
