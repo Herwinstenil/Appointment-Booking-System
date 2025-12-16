@@ -714,15 +714,6 @@ const ClientDashboard = () => {
                                                         </div>
                                                         <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
                                                         <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
-
-                                                        {/* Hover Tooltip */}
-                                                        <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
-                                                            <div className="font-semibold">${data.revenue.toLocaleString()}</div>
-                                                            <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                                {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                                                {Math.abs(data.growth)}%
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 ));
                                             })()}
