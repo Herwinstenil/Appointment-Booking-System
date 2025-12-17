@@ -3126,14 +3126,14 @@ const AdminDashboard = () => {
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500"
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer"
                                         >
                                             <XCircle size={20} />
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-green-500/25"
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-green-500/25 cursor-pointer"
                                         >
                                             <Save size={20} />
                                             Save Changes
@@ -3142,7 +3142,7 @@ const AdminDashboard = () => {
                                 ) : (
                                     <button
                                         onClick={handleStartEditing}
-                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:shadow-rose-500/25"
+                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:shadow-rose-500/25 cursor-pointer"
                                     >
                                         <Edit3 size={20} />
                                         Edit Profile
@@ -3205,7 +3205,7 @@ const AdminDashboard = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
+                                        className={`flex items-center gap-2 px-6 py-3 cursor-pointer rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
                                             ? 'bg-white text-rose-600 shadow-lg'
                                             : 'text-gray-600 hover:text-rose-600'
                                             }`}
@@ -3336,7 +3336,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleNotificationChange(key)}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${value
+                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${value
                                                             ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
                                                             : 'bg-gray-300'
                                                             }`}
@@ -3371,7 +3371,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleSecurityChange(item.key, !securitySettings[item.key])}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${securitySettings[item.key]
+                                                        className={`relative inline-flex h-7 w-12 items-center cursor-pointer rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 ${securitySettings[item.key]
                                                             ? 'bg-rose-500 shadow-lg shadow-rose-500/30'
                                                             : 'bg-gray-300'
                                                             }`}
@@ -3466,7 +3466,7 @@ const AdminDashboard = () => {
                                             return (
                                                 <button
                                                     key={index}
-                                                    className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-rose-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group"
+                                                    className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-rose-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group cursor-pointer"
                                                 >
                                                     <ActionIcon size={20} className={`${action.color} group-hover:scale-110 transition-transform`} />
                                                     <span className="font-medium group-hover:text-rose-700">{action.label}</span>
