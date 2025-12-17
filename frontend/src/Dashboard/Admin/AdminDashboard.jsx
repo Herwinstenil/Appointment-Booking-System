@@ -2293,7 +2293,7 @@ const AdminDashboard = () => {
                                         <button
                                             key={range}
                                             onClick={() => setTimeRange(range)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 ${timeRange === range
                                                 ? 'bg-rose-500 text-white shadow-lg'
                                                 : 'text-gray-600 hover:text-rose-600'
                                                 }`}
