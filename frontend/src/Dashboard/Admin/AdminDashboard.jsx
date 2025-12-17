@@ -1887,7 +1887,7 @@ const AdminDashboard = () => {
                             </div>
                             <button
                                 onClick={() => setShowSystemDetailsModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                             >
                                 <X size={24} />
                             </button>
@@ -2023,7 +2023,7 @@ const AdminDashboard = () => {
                             </div>
                             <button
                                 onClick={() => setShowAllActivitiesModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                             >
                                 <X size={24} />
                             </button>
