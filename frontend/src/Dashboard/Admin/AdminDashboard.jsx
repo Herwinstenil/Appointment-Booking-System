@@ -2777,14 +2777,14 @@ const AdminDashboard = () => {
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
                                 <button
                                     onClick={exportBookingAnalyticsToPDF}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
                                 >
                                     <Download size={16} />
                                     Export Report
                                 </button>
                                 <button
                                     onClick={() => setShowBookingFilterModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Filter size={16} />
                                     Filter
