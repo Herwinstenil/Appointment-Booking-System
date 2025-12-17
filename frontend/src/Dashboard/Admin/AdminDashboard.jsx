@@ -2382,7 +2382,7 @@ const AdminDashboard = () => {
                                             <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
                                             Revenue
                                         </div>
-                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
                                             <MoreVertical size={16} />
                                         </button>
                                     </div>
