@@ -1998,7 +1998,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center justify-end space-x-3">
                             <button
                                 onClick={() => setShowSystemDetailsModal(false)}
-                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                             >
                                 Close
                             </button>
@@ -2036,7 +2036,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-4 mb-6">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-700">Filter by:</span>
-                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
                                     <option value="all">All Activities</option>
                                     <option value="success">Success</option>
                                     <option value="modified">Modified</option>
@@ -2046,7 +2046,7 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-700">Time:</span>
-                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm">
+                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
                                     <option value="all">All Time</option>
                                     <option value="today">Today</option>
                                     <option value="week">This Week</option>
@@ -2085,7 +2085,7 @@ const AdminDashboard = () => {
                                                     setSelectedActivity(activity);
                                                     setShowActivityDetailModal(true);
                                                 }}
-                                                className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors"
+                                                className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
                                             >
                                                 View Details
                                             </button>
@@ -2097,7 +2097,7 @@ const AdminDashboard = () => {
 
                         {/* Load More */}
                         <div className="text-center mt-8">
-                            <button className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
+                            <button className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer">
                                 Load More Activities
                             </button>
                         </div>
@@ -2112,12 +2112,12 @@ const AdminDashboard = () => {
                             <div className="flex items-center space-x-3">
                                 <button
                                     onClick={() => setShowAllActivitiesModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
                                 <button
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Download size={18} className="inline mr-2" />
                                     Export Log
