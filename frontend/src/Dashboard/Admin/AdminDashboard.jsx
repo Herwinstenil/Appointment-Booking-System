@@ -1391,7 +1391,7 @@ const AdminDashboard = () => {
                             </div>
                             <button
                                 onClick={() => setShowUserFilterModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                             >
                                 <X size={24} />
                             </button>
@@ -1410,7 +1410,7 @@ const AdminDashboard = () => {
                                 <select
                                     value={localFilters.role}
                                     onChange={(e) => handleLocalFilterChange('role', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
                                 >
                                     <option value="">All Roles</option>
                                     <option value="Admin">Admin</option>
@@ -1429,7 +1429,7 @@ const AdminDashboard = () => {
                                 <select
                                     value={localFilters.status}
                                     onChange={(e) => handleLocalFilterChange('status', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
                                 >
                                     <option value="">All Statuses</option>
                                     <option value="Active">Active</option>
@@ -1504,20 +1504,20 @@ const AdminDashboard = () => {
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={handleClearFilters}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                             >
                                 Clear All
                             </button>
                             <div className="flex items-center space-x-3">
                                 <button
                                     onClick={() => setShowUserFilterModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleApplyFilters}
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Apply Filters
                                 </button>
