@@ -814,7 +814,7 @@ const AdminDashboard = () => {
                             </div>
                             <button
                                 onClick={handleCloseAddClientModal}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                             >
                                 <X size={24} />
                             </button>
@@ -896,7 +896,7 @@ const AdminDashboard = () => {
                                     <select
                                         value={localClient.role}
                                         onChange={(e) => handleLocalChange('role', e.target.value)}
-                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 cursor-pointer transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                     >
                                         <option value="" disabled>Select Role</option>
                                         <option value="Client">Client</option>
@@ -912,7 +912,7 @@ const AdminDashboard = () => {
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => handleLocalChange('status', 'Active')}
-                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${localClient.status === 'Active'
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-300 ${localClient.status === 'Active'
                                                 ? 'border-green-500 bg-green-50 text-green-700'
                                                 : 'border-gray-200 hover:border-green-300 hover:bg-green-25'
                                                 }`}
@@ -924,7 +924,7 @@ const AdminDashboard = () => {
                                         </button>
                                         <button
                                             onClick={() => handleLocalChange('status', 'Inactive')}
-                                            className={`flex-1 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${localClient.status === 'Inactive'
+                                            className={`flex-1 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-300 ${localClient.status === 'Inactive'
                                                 ? 'border-red-500 bg-red-50 text-red-700'
                                                 : 'border-gray-200 hover:border-red-300 hover:bg-red-25'
                                                 }`}
@@ -1005,13 +1005,13 @@ const AdminDashboard = () => {
                             <div className="flex items-center space-x-3">
                                 <button
                                     onClick={handleCloseAddClientModal}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <div className="flex items-center gap-2">
                                         <UserPlus size={18} />
