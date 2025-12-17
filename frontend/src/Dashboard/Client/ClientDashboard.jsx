@@ -327,6 +327,14 @@ const ClientDashboard = () => {
     const [showUserModal, setShowUserModal] = useState(false);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showRequestModal, setShowRequestModal] = useState(false);
+    const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+    const [newServiceData, setNewServiceData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        category: 'Development',
+        status: 'Active'
+    });
     const [selectedService, setSelectedService] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -486,6 +494,50 @@ const ClientDashboard = () => {
         setRequests(requests.map(request =>
             request.id === requestId ? { ...request, status: action } : request
         ));
+    };
+
+    // Add Service Handlers
+    const handleAddServiceChange = (e) => {
+        const { name, value } = e.target;
+        setNewServiceData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleAddServiceSubmit = (e) => {
+        e.preventDefault();
+
+        // Validation
+        if (!newServiceData.name.trim() || !newServiceData.description.trim() || !newServiceData.price.trim()) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Create new service
+        const newService = {
+            id: services.length + 1,
+            name: newServiceData.name.trim(),
+            description: newServiceData.description.trim(),
+            price: `$${newServiceData.price}`,
+            category: newServiceData.category,
+            status: newServiceData.status,
+            bookings: 0,
+            rating: 0
+        };
+
+        // Add to services array
+        setServices(prev => [...prev, newService]);
+
+        // Reset form and close modal
+        setNewServiceData({
+            name: '',
+            description: '',
+            price: '',
+            category: 'Development',
+            status: 'Active'
+        });
+        setShowAddServiceModal(false);
     };
 
     // Modal Handlers
@@ -1081,7 +1133,10 @@ const ClientDashboard = () => {
                                 </h2>
                                 <p className="text-gray-600">Create and manage your service offerings</p>
                             </div>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0">
+                            <button
+                                onClick={() => setShowAddServiceModal(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0"
+                            >
                                 <Plus size={16} />
                                 Add New Service
                             </button>
@@ -2776,6 +2831,157 @@ const ClientDashboard = () => {
                                     className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                                 >
                                     Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Service Modal */}
+            {showAddServiceModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Add New Service</h3>
+                                    <p className="text-gray-600 mt-1">Create a new service offering</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setShowAddServiceModal(false);
+                                        setNewServiceData({
+                                            name: '',
+                                            description: '',
+                                            price: '',
+                                            category: 'Development',
+                                            status: 'Active'
+                                        });
+                                    }}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleAddServiceSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Service Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={newServiceData.name}
+                                            onChange={handleAddServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            placeholder="Enter service name"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Price *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            value={newServiceData.price}
+                                            onChange={handleAddServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Description *
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={newServiceData.description}
+                                        onChange={handleAddServiceChange}
+                                        rows="4"
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        placeholder="Describe your service..."
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Category
+                                        </label>
+                                        <select
+                                            name="category"
+                                            value={newServiceData.category}
+                                            onChange={handleAddServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="Development">Development</option>
+                                            <option value="Design">Design</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Consulting">Consulting</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Status
+                                        </label>
+                                        <select
+                                            name="status"
+                                            value={newServiceData.status}
+                                            onChange={handleAddServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 p-4 rounded-xl">
+                                    <div className="flex items-center gap-2 text-blue-700">
+                                        <AlertCircle size={16} />
+                                        <span className="text-sm font-medium">Note:</span>
+                                    </div>
+                                    <p className="text-sm text-blue-600 mt-1">
+                                        New services will start with 0 bookings and 0 rating. You can update these values later.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowAddServiceModal(false);
+                                        setNewServiceData({
+                                            name: '',
+                                            description: '',
+                                            price: '',
+                                            category: 'Development',
+                                            status: 'Active'
+                                        });
+                                    }}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAddServiceSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Add Service
                                 </button>
                             </div>
                         </div>
