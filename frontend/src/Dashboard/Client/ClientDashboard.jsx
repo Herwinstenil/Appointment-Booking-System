@@ -319,6 +319,37 @@ const ClientDashboard = () => {
     const recentTransactions = useMemo(() => getRecentTransactions(timeRange), [timeRange]);
     const performanceMetrics = useMemo(() => getPerformanceMetrics(timeRange), [timeRange]);
 
+    // Modal States
+    const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false);
+    const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
+    const [showAllServicesModal, setShowAllServicesModal] = useState(false);
+    const [showServiceModal, setShowServiceModal] = useState(false);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const [selectedService, setSelectedService] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+
+    // Pagination states for modals
+    const [transactionsPage, setTransactionsPage] = useState(1);
+    const [transactionsPerPage] = useState(5);
+    const [allTransactions, setAllTransactions] = useState([
+        { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
+        { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
+        { id: 3, client: 'Mike Davis', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'pending', avatar: 'MD' },
+        { id: 4, client: 'Emma Wilson', service: 'Consultation', amount: 200, date: 'Yesterday', status: 'completed', avatar: 'EW' },
+        { id: 5, client: 'Alex Brown', service: 'Web Development', amount: 500, date: '2 days ago', status: 'completed', avatar: 'AB' },
+        { id: 6, client: 'Lisa Chen', service: 'UI/UX Design', amount: 300, date: '2 days ago', status: 'completed', avatar: 'LC' },
+        { id: 7, client: 'David Kim', service: 'Mobile App Development', amount: 800, date: '3 days ago', status: 'pending', avatar: 'DK' },
+        { id: 8, client: 'Rachel Green', service: 'Consultation', amount: 200, date: '3 days ago', status: 'completed', avatar: 'RG' },
+        { id: 9, client: 'Tom Wilson', service: 'Web Development', amount: 500, date: '4 days ago', status: 'completed', avatar: 'TW' },
+        { id: 10, client: 'Anna Davis', service: 'UI/UX Design', amount: 300, date: '4 days ago', status: 'completed', avatar: 'AD' },
+        { id: 11, client: 'Chris Johnson', service: 'Mobile App Development', amount: 800, date: '5 days ago', status: 'pending', avatar: 'CJ' },
+        { id: 12, client: 'Maria Garcia', service: 'Consultation', amount: 200, date: '5 days ago', status: 'completed', avatar: 'MG' }
+    ]);
+
     // Availability Management State
     const [availability, setAvailability] = useState({
         monday: { start: '09:00', end: '17:00', enabled: true },
@@ -455,6 +486,39 @@ const ClientDashboard = () => {
         setRequests(requests.map(request =>
             request.id === requestId ? { ...request, status: action } : request
         ));
+    };
+
+    // Modal Handlers
+    const handleViewServiceDetails = (service) => {
+        setSelectedService(service);
+        setShowServiceDetailsModal(true);
+    };
+
+    const handleViewAllTransactions = () => {
+        setShowAllTransactionsModal(true);
+    };
+
+    const handleViewUser = (user) => {
+        setSelectedUser(user);
+        setShowUserModal(true);
+    };
+
+    const handleViewBooking = (booking) => {
+        setSelectedBooking(booking);
+        setShowBookingModal(true);
+    };
+
+    const handleViewRequest = (request) => {
+        setSelectedRequest(request);
+        setShowRequestModal(true);
+    };
+
+    const closeModal = (modalSetter) => {
+        modalSetter(false);
+        setSelectedService(null);
+        setSelectedUser(null);
+        setSelectedBooking(null);
+        setSelectedRequest(null);
     };
 
     // Chart Handlers
@@ -886,7 +950,10 @@ const ClientDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Revenue by Service</h3>
-                                    <button className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
+                                    <button
+                                        onClick={() => setShowAllServicesModal(true)}
+                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors"
+                                    >
                                         View Details
                                     </button>
                                 </div>
@@ -924,7 +991,10 @@ const ClientDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
-                                    <button className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
+                                    <button
+                                        onClick={handleViewAllTransactions}
+                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors"
+                                    >
                                         View All
                                     </button>
                                 </div>
@@ -1108,7 +1178,10 @@ const ClientDashboard = () => {
                                                 <Edit size={14} className="inline mr-1" />
                                                 Edit
                                             </button>
-                                            <button className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                                            <button
+                                                onClick={() => handleViewServiceDetails(service)}
+                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                                            >
                                                 <ViewIcon size={14} className="inline mr-1" />
                                                 View
                                             </button>
@@ -2232,6 +2305,484 @@ const ClientDashboard = () => {
                 ></div>
             )}
 
+            {/* Modal Components */}
+            {/* Service Details Modal */}
+            {showServiceDetailsModal && selectedService && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Service Details</h3>
+                                    <p className="text-gray-600 mt-1">Complete information about this service</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowServiceDetailsModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+                                        {selectedService.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-bold text-gray-900">{selectedService.name}</h4>
+                                        <p className="text-gray-600">{selectedService.category}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Price</p>
+                                        <p className="text-2xl font-bold text-emerald-600">{selectedService.price}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Bookings</p>
+                                        <p className="text-2xl font-bold text-gray-900">{selectedService.bookings}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Rating</p>
+                                        <p className="text-2xl font-bold text-gray-900">{selectedService.rating}/5</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Status</p>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedService.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                                            {selectedService.status}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600 mb-2">Description</p>
+                                    <p className="text-gray-900">{selectedService.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowServiceDetailsModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* All Services Modal */}
+            {showAllServicesModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">All Services</h3>
+                                    <p className="text-gray-600 mt-1">Complete service portfolio and performance metrics</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowAllServicesModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            {/* Service Stats Summary */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-emerald-100 text-sm font-medium">Total Services</p>
+                                            <p className="text-2xl font-bold">{services.length}</p>
+                                            <p className="text-emerald-100 text-xs mt-1">All categories</p>
+                                        </div>
+                                        <FolderOpen size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-medium">Active Services</p>
+                                            <p className="text-2xl font-bold">{services.filter(s => s.status === 'Active').length}</p>
+                                            <p className="text-blue-100 text-xs mt-1">Currently available</p>
+                                        </div>
+                                        <CheckCircle size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-purple-100 text-sm font-medium">Total Bookings</p>
+                                            <p className="text-2xl font-bold">{services.reduce((sum, s) => sum + s.bookings, 0)}</p>
+                                            <p className="text-purple-100 text-xs mt-1">Across all services</p>
+                                        </div>
+                                        <BookOpen size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-amber-100 text-sm font-medium">Avg Rating</p>
+                                            <p className="text-2xl font-bold">4.7/5</p>
+                                            <p className="text-amber-100 text-xs mt-1">Customer satisfaction</p>
+                                        </div>
+                                        <Star size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Services Revenue Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {services.map((service) => {
+                                    // Calculate revenue for this service based on time range
+                                    const revenueAmount = service.bookings * parseFloat(service.price.replace('$', ''));
+                                    const adjustedRevenue = Math.round(revenueAmount * (timeRange === 'daily' ? 0.03 : timeRange === 'weekly' ? 0.12 : timeRange === 'monthly' ? 1 : 12));
+
+                                    return (
+                                        <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                            <div className="p-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {service.status}
+                                                    </span>
+                                                </div>
+
+                                                <div className="text-center mb-4">
+                                                    <div className="text-3xl font-bold text-emerald-600 mb-1">
+                                                        ${adjustedRevenue.toLocaleString()}
+                                                    </div>
+                                                    <p className="text-sm text-gray-500">Total Revenue</p>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                                    <div className="text-center">
+                                                        <div className="text-lg font-semibold text-gray-900">{service.bookings}</div>
+                                                        <p className="text-xs text-gray-500">Bookings</p>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <div className="text-lg font-semibold text-gray-900">{service.price}</div>
+                                                        <p className="text-xs text-gray-500">Price</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-sm text-gray-500">
+                                                    <span>Category: {service.category}</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <Star size={14} className="text-amber-500" />
+                                                        <span>{service.rating}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowAllServicesModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* All Transactions Modal */}
+            {showAllTransactionsModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">All Transactions</h3>
+                                    <p className="text-gray-600 mt-1">Complete transaction history with pagination</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowAllTransactionsModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            {/* Pagination Info */}
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="text-sm text-gray-600">
+                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={transactionsPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
+                                        {transactionsPage}
+                                    </span>
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
+                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {allTransactions.slice((transactionsPage - 1) * transactionsPerPage, transactionsPage * transactionsPerPage).map((transaction) => (
+                                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-all duration-300">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white text-sm font-bold">
+                                                {transaction.avatar}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-800">{transaction.client}</p>
+                                                <p className="text-sm text-gray-600">{transaction.service}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-lg font-bold text-gray-900">${transaction.amount}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-xs text-gray-500">{transaction.date}</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                    {transaction.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowAllTransactionsModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Details Modal */}
+            {showUserModal && selectedUser && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">User Details</h3>
+                                    <p className="text-gray-600 mt-1">Complete information about this user</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowUserModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="flex items-center space-x-6 mb-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                                    {selectedUser.name.split(' ').map(n => n[0]).join('')}
+                                </div>
+                                <div>
+                                    <h4 className="text-2xl font-bold text-gray-900">{selectedUser.name}</h4>
+                                    <p className="text-gray-600">{selectedUser.email}</p>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium mt-2 inline-block ${selectedUser.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                                        {selectedUser.status}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600">Join Date</p>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedUser.joinDate}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600">Last Login</p>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedUser.lastLogin}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600">Role</p>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedUser.role}</p>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600">Total Bookings</p>
+                                    <p className="text-lg font-semibold text-gray-900">8</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowUserModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Booking Details Modal */}
+            {showBookingModal && selectedBooking && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Booking Details</h3>
+                                    <p className="text-gray-600 mt-1">Complete information about this booking</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowBookingModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+                                        {selectedBooking.client.split(' ').map(n => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-bold text-gray-900">{selectedBooking.client}</h4>
+                                        <p className="text-gray-600">{selectedBooking.service}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Date</p>
+                                        <p className="text-lg font-semibold text-gray-900">{selectedBooking.date}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Time</p>
+                                        <p className="text-lg font-semibold text-gray-900">{selectedBooking.time}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Duration</p>
+                                        <p className="text-lg font-semibold text-gray-900">{selectedBooking.duration}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Amount</p>
+                                        <p className="text-lg font-semibold text-emerald-600">{selectedBooking.amount}</p>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600 mb-2">Status</p>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedBooking.status === 'Confirmed' || selectedBooking.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : selectedBooking.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
+                                        {selectedBooking.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowBookingModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Request Details Modal */}
+            {showRequestModal && selectedRequest && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Request Details</h3>
+                                    <p className="text-gray-600 mt-1">Complete information about this request</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowRequestModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+                                        {selectedRequest.client.split(' ').map(n => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-bold text-gray-900">{selectedRequest.client}</h4>
+                                        <p className="text-gray-600">{selectedRequest.service} • {selectedRequest.date}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Request Type</p>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedRequest.type === 'Reschedule' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}>
+                                            {selectedRequest.type}
+                                        </span>
+                                    </div>
+                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                        <p className="text-sm text-gray-600">Status</p>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedRequest.status === 'Pending' ? 'bg-amber-100 text-amber-800' : selectedRequest.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                                            {selectedRequest.status}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <p className="text-sm text-gray-600 mb-2">Reason</p>
+                                    <p className="text-gray-900">{selectedRequest.reason}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => closeModal(setShowRequestModal)}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Add CSS animations */}
             <style>{`
                 @keyframes fadeIn {
@@ -2244,7 +2795,7 @@ const ClientDashboard = () => {
                         transform: translateY(0);
                     }
                 }
-                
+
                 @keyframes dropdown {
                     from {
                         opacity: 0;
@@ -2255,7 +2806,7 @@ const ClientDashboard = () => {
                         transform: translateY(0) scale(1);
                     }
                 }
-                
+
                 @keyframes slideIn {
                     from {
                         opacity: 0;
@@ -2266,19 +2817,34 @@ const ClientDashboard = () => {
                         transform: translateX(0);
                     }
                 }
-                
+
+                @keyframes modalSlideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
                 }
-                
+
                 .animate-dropdown {
                     animation: dropdown 0.2s ease-out;
                 }
-                
+
                 .animate-slideIn {
                     animation: slideIn 0.5s ease-out;
                 }
-                
+
+                .animate-modalSlideIn {
+                    animation: modalSlideIn 0.3s ease-out;
+                }
+
                 /* Smooth scrolling */
                 .overflow-y-auto {
                     scroll-behavior: smooth;
