@@ -2925,7 +2925,7 @@ const AdminDashboard = () => {
                                         <button
                                             key={range}
                                             onClick={() => setTimeRange(range)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 transform hover:scale-105 ${timeRange === range
                                                 ? 'bg-rose-500 text-white shadow-lg'
                                                 : 'text-gray-600 hover:text-rose-600'
                                                 }`}
@@ -2937,14 +2937,14 @@ const AdminDashboard = () => {
 
                                 <button
                                     onClick={() => setShowRevenueFilterModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 border border-gray-200 text-white rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 border border-gray-200 text-white rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Filter size={16} />
                                     Filter
                                 </button>
                                 <button
                                     onClick={exportRevenueDashboardToPDF}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
                                 >
                                     <Download size={16} />
                                     Export Report
@@ -3024,7 +3024,7 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Revenue by Category</h3>
-                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
                                         View Details
                                     </button>
                                 </div>
@@ -3062,7 +3062,7 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
-                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors">
+                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
                                         View All
                                     </button>
                                 </div>
