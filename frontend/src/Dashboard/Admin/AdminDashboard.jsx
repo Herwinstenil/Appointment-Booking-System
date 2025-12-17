@@ -2601,14 +2601,14 @@ const AdminDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowUserFilterModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Filter size={16} />
                                     Filter
                                 </button>
                                 <button
                                     onClick={handleAddClient}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Plus size={16} />
                                     Add Client
@@ -2677,7 +2677,7 @@ const AdminDashboard = () => {
                                                     type="checkbox"
                                                     checked={selectedUsers.length === users.length && users.length > 0}
                                                     onChange={handleSelectAll}
-                                                    className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                    className="rounded border-gray-300 text-rose-500 focus:ring-rose-500 cursor-pointer"
                                                 />
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
@@ -2696,7 +2696,7 @@ const AdminDashboard = () => {
                                                         type="checkbox"
                                                         checked={selectedUsers.includes(user.id)}
                                                         onChange={() => handleUserSelect(user.id)}
-                                                        className="rounded border-gray-300 text-rose-500 focus:ring-rose-500"
+                                                        className="rounded border-gray-300 text-rose-500 focus:ring-rose-500 cursor-pointer"
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
