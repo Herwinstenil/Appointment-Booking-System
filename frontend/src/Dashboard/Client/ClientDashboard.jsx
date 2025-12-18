@@ -335,6 +335,7 @@ const ClientDashboard = () => {
         category: 'Development',
         status: 'Active'
     });
+    const [serviceErrors, setServiceErrors] = useState({});
     const [selectedService, setSelectedService] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -509,10 +510,24 @@ const ClientDashboard = () => {
         e.preventDefault();
 
         // Validation
-        if (!newServiceData.name.trim() || !newServiceData.description.trim() || !newServiceData.price.trim()) {
-            alert('Please fill in all required fields');
+        const errors = {};
+        if (!newServiceData.name.trim()) {
+            errors.name = 'Service name is required';
+        }
+        if (!newServiceData.description.trim()) {
+            errors.description = 'Description is required';
+        }
+        if (!newServiceData.price.trim()) {
+            errors.price = 'Price is required';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setServiceErrors(errors);
             return;
         }
+
+        // Clear errors
+        setServiceErrors({});
 
         // Create new service
         const newService = {
@@ -2877,10 +2892,13 @@ const ClientDashboard = () => {
                                             name="name"
                                             value={newServiceData.name}
                                             onChange={handleAddServiceChange}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
                                             placeholder="Enter service name"
-                                            required
                                         />
+                                        {serviceErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{serviceErrors.name}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -2891,12 +2909,15 @@ const ClientDashboard = () => {
                                             name="price"
                                             value={newServiceData.price}
                                             onChange={handleAddServiceChange}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
                                             placeholder="0.00"
                                             min="0"
                                             step="0.01"
-                                            required
                                         />
+                                        {serviceErrors.price && (
+                                            <p className="text-red-500 text-sm mt-1">{serviceErrors.price}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -2909,10 +2930,13 @@ const ClientDashboard = () => {
                                         value={newServiceData.description}
                                         onChange={handleAddServiceChange}
                                         rows="4"
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                            }`}
                                         placeholder="Describe your service..."
-                                        required
                                     />
+                                    {serviceErrors.description && (
+                                        <p className="text-red-500 text-sm mt-1">{serviceErrors.description}</p>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
