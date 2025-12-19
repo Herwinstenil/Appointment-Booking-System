@@ -328,7 +328,16 @@ const ClientDashboard = () => {
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showRequestModal, setShowRequestModal] = useState(false);
     const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+    const [showEditServiceModal, setShowEditServiceModal] = useState(false);
     const [newServiceData, setNewServiceData] = useState({
+        name: '',
+        description: '',
+        price: '',
+        category: 'Development',
+        status: 'Active'
+    });
+    const [editServiceData, setEditServiceData] = useState({
+        id: null,
         name: '',
         description: '',
         price: '',
@@ -553,6 +562,75 @@ const ClientDashboard = () => {
             status: 'Active'
         });
         setShowAddServiceModal(false);
+    };
+
+    // Edit Service Handlers
+    const handleEditService = (service) => {
+        setEditServiceData({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            price: service.price.replace('$', ''),
+            category: service.category,
+            status: service.status
+        });
+        setShowEditServiceModal(true);
+    };
+
+    const handleEditServiceChange = (e) => {
+        const { name, value } = e.target;
+        setEditServiceData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditServiceSubmit = (e) => {
+        e.preventDefault();
+
+        // Validation
+        const errors = {};
+        if (!editServiceData.name.trim()) {
+            errors.name = 'Service name is required';
+        }
+        if (!editServiceData.description.trim()) {
+            errors.description = 'Description is required';
+        }
+        if (!editServiceData.price.trim()) {
+            errors.price = 'Price is required';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setServiceErrors(errors);
+            return;
+        }
+
+        // Clear errors
+        setServiceErrors({});
+
+        // Update service
+        setServices(prev => prev.map(service =>
+            service.id === editServiceData.id
+                ? {
+                    ...service,
+                    name: editServiceData.name.trim(),
+                    description: editServiceData.description.trim(),
+                    price: `$${editServiceData.price}`,
+                    category: editServiceData.category,
+                    status: editServiceData.status
+                }
+                : service
+        ));
+
+        // Close modal
+        setShowEditServiceModal(false);
+    };
+
+    // Delete Service Handler
+    const handleDeleteService = (serviceId) => {
+        if (window.confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+            setServices(prev => prev.filter(service => service.id !== serviceId));
+        }
     };
 
     // Modal Handlers
@@ -1244,7 +1322,10 @@ const ClientDashboard = () => {
                                             <span className="text-sm text-gray-500">Category: {service.category}</span>
                                         </div>
                                         <div className="mt-4 flex items-center space-x-2">
-                                            <button className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm">
+                                            <button
+                                                onClick={() => handleEditService(service)}
+                                                className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm"
+                                            >
                                                 <Edit size={14} className="inline mr-1" />
                                                 Edit
                                             </button>
@@ -1255,7 +1336,10 @@ const ClientDashboard = () => {
                                                 <ViewIcon size={14} className="inline mr-1" />
                                                 View
                                             </button>
-                                            <button className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm">
+                                            <button
+                                                onClick={() => handleDeleteService(service.id)}
+                                                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                                            >
                                                 <Trash2 size={14} className="inline mr-1" />
                                                 Delete
                                             </button>
