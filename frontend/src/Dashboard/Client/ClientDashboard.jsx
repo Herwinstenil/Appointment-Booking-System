@@ -3186,6 +3186,7 @@ const ClientDashboard = () => {
                                             onChange={handleEditServiceChange}
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                         >
+                                            <option value="" disabled>Select a Category</option>
                                             <option value="Development">Development</option>
                                             <option value="Design">Design</option>
                                             <option value="Marketing">Marketing</option>
