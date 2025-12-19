@@ -3097,6 +3097,148 @@ const ClientDashboard = () => {
                 </div>
             )}
 
+            {/* Edit Service Modal */}
+            {showEditServiceModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Edit Service</h3>
+                                    <p className="text-gray-600 mt-1">Update service information</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowEditServiceModal(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleEditServiceSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Service Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={editServiceData.name}
+                                            onChange={handleEditServiceChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="Enter service name"
+                                        />
+                                        {serviceErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{serviceErrors.name}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Price *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            value={editServiceData.price}
+                                            onChange={handleEditServiceChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.price ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                        />
+                                        {serviceErrors.price && (
+                                            <p className="text-red-500 text-sm mt-1">{serviceErrors.price}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Description *
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={editServiceData.description}
+                                        onChange={handleEditServiceChange}
+                                        rows="4"
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${serviceErrors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                            }`}
+                                        placeholder="Describe your service..."
+                                    />
+                                    {serviceErrors.description && (
+                                        <p className="text-red-500 text-sm mt-1">{serviceErrors.description}</p>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Category
+                                        </label>
+                                        <select
+                                            name="category"
+                                            value={editServiceData.category}
+                                            onChange={handleEditServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="Development">Development</option>
+                                            <option value="Design">Design</option>
+                                            <option value="Marketing">Marketing</option>
+                                            <option value="Consulting">Consulting</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Status
+                                        </label>
+                                        <select
+                                            name="status"
+                                            value={editServiceData.status}
+                                            onChange={handleEditServiceChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="bg-amber-50 p-4 rounded-xl">
+                                    <div className="flex items-center gap-2 text-amber-700">
+                                        <AlertCircle size={16} />
+                                        <span className="text-sm font-medium">Note:</span>
+                                    </div>
+                                    <p className="text-sm text-amber-600 mt-1">
+                                        Changes will be applied immediately after saving.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => setShowEditServiceModal(false)}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleEditServiceSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Add CSS animations */}
             <style>{`
                 @keyframes fadeIn {
