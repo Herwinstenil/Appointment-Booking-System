@@ -379,6 +379,8 @@ const ClientDashboard = () => {
         sunday: { start: '10:00', end: '14:00', enabled: false }
     });
 
+    const [availabilitySaveSuccess, setAvailabilitySaveSuccess] = useState(false);
+
     const [timeSlots, setTimeSlots] = useState([
         { id: 1, time: '09:00 AM - 10:00 AM', available: true },
         { id: 2, time: '10:00 AM - 11:00 AM', available: true },
@@ -497,6 +499,14 @@ const ClientDashboard = () => {
         setTimeSlots(timeSlots.map(slot =>
             slot.id === slotId ? { ...slot, available: !slot.available } : slot
         ));
+    };
+
+    const handleSaveAvailability = () => {
+        console.log('Saving availability settings:', { availability, timeSlots });
+        // Here you would typically send the data to your backend API
+        // For now, we'll just show a success message
+        setAvailabilitySaveSuccess(true);
+        setTimeout(() => setAvailabilitySaveSuccess(false), 3000);
     };
 
     // Request Handlers
