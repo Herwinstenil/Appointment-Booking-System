@@ -113,6 +113,7 @@ const ClientDashboard = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
+    const [bookingSearchTerm, setBookingSearchTerm] = useState('');
 
     // Service Management State
     const [services, setServices] = useState([
@@ -480,6 +481,12 @@ const ClientDashboard = () => {
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const filteredBookings = bookings.filter(booking =>
+        booking.client.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.service.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.status.toLowerCase().includes(bookingSearchTerm.toLowerCase())
     );
 
     // Service Management Handlers
@@ -1581,6 +1588,8 @@ const ClientDashboard = () => {
                                     <input
                                         type="text"
                                         placeholder="Search bookings..."
+                                        value={bookingSearchTerm}
+                                        onChange={(e) => setBookingSearchTerm(e.target.value)}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     />
                                 </div>
@@ -1659,7 +1668,7 @@ const ClientDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {bookings.map((booking) => (
+                                        {filteredBookings.map((booking) => (
                                             <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center">
