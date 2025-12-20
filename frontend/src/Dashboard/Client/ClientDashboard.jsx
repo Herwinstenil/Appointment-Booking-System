@@ -350,9 +350,9 @@ const ClientDashboard = () => {
         service: '',
         date: '',
         time: '',
-        duration: '1 hour',
+        duration: '',
         amount: '',
-        status: 'Pending'
+        status: ''
     });
     const [serviceErrors, setServiceErrors] = useState({});
     const [bookingErrors, setBookingErrors] = useState({});
@@ -514,8 +514,6 @@ const ClientDashboard = () => {
 
     const handleSaveAvailability = () => {
         console.log('Saving availability settings:', { availability, timeSlots });
-        // Here you would typically send the data to your backend API
-        // For now, we'll just show a success message
         setAvailabilitySaveSuccess(true);
         setTimeout(() => setAvailabilitySaveSuccess(false), 3000);
     };
@@ -601,9 +599,9 @@ const ClientDashboard = () => {
             service: '',
             date: '',
             time: '',
-            duration: '1 hour',
+            duration: '',
             amount: '',
-            status: 'Pending'
+            status: ''
         });
         setShowNewBookingModal(false);
     };
@@ -3366,9 +3364,9 @@ const ClientDashboard = () => {
                                             service: '',
                                             date: '',
                                             time: '',
-                                            duration: '1 hour',
+                                            duration: '',
                                             amount: '',
-                                            status: 'Pending'
+                                            status: ''
                                         });
                                         setBookingErrors({});
                                     }}
@@ -3468,6 +3466,7 @@ const ClientDashboard = () => {
                                             onChange={handleNewBookingChange}
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                         >
+                                            <option value="" disabled>Select a Duration</option>
                                             <option value="1 hour">1 hour</option>
                                             <option value="1.5 hours">1.5 hours</option>
                                             <option value="2 hours">2 hours</option>
@@ -3505,6 +3504,7 @@ const ClientDashboard = () => {
                                             onChange={handleNewBookingChange}
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                         >
+                                            <option value="" disabled>Select a Status</option>
                                             <option value="Pending">Pending</option>
                                             <option value="Confirmed">Confirmed</option>
                                             <option value="Completed">Completed</option>
@@ -3534,9 +3534,9 @@ const ClientDashboard = () => {
                                             service: '',
                                             date: '',
                                             time: '',
-                                            duration: '1 hour',
+                                            duration: '',
                                             amount: '',
-                                            status: 'Pending'
+                                            status: ''
                                         });
                                         setBookingErrors({});
                                     }}
