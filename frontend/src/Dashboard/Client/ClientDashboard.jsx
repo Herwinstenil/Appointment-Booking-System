@@ -486,7 +486,11 @@ const ClientDashboard = () => {
     const filteredBookings = bookings.filter(booking =>
         booking.client.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
         booking.service.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.status.toLowerCase().includes(bookingSearchTerm.toLowerCase())
+        booking.status.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.date.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.time.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.amount.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
+        booking.duration.toLowerCase().includes(bookingSearchTerm.toLowerCase())
     );
 
     // Service Management Handlers
@@ -1717,10 +1721,18 @@ const ClientDashboard = () => {
                                                                 </button>
                                                             </>
                                                         )}
-                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                        <button
+                                                            onClick={() => handleViewBooking(booking)}
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            title="View Booking Details"
+                                                        >
                                                             <ViewIcon size={16} />
                                                         </button>
-                                                        <button className="p-1 text-gray-600 hover:text-gray-800 transition-colors">
+                                                        <button
+                                                            onClick={() => handleEditBooking(booking)}
+                                                            className="p-1 text-gray-600 hover:text-gray-800 transition-colors"
+                                                            title="Edit Booking"
+                                                        >
                                                             <Edit size={16} />
                                                         </button>
                                                     </div>
