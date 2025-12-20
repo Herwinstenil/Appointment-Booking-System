@@ -1380,6 +1380,14 @@ const ClientDashboard = () => {
                             </button>
                         </div>
 
+                        {/* Success Message */}
+                        {availabilitySaveSuccess && (
+                            <div className="flex items-center space-x-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg animate-bounce mb-6">
+                                <CheckCircle size={16} />
+                                <span className="text-sm font-medium">Availability settings saved successfully!</span>
+                            </div>
+                        )}
+
                         {/* Availability Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
