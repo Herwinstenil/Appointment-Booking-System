@@ -331,6 +331,7 @@ const ClientDashboard = () => {
     const [showAddServiceModal, setShowAddServiceModal] = useState(false);
     const [showEditServiceModal, setShowEditServiceModal] = useState(false);
     const [showNewBookingModal, setShowNewBookingModal] = useState(false);
+    const [showEditBookingModal, setShowEditBookingModal] = useState(false);
     const [newServiceData, setNewServiceData] = useState({
         name: '',
         description: '',
@@ -345,6 +346,16 @@ const ClientDashboard = () => {
         price: '',
         category: '',
         status: 'Active'
+    });
+    const [editBookingData, setEditBookingData] = useState({
+        id: null,
+        client: '',
+        service: '',
+        date: '',
+        time: '',
+        duration: '',
+        amount: '',
+        status: ''
     });
     const [newBookingData, setNewBookingData] = useState({
         client: '',
@@ -677,6 +688,84 @@ const ClientDashboard = () => {
             status: service.status
         });
         setShowEditServiceModal(true);
+    };
+
+    // Edit Booking Handlers
+    const handleEditBooking = (booking) => {
+        setEditBookingData({
+            id: booking.id,
+            client: booking.client,
+            service: booking.service,
+            date: booking.date,
+            time: booking.time,
+            duration: booking.duration,
+            amount: booking.amount.replace('$', ''),
+            status: booking.status
+        });
+        setShowEditBookingModal(true);
+    };
+
+    const handleEditBookingChange = (e) => {
+        const { name, value } = e.target;
+        setEditBookingData(prev => {
+            const updated = { ...prev, [name]: value };
+            if (name === 'service') {
+                const selectedService = services.find(s => s.name === value);
+                if (selectedService) {
+                    updated.amount = selectedService.price.replace('$', '');
+                }
+            }
+            return updated;
+        });
+    };
+
+    const handleEditBookingSubmit = (e) => {
+        e.preventDefault();
+
+        // Validation
+        const errors = {};
+        if (!editBookingData.client.trim()) {
+            errors.client = 'Client name is required';
+        }
+        if (!editBookingData.service) {
+            errors.service = 'Service is required';
+        }
+        if (!editBookingData.date) {
+            errors.date = 'Date is required';
+        }
+        if (!editBookingData.time) {
+            errors.time = 'Time is required';
+        }
+        if (!editBookingData.amount) {
+            errors.amount = 'Amount is required';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setBookingErrors(errors);
+            return;
+        }
+
+        // Clear errors
+        setBookingErrors({});
+
+        // Update booking
+        setBookings(prev => prev.map(booking =>
+            booking.id === editBookingData.id
+                ? {
+                    ...booking,
+                    client: editBookingData.client.trim(),
+                    service: editBookingData.service,
+                    date: editBookingData.date,
+                    time: editBookingData.time,
+                    duration: editBookingData.duration,
+                    amount: `$${editBookingData.amount}`,
+                    status: editBookingData.status
+                }
+                : booking
+        ));
+
+        // Close modal
+        setShowEditBookingModal(false);
     };
 
     const handleEditServiceChange = (e) => {
@@ -3570,6 +3659,192 @@ const ClientDashboard = () => {
                                     className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                                 >
                                     Create Booking
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Booking Modal */}
+            {showEditBookingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Edit Booking</h3>
+                                    <p className="text-gray-600 mt-1">Update booking information</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowEditBookingModal(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleEditBookingSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Client Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="client"
+                                            value={editBookingData.client}
+                                            onChange={handleEditBookingChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.client ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="Enter client name"
+                                        />
+                                        {bookingErrors.client && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.client}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Service *
+                                        </label>
+                                        <select
+                                            name="service"
+                                            value={editBookingData.service}
+                                            onChange={handleEditBookingChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.service ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                        >
+                                            <option value="" disabled>Select a Service</option>
+                                            {services.filter(s => s.status === 'Active').map((service) => (
+                                                <option key={service.id} value={service.name}>
+                                                    {service.name} - {service.price}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {bookingErrors.service && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.service}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Date *
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="date"
+                                            value={editBookingData.date}
+                                            onChange={handleEditBookingChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.date ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                        />
+                                        {bookingErrors.date && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.date}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Time *
+                                        </label>
+                                        <input
+                                            type="time"
+                                            name="time"
+                                            value={editBookingData.time}
+                                            onChange={handleEditBookingChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.time ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                        />
+                                        {bookingErrors.time && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.time}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Duration
+                                        </label>
+                                        <select
+                                            name="duration"
+                                            value={editBookingData.duration}
+                                            onChange={handleEditBookingChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="" disabled>Select a Duration</option>
+                                            <option value="1 hour">1 hour</option>
+                                            <option value="1.5 hours">1.5 hours</option>
+                                            <option value="2 hours">2 hours</option>
+                                            <option value="2.5 hours">2.5 hours</option>
+                                            <option value="3 hours">3 hours</option>
+                                            <option value="4 hours">4 hours</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Amount *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="amount"
+                                            value={editBookingData.amount}
+                                            onChange={handleEditBookingChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.amount ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                        />
+                                        {bookingErrors.amount && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.amount}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Status
+                                        </label>
+                                        <select
+                                            name="status"
+                                            value={editBookingData.status}
+                                            onChange={handleEditBookingChange}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                        >
+                                            <option value="" disabled>Select a Status</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Confirmed">Confirmed</option>
+                                            <option value="Completed">Completed</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="bg-amber-50 p-4 rounded-xl">
+                                    <div className="flex items-center gap-2 text-amber-700">
+                                        <AlertCircle size={16} />
+                                        <span className="text-sm font-medium">Note:</span>
+                                    </div>
+                                    <p className="text-sm text-amber-600 mt-1">
+                                        Changes will be applied immediately after saving.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => setShowEditBookingModal(false)}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleEditBookingSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Save Changes
                                 </button>
                             </div>
                         </div>
