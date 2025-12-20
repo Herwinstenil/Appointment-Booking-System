@@ -1371,7 +1371,10 @@ const ClientDashboard = () => {
                                 </h2>
                                 <p className="text-gray-600">Set your working hours and available time slots</p>
                             </div>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0">
+                            <button
+                                onClick={handleSaveAvailability}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0"
+                            >
                                 <Save size={16} />
                                 Save Changes
                             </button>
