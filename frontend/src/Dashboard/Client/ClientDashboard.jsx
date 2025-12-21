@@ -374,6 +374,7 @@ const ClientDashboard = () => {
     });
     const [serviceErrors, setServiceErrors] = useState({});
     const [bookingErrors, setBookingErrors] = useState({});
+    const [clientErrors, setClientErrors] = useState({});
     const [selectedService, setSelectedService] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -578,10 +579,12 @@ const ClientDashboard = () => {
         }
 
         if (Object.keys(errors).length > 0) {
-            // Assuming we add clientErrors state, but for now, just alert or handle
-            alert(Object.values(errors).join('\n'));
+            setClientErrors(errors);
             return;
         }
+
+        // Clear errors
+        setClientErrors({});
 
         // Create new client
         const newClient = {
@@ -3965,9 +3968,12 @@ const ClientDashboard = () => {
                                             name="name"
                                             value={newClientData.name}
                                             onChange={handleAddClientChange}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'}`}
                                             placeholder="Enter client name"
                                         />
+                                        {clientErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{clientErrors.name}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -3978,9 +3984,12 @@ const ClientDashboard = () => {
                                             name="email"
                                             value={newClientData.email}
                                             onChange={handleAddClientChange}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'}`}
                                             placeholder="Enter email address"
                                         />
+                                        {clientErrors.email && (
+                                            <p className="text-red-500 text-sm mt-1">{clientErrors.email}</p>
+                                        )}
                                     </div>
                                 </div>
 
