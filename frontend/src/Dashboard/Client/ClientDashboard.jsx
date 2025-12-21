@@ -416,9 +416,9 @@ const ClientDashboard = () => {
 
     // Reschedule/Cancel Requests
     const [requests, setRequests] = useState([
-        { id: 1, client: 'John Smith', service: 'Web Development', date: '2024-01-20', type: 'Reschedule', reason: 'Conflict with another meeting', status: 'Pending' },
+        { id: 1, client: 'John Smith', service: 'Web Development', date: '2024-01-20', type: 'Reschedule', reason: 'Conflict with another meeting', status: 'Pending', rescheduledDate: '2024-01-25' },
         { id: 2, client: 'Emma Wilson', service: 'Mobile App', date: '2024-01-18', type: 'Cancel', reason: 'Unexpected travel', status: 'Pending' },
-        { id: 3, client: 'Mike Davis', service: 'Consultation', date: '2024-01-22', type: 'Reschedule', reason: 'Prefer later time', status: 'Approved' },
+        { id: 3, client: 'Mike Davis', service: 'Consultation', date: '2024-01-22', type: 'Reschedule', reason: 'Prefer later time', status: 'Approved', rescheduledDate: '2024-01-28' },
         { id: 4, client: 'Sarah Johnson', service: 'UI/UX Design', date: '2024-01-19', type: 'Cancel', reason: 'Budget constraints', status: 'Declined' }
     ]);
 
@@ -3139,6 +3139,12 @@ const ClientDashboard = () => {
                                     <p className="text-sm text-gray-600 mb-2">Reason</p>
                                     <p className="text-gray-900">{selectedRequest.reason}</p>
                                 </div>
+                                {selectedRequest.type === 'Reschedule' && selectedRequest.rescheduledDate && (
+                                    <div className="bg-blue-50 p-4 rounded-xl">
+                                        <p className="text-sm text-blue-600 mb-2">Rescheduled Date</p>
+                                        <p className="text-blue-900 font-semibold">{selectedRequest.rescheduledDate}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
