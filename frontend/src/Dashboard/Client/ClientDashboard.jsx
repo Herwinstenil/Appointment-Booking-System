@@ -491,7 +491,8 @@ const ClientDashboard = () => {
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
+        user.status.toLowerCase().includes(searchTerm.toLowerCase())||
+        user.joinDate.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredBookings = bookings.filter(booking =>
