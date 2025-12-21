@@ -1927,6 +1927,11 @@ const ClientDashboard = () => {
                                                 <p className="text-sm text-gray-700">
                                                     <span className="font-medium">Reason:</span> {request.reason}
                                                 </p>
+                                                {request.type === 'Reschedule' && request.rescheduledDate && (
+                                                    <p className="text-sm text-gray-700 mt-2">
+                                                        <span className="font-medium">Requested Date:</span> {request.rescheduledDate}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         {request.status === 'Pending' && (
