@@ -1929,7 +1929,7 @@ const ClientDashboard = () => {
                                                 </p>
                                                 {request.type === 'Reschedule' && request.rescheduledDate && (
                                                     <p className="text-sm text-gray-700 mt-2">
-                                                        <span className="font-medium">Requested Date:</span> {request.rescheduledDate}
+                                                        <span className="font-medium">Reschedule Date:</span> {request.rescheduledDate}
                                                     </p>
                                                 )}
                                             </div>
