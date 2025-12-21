@@ -1943,7 +1943,10 @@ const ClientDashboard = () => {
                                                 >
                                                     Decline
                                                 </button>
-                                                <button className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors transform hover:scale-105">
+                                                <button
+                                                    onClick={() => handleViewRequest(request)}
+                                                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors transform hover:scale-105"
+                                                >
                                                     View Details
                                                 </button>
                                             </div>
