@@ -766,6 +766,7 @@ const ClientDashboard = () => {
             id: user.id,
             name: user.name,
             email: user.email,
+            role: 'Customer',
             status: user.status
         });
         setShowEditUserModal(true);
@@ -4179,23 +4180,6 @@ const ClientDashboard = () => {
                                         )}
                                     </div>
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Role
-                                    </label>
-                                    <select
-                                        name="role"
-                                        value={editUserData.role}
-                                        onChange={handleEditUserChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
-                                    >
-                                        <option value="Customer">Customer</option>
-                                        <option value="Admin">Admin</option>
-                                        <option value="Manager">Manager</option>
-                                    </select>
-                                </div>
-
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Status
