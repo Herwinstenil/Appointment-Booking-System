@@ -2166,13 +2166,25 @@ const ClientDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                        <button
+                                                            onClick={() => handleViewUser(user)}
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            title="View User Details"
+                                                        >
                                                             <ViewIcon size={16} />
                                                         </button>
-                                                        <button className="p-1 text-emerald-600 hover:text-emerald-800 transition-colors">
+                                                        <button
+                                                            onClick={() => alert('Edit functionality coming soon')}
+                                                            className="p-1 text-emerald-600 hover:text-emerald-800 transition-colors"
+                                                            title="Edit User"
+                                                        >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                        <button
+                                                            onClick={() => alert('Delete functionality coming soon')}
+                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                                            title="Delete User"
+                                                        >
                                                             <Trash2 size={16} />
                                                         </button>
                                                     </div>
