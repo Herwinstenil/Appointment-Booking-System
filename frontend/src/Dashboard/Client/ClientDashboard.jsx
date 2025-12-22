@@ -3146,7 +3146,7 @@ const ClientDashboard = () => {
                                     <p className="text-sm text-gray-600">Last Login</p>
                                     <p className="text-lg font-semibold text-gray-900">{selectedUser.lastLogin}</p>
                                 </div>
-                                  <div className="bg-gray-50 p-4 rounded-xl">
+                                <div className="bg-gray-50 p-4 rounded-xl">
                                     <p className="text-sm text-gray-600">Role</p>
                                     <p className="text-lg font-semibold text-gray-900">{selectedUser.role}</p>
                                 </div>
@@ -4178,6 +4178,22 @@ const ClientDashboard = () => {
                                             <p className="text-red-500 text-sm mt-1">{clientErrors.email}</p>
                                         )}
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Role
+                                    </label>
+                                    <select
+                                        name="role"
+                                        value={editUserData.role}
+                                        onChange={handleEditUserChange}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                    >
+                                        <option value="Customer">Customer</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Manager">Manager</option>
+                                    </select>
                                 </div>
 
                                 <div>
