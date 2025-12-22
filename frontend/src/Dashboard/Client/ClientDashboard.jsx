@@ -353,6 +353,7 @@ const ClientDashboard = () => {
         id: null,
         name: '',
         email: '',
+        role: 'Customer',
         status: 'Active'
     });
     const [newClientData, setNewClientData] = useState({
@@ -2238,7 +2239,7 @@ const ClientDashboard = () => {
                                                             <ViewIcon size={16} />
                                                         </button>
                                                         <button
-                                                            onClick={() => alert('Edit functionality coming soon')}
+                                                            onClick={() => handleEditUser(user)}
                                                             className="p-1 text-emerald-600 hover:text-emerald-800 transition-colors"
                                                             title="Edit User"
                                                         >
@@ -3145,7 +3146,7 @@ const ClientDashboard = () => {
                                     <p className="text-sm text-gray-600">Last Login</p>
                                     <p className="text-lg font-semibold text-gray-900">{selectedUser.lastLogin}</p>
                                 </div>
-                                <div className="bg-gray-50 p-4 rounded-xl">
+                                  <div className="bg-gray-50 p-4 rounded-xl">
                                     <p className="text-sm text-gray-600">Role</p>
                                     <p className="text-lg font-semibold text-gray-900">{selectedUser.role}</p>
                                 </div>
@@ -4115,6 +4116,109 @@ const ClientDashboard = () => {
                                     className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                                 >
                                     Add Client
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit User Modal */}
+            {showEditUserModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Edit User</h3>
+                                    <p className="text-gray-600 mt-1">Update user information</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowEditUserModal(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleEditUserSubmit} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            User Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={editUserData.name}
+                                            onChange={handleEditUserChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="Enter user name"
+                                        />
+                                        {clientErrors.name && (
+                                            <p className="text-red-500 text-sm mt-1">{clientErrors.name}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Email *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={editUserData.email}
+                                            onChange={handleEditUserChange}
+                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                                }`}
+                                            placeholder="Enter email address"
+                                        />
+                                        {clientErrors.email && (
+                                            <p className="text-red-500 text-sm mt-1">{clientErrors.email}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Status
+                                    </label>
+                                    <select
+                                        name="status"
+                                        value={editUserData.status}
+                                        onChange={handleEditUserChange}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+
+                                <div className="bg-amber-50 p-4 rounded-xl">
+                                    <div className="flex items-center gap-2 text-amber-700">
+                                        <AlertCircle size={16} />
+                                        <span className="text-sm font-medium">Note:</span>
+                                    </div>
+                                    <p className="text-sm text-amber-600 mt-1">
+                                        Changes will be applied immediately after saving.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => setShowEditUserModal(false)}
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleEditUserSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Save Changes
                                 </button>
                             </div>
                         </div>
