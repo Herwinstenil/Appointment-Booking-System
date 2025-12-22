@@ -333,6 +333,7 @@ const ClientDashboard = () => {
     const [showNewBookingModal, setShowNewBookingModal] = useState(false);
     const [showEditBookingModal, setShowEditBookingModal] = useState(false);
     const [showAddClientModal, setShowAddClientModal] = useState(false);
+    const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [newServiceData, setNewServiceData] = useState({
         name: '',
         description: '',
@@ -346,6 +347,12 @@ const ClientDashboard = () => {
         description: '',
         price: '',
         category: '',
+        status: 'Active'
+    });
+    const [editUserData, setEditUserData] = useState({
+        id: null,
+        name: '',
+        email: '',
         status: 'Active'
     });
     const [newClientData, setNewClientData] = useState({
@@ -750,6 +757,63 @@ const ClientDashboard = () => {
             status: service.status
         });
         setShowEditServiceModal(true);
+    };
+
+    // Edit User Handlers
+    const handleEditUser = (user) => {
+        setEditUserData({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            status: user.status
+        });
+        setShowEditUserModal(true);
+    };
+
+    const handleEditUserChange = (e) => {
+        const { name, value } = e.target;
+        setEditUserData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditUserSubmit = (e) => {
+        e.preventDefault();
+
+        // Validation
+        const errors = {};
+        if (!editUserData.name.trim()) {
+            errors.name = 'User name is required';
+        }
+        if (!editUserData.email.trim()) {
+            errors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(editUserData.email)) {
+            errors.email = 'Email is invalid';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setClientErrors(errors);
+            return;
+        }
+
+        // Clear errors
+        setClientErrors({});
+
+        // Update user
+        setUsers(prev => prev.map(user =>
+            user.id === editUserData.id
+                ? {
+                    ...user,
+                    name: editUserData.name.trim(),
+                    email: editUserData.email.trim(),
+                    status: editUserData.status
+                }
+                : user
+        ));
+
+        // Close modal
+        setShowEditUserModal(false);
     };
 
     // Edit Booking Handlers
