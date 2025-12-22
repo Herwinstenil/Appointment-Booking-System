@@ -952,6 +952,14 @@ const ClientDashboard = () => {
         }
     };
 
+    // Delete User Handler
+    const handleDeleteUser = (userId) => {
+        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            setUsers(prev => prev.filter(user => user.id !== userId));
+            setSelectedUsers(prev => prev.filter(id => id !== userId));
+        }
+    };
+
     // Modal Handlers
     const handleViewServiceDetails = (service) => {
         setSelectedService(service);
@@ -2247,7 +2255,7 @@ const ClientDashboard = () => {
                                                             <Edit size={16} />
                                                         </button>
                                                         <button
-                                                            onClick={() => alert('Delete functionality coming soon')}
+                                                            onClick={() => handleDeleteUser(user.id)}
                                                             className="p-1 text-red-600 hover:text-red-800 transition-colors"
                                                             title="Delete User"
                                                         >
