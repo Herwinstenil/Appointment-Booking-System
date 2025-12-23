@@ -182,8 +182,6 @@ const AdminDashboard = () => {
     // Revenue Dashboard State
     const [timeRange, setTimeRange] = useState('daily');
     const [selectedMetric, setSelectedMetric] = useState('revenue');
-
-    // Chart State
     const [showChartMenu, setShowChartMenu] = useState(false);
     const [chartType, setChartType] = useState('area');
     const [isFullScreen, setIsFullScreen] = useState(false);
