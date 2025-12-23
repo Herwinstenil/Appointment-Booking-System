@@ -186,6 +186,11 @@ const AdminDashboard = () => {
     const [chartType, setChartType] = useState('area');
     const [isFullScreen, setIsFullScreen] = useState(false);
 
+    // Booking Analytics State
+    const [showBookingChartMenu, setShowBookingChartMenu] = useState(false);
+    const [isBookingFullScreen, setIsBookingFullScreen] = useState(false);
+    const [bookingChartType, setBookingChartType] = useState('area');
+
     // Function to get date labels based on time range
     const getDateLabels = (range) => {
         const now = new Date();
@@ -2889,6 +2894,20 @@ const AdminDashboard = () => {
                                 <p className="text-gray-600">Track and analyze booking patterns and trends</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-xl p-1">
+                                    {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
+                                        <button
+                                            key={range}
+                                            onClick={() => setTimeRange(range)}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 ${timeRange === range
+                                                ? 'bg-rose-500 text-white shadow-lg'
+                                                : 'text-gray-600 hover:text-rose-600'
+                                                }`}
+                                        >
+                                            {range.charAt(0).toUpperCase() + range.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
                                 <button
                                     onClick={exportBookingAnalyticsToPDF}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
@@ -2953,8 +2972,56 @@ const AdminDashboard = () => {
                         {/* Charts Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                             {/* Booking Trend */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Booking Trend</h3>
+                            <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 ${isBookingFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Weekly Booking Trend</h3>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                            <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
+                                            Bookings
+                                        </div>
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setShowBookingChartMenu(!showBookingChartMenu)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+
+                                            {/* Chart Menu Dropdown */}
+                                            {showBookingChartMenu && (
+                                                <div className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
+                                                    <div className="px-4 py-2 border-b border-gray-100">
+                                                        <p className="text-sm font-semibold text-gray-800">Chart Options</p>
+                                                    </div>
+
+                                                    <div className="py-1">
+                                                        <button
+                                                            onClick={() => setBookingChartType('area')}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'area' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <Activity size={16} className="mr-3" />
+                                                            Area Chart
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="border-t border-gray-100 py-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                setIsBookingFullScreen(!isBookingFullScreen);
+                                                                setShowBookingChartMenu(false);
+                                                            }}
+                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                        >
+                                                            <Eye size={16} className="mr-3" />
+                                                            {isBookingFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="h-64 flex items-end justify-between space-x-2">
                                     {bookingTrend.map((data, index) => (
                                         <div key={index} className="flex-1 flex flex-col items-center group">
@@ -2964,7 +3031,7 @@ const AdminDashboard = () => {
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
                                             </div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.day}</p>
+                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
                                             <p className="text-xs text-gray-500">{data.bookings}</p>
                                         </div>
                                     ))}
