@@ -278,9 +278,13 @@ const AdminDashboard = () => {
                     bookings = 0;
             }
 
+            const prevBookings = i > 0 ? data[i - 1].bookings : bookings;
+            const growth = ((bookings - prevBookings) / prevBookings * 100);
+
             data.push({
                 label: labels[i],
-                bookings: bookings
+                bookings: bookings,
+                growth: Math.round(growth * 10) / 10
             });
         }
 
@@ -2996,11 +3000,25 @@ const AdminDashboard = () => {
 
                                                     <div className="py-1">
                                                         <button
+                                                            onClick={() => setBookingChartType('bar')}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'bar' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <BarChart3 size={16} className="mr-3" />
+                                                            Bar Chart
+                                                        </button>
+                                                        <button
                                                             onClick={() => setBookingChartType('area')}
                                                             className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'area' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
                                                         >
                                                             <Activity size={16} className="mr-3" />
                                                             Area Chart
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setBookingChartType('line')}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'line' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <TrendingUp size={16} className="mr-3" />
+                                                            Line Chart
                                                         </button>
                                                     </div>
 
@@ -3021,19 +3039,114 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-64 flex items-end justify-between space-x-2">
-                                    {bookingTrend.map((data, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center group">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-rose-500 to-pink-500 rounded-t-lg transition-all duration-300 hover:from-rose-600 hover:to-pink-600 cursor-pointer relative overflow-hidden"
-                                                style={{ height: `${(data.bookings / 70) * 100}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
-                                            <p className="text-xs text-gray-500">{data.bookings}</p>
+                                <div className="h-64 relative">
+                                    {/* Grid Lines */}
+                                    <div className="absolute inset-0 flex flex-col justify-between">
+                                        {[0, 1, 2, 3, 4].map((i) => (
+                                            <div key={i} className="border-t border-gray-100"></div>
+                                        ))}
+                                    </div>
+
+                                    {bookingChartType === 'bar' ? (
+                                        // Bar Chart
+                                        <div className="h-full flex items-end justify-between space-x-2">
+                                            {(() => {
+                                                const maxBookings = Math.max(...bookingTrend.map(d => d.bookings));
+                                                return bookingTrend.map((data, index) => (
+                                                    <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                                        <div
+                                                            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
+                                                            style={{ height: `${Math.max((data.bookings / maxBookings) * 100, 5)}%` }}
+                                                        >
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+                                                        </div>
+                                                        <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
+                                                        <p className="text-xs text-gray-500">{data.bookings}</p>
+                                                    </div>
+                                                ));
+                                            })()}
                                         </div>
-                                    ))}
+                                    ) : (
+                                        // Line/Area Chart
+                                        <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
+                                            {(() => {
+                                                const maxBookings = Math.max(...bookingTrend.map(d => d.bookings));
+                                                const points = bookingTrend.map((data, index) => {
+                                                    const x = (index / (bookingTrend.length - 1)) * 400;
+                                                    const y = 256 - (data.bookings / maxBookings) * 200; // Leave some margin at top
+                                                    return `${x},${y}`;
+                                                }).join(' ');
+
+                                                return (
+                                                    <>
+                                                        {/* Area fill for area chart */}
+                                                        {bookingChartType === 'area' && (
+                                                            <polygon
+                                                                points={`0,256 ${points} 400,256`}
+                                                                fill="url(#bookingAreaGradient)"
+                                                                opacity="0.3"
+                                                            />
+                                                        )}
+
+                                                        {/* Line */}
+                                                        <polyline
+                                                            points={points}
+                                                            fill="none"
+                                                            stroke="#f02450ff"
+                                                            strokeWidth="3"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        />
+
+                                                        {/* Data points */}
+                                                        {bookingTrend.map((data, index) => {
+                                                            const x = (index / (bookingTrend.length - 1)) * 400;
+                                                            const y = 256 - (data.bookings / maxBookings) * 200;
+                                                            return (
+                                                                <circle
+                                                                    key={index}
+                                                                    cx={x}
+                                                                    cy={y}
+                                                                    r="6"
+                                                                    fill="#f02450ff"
+                                                                    className="hover:r-8 transition-all cursor-pointer"
+                                                                />
+                                                            );
+                                                        })}
+
+                                                        {/* Gradient definition */}
+                                                        <defs>
+                                                            <linearGradient id="bookingAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                <stop offset="0%" stopColor="#f02450ff" stopOpacity="0.8" />
+                                                                <stop offset="100%" stopColor="#f02450ff" stopOpacity="0.1" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                    </>
+                                                );
+                                            })()}
+                                        </svg>
+                                    )}
+
+                                    {/* Labels for line/area chart */}
+                                    {bookingChartType !== 'bar' && (
+                                        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2">
+                                            {bookingTrend.map((data, index) => (
+                                                <div key={index} className="text-center group relative">
+                                                    <p className="text-xs text-gray-600 font-medium">{data.label}</p>
+                                                    <p className="text-xs text-gray-500">{data.bookings}</p>
+
+                                                    {/* Hover Tooltip */}
+                                                    <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                        <div className="font-semibold">{data.bookings}</div>
+                                                        <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                            {Math.abs(data.growth)}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
