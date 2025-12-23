@@ -1424,7 +1424,7 @@ const ClientDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800">Revenue by Service</h3>
                                     <button
                                         onClick={() => setShowAllServicesModal(true)}
-                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors"
+                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors cursor-pointer"
                                     >
                                         View Details
                                     </button>
@@ -1465,7 +1465,7 @@ const ClientDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
                                     <button
                                         onClick={handleViewAllTransactions}
-                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors"
+                                        className="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors cursor-pointer"
                                     >
                                         View All
                                     </button>
@@ -2915,7 +2915,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => closeModal(setShowAllServicesModal)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3021,7 +3021,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowAllServicesModal)}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -3043,7 +3043,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => closeModal(setShowAllTransactionsModal)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3059,7 +3059,7 @@ const ClientDashboard = () => {
                                     <button
                                         onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
                                         disabled={transactionsPage === 1}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         Previous
                                     </button>
@@ -3069,7 +3069,7 @@ const ClientDashboard = () => {
                                     <button
                                         onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
                                         disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         Next
                                     </button>
@@ -3105,7 +3105,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowAllTransactionsModal)}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
