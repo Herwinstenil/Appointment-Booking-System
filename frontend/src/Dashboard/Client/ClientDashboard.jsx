@@ -1824,7 +1824,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowNewBookingModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Plus size={16} />
                                     New Booking
@@ -1934,13 +1934,13 @@ const ClientDashboard = () => {
                                                             <>
                                                                 <button
                                                                     onClick={() => updateBookingStatus(booking.id, 'Confirmed')}
-                                                                    className="px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors"
+                                                                    className="px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors cursor-pointer"
                                                                 >
                                                                     Confirm
                                                                 </button>
                                                                 <button
                                                                     onClick={() => updateBookingStatus(booking.id, 'Cancelled')}
-                                                                    className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors"
+                                                                    className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
                                                                 >
                                                                     Cancel
                                                                 </button>
@@ -1948,14 +1948,14 @@ const ClientDashboard = () => {
                                                         )}
                                                         <button
                                                             onClick={() => handleViewBooking(booking)}
-                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                                                             title="View Booking Details"
                                                         >
                                                             <ViewIcon size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleEditBooking(booking)}
-                                                            className="p-1 text-gray-600 hover:text-gray-800 transition-colors"
+                                                            className="p-1 text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
                                                             title="Edit Booking"
                                                         >
                                                             <Edit size={16} />
@@ -3191,7 +3191,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => closeModal(setShowBookingModal)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3238,7 +3238,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowBookingModal)}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -3645,7 +3645,7 @@ const ClientDashboard = () => {
                                         });
                                         setBookingErrors({});
                                     }}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3815,13 +3815,13 @@ const ClientDashboard = () => {
                                         });
                                         setBookingErrors({});
                                     }}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleNewBookingSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Create Booking
                                 </button>
@@ -3843,7 +3843,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowEditBookingModal(false)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -4001,13 +4001,13 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => setShowEditBookingModal(false)}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleEditBookingSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Save Changes
                                 </button>
