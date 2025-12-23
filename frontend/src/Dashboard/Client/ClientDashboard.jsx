@@ -1142,7 +1142,7 @@ const ClientDashboard = () => {
                                         <button
                                             key={range}
                                             onClick={() => setTimeRange(range)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${timeRange === range
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 transform hover:scale-105 ${timeRange === range
                                                 ? 'bg-emerald-500 text-white shadow-lg'
                                                 : 'text-gray-600 hover:text-emerald-600'
                                                 }`}
@@ -1153,7 +1153,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={exportDashboardToPDF}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
                                 >
                                     <Download size={16} />
                                     Export Report
@@ -1241,7 +1241,7 @@ const ClientDashboard = () => {
                                         <div className="relative">
                                             <button
                                                 onClick={() => setShowChartMenu(!showChartMenu)}
-                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                                             >
                                                 <MoreVertical size={16} />
                                             </button>
@@ -1256,7 +1256,7 @@ const ClientDashboard = () => {
                                                     <div className="py-1">
                                                         <button
                                                             onClick={() => handleChartTypeChange('area')}
-                                                            className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
                                                         >
                                                             <Activity size={16} className="mr-3" />
                                                             Area Chart
@@ -1266,7 +1266,7 @@ const ClientDashboard = () => {
                                                     <div className="border-t border-gray-100 py-1">
                                                         <button
                                                             onClick={handleFullScreen}
-                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                                                         >
                                                             <Eye size={16} className="mr-3" />
                                                             {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
