@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
@@ -192,8 +192,8 @@ const AdminDashboard = () => {
         const labels = [];
 
         switch (range) {
-             case 'daily':
-           // Current week from Monday to Sunday
+            case 'daily':
+                // Current week from Monday to Sunday
                 const monday = new Date(now);
                 monday.setDate(now.getDate() - now.getDay() + 1); // Monday of current week
                 for (let i = 0; i < 7; i++) {
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                     labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
                 }
                 break;
-             case 'weekly':
+            case 'weekly':
                 // Weeks 1-4 of current month
                 labels.push('Week 1', 'Week 2', 'Week 3', 'Week 4');
                 break;
@@ -214,7 +214,7 @@ const AdminDashboard = () => {
                     labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
                 }
                 break;
-             case 'yearly':
+            case 'yearly':
                 // Last 5 years
                 for (let i = 4; i >= 0; i--) {
                     const year = now.getFullYear() - i;
@@ -282,9 +282,9 @@ const AdminDashboard = () => {
         return data;
     };
 
-    // Dynamic data based on time range
-    const revenueTrend = getRevenueTrend(timeRange);
-    const bookingTrend = getBookingTrend(timeRange);
+    // Dynamic data based on time range - memoized to prevent unnecessary recalculations
+    const revenueTrend = React.useMemo(() => getRevenueTrend(timeRange), [timeRange]);
+    const bookingTrend = React.useMemo(() => getBookingTrend(timeRange), [timeRange]);
 
     // Revenue Dashboard Data (dynamic based on time range)
     const getRevenueMetrics = (range) => {
