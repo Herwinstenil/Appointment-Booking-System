@@ -2975,7 +2975,7 @@ const AdminDashboard = () => {
                         {/* Charts Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                             {/* Booking Trend */}
-                            <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 ${isBookingFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
+                            <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isBookingFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Booking Trend</h3>
                                     <div className="flex items-center gap-4">
@@ -3137,11 +3137,11 @@ const AdminDashboard = () => {
                             </div>
 
                             {/* Popular Services */}
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <h3 className="text-xl font-bold text-gray-800 mb-6">Popular Services</h3>
                                 <div className="space-y-4">
                                     {filteredPopularServices.map((service, index) => (
-                                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300">
+                                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                                     {index + 1}
@@ -3503,7 +3503,7 @@ const AdminDashboard = () => {
                                 {activeTab === 'personal' && (
                                     <div className="space-y-6">
                                         {/* Personal Information */}
-                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                                                 <User className="text-rose-500" size={24} />
                                                 Personal Information
@@ -3732,7 +3732,7 @@ const AdminDashboard = () => {
                             {/* Sidebar */}
                             <div className="space-y-6">
                                 {/* Quick Actions */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
@@ -3756,7 +3756,7 @@ const AdminDashboard = () => {
                                 </div>
 
                                 {/* Account Stats */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Account Stats</h3>
                                     <div className="space-y-4">
                                         {[
@@ -3767,7 +3767,7 @@ const AdminDashboard = () => {
                                         ].map((stat, index) => {
                                             const StatIcon = stat.icon;
                                             return (
-                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-rose-50 transition-all duration-300">
+                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group">
                                                     <div className="flex items-center gap-3">
                                                         <StatIcon size={18} className="text-rose-500" />
                                                         <span className="text-gray-700 group-hover:text-rose-700">{stat.label}</span>
