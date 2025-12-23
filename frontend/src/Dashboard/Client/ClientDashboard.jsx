@@ -2734,7 +2734,7 @@ const ClientDashboard = () => {
                                     setActiveItem(item.name);
                                     setSidebarOpen(false);
                                 }}
-                                className={`w-full flex items-center px-4 py-3 mb-2 text-left rounded-lg transition-all duration-200 transform hover:scale-105 ${activeItem === item.name ? 'bg-white text-emerald-700 shadow-lg font-medium' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                                className={`w-full flex items-center px-4 py-3 mb-2 cursor-pointer text-left rounded-lg transition-all duration-200 transform hover:scale-105 ${activeItem === item.name ? 'bg-white text-emerald-700 shadow-lg font-medium' : 'text-white/80 hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 <Icon size={20} className="mr-3" />
@@ -2846,7 +2846,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => closeModal(setShowServiceDetailsModal)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -2893,7 +2893,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowServiceDetailsModal)}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
@@ -3338,7 +3338,7 @@ const ClientDashboard = () => {
                                             status: 'Active'
                                         });
                                     }}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3462,13 +3462,13 @@ const ClientDashboard = () => {
                                             status: 'Active'
                                         });
                                     }}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleAddServiceSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Add Service
                                 </button>
@@ -3490,7 +3490,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowEditServiceModal(false)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3605,13 +3605,13 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => setShowEditServiceModal(false)}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleEditServiceSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Save Changes
                                 </button>
