@@ -2122,7 +2122,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowAddClientModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <UserPlus size={16} />
                                     Add Client
@@ -2191,7 +2191,7 @@ const ClientDashboard = () => {
                                                     type="checkbox"
                                                     checked={selectedUsers.length === users.length && users.length > 0}
                                                     onChange={handleSelectAll}
-                                                    className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                                                    className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
                                                 />
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
@@ -2210,7 +2210,7 @@ const ClientDashboard = () => {
                                                         type="checkbox"
                                                         checked={selectedUsers.includes(user.id)}
                                                         onChange={() => handleUserSelect(user.id)}
-                                                        className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                                                        className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -2242,21 +2242,21 @@ const ClientDashboard = () => {
                                                     <div className="flex items-center space-x-2">
                                                         <button
                                                             onClick={() => handleViewUser(user)}
-                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                                                             title="View User Details"
                                                         >
                                                             <ViewIcon size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleEditUser(user)}
-                                                            className="p-1 text-emerald-600 hover:text-emerald-800 transition-colors"
+                                                            className="p-1 text-emerald-600 hover:text-emerald-800 transition-colors cursor-pointer"
                                                             title="Edit User"
                                                         >
                                                             <Edit size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteUser(user.id)}
-                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                                                             title="Delete User"
                                                         >
                                                             <Trash2 size={16} />
