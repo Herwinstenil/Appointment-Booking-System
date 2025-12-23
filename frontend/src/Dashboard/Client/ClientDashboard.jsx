@@ -1690,7 +1690,7 @@ const ClientDashboard = () => {
                             </div>
                             <button
                                 onClick={handleSaveAvailability}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0"
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0 cursor-pointer"
                             >
                                 <Save size={16} />
                                 Save Changes
@@ -1755,7 +1755,7 @@ const ClientDashboard = () => {
                                             <span className="font-medium text-gray-800 capitalize">{day}</span>
                                             <button
                                                 onClick={() => toggleDayAvailability(day)}
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${schedule.enabled ? 'bg-emerald-500' : 'bg-gray-300'
+                                                className={`relative inline-flex h-5 w-9 cursor-pointer items-center rounded-full transition-colors ${schedule.enabled ? 'bg-emerald-500' : 'bg-gray-300'
                                                     }`}
                                             >
                                                 <span
@@ -1787,7 +1787,7 @@ const ClientDashboard = () => {
                                     <button
                                         key={slot.id}
                                         onClick={() => toggleTimeSlot(slot.id)}
-                                        className={`p-4 rounded-xl text-center transition-all duration-300 transform hover:scale-105 ${slot.available
+                                        className={`p-4 rounded-xl cursor-pointer text-center transition-all duration-300 transform hover:scale-105 ${slot.available
                                             ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-200'
                                             : 'bg-red-100 text-red-700 border-2 border-red-300 hover:bg-red-200'
                                             }`}
