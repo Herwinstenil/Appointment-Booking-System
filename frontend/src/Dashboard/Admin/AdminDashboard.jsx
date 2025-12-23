@@ -194,35 +194,29 @@ const AdminDashboard = () => {
         const labels = [];
 
         switch (range) {
-            case 'daily':
-                // Last 7 days
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() - i);
+             case 'daily':
+           // Current week from Monday to Sunday
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - now.getDay() + 1); // Monday of current week
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(monday);
+                    date.setDate(monday.getDate() + i);
                     labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
                 }
                 break;
-            case 'weekly':
-                // Last 4 weeks
-                for (let i = 3; i >= 0; i--) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() - (i * 7));
-                    const weekStart = new Date(date);
-                    weekStart.setDate(date.getDate() - date.getDay());
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-                    labels.push(`W${Math.ceil((now - weekStart) / (7 * 24 * 60 * 60 * 1000)) - i}`);
-                }
+             case 'weekly':
+                // Weeks 1-4 of current month
+                labels.push('Week 1', 'Week 2', 'Week 3', 'Week 4');
                 break;
             case 'monthly':
-                // Last 12 months
+                // Last 7 months
                 for (let i = 11; i >= 0; i--) {
                     const date = new Date(now);
                     date.setMonth(now.getMonth() - i);
                     labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
                 }
                 break;
-            case 'yearly':
+             case 'yearly':
                 // Last 5 years
                 for (let i = 4; i >= 0; i--) {
                     const year = now.getFullYear() - i;
