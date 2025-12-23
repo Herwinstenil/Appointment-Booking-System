@@ -1555,7 +1555,7 @@ const ClientDashboard = () => {
                             </div>
                             <button
                                 onClick={() => setShowAddServiceModal(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0"
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 mt-4 lg:mt-0 cursor-pointer"
                             >
                                 <Plus size={16} />
                                 Add New Service
@@ -1613,7 +1613,7 @@ const ClientDashboard = () => {
                                             <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
                                             <button
                                                 onClick={() => toggleServiceStatus(service.id)}
-                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
+                                                className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
                                                     }`}
                                             >
                                                 <span
@@ -1651,21 +1651,21 @@ const ClientDashboard = () => {
                                         <div className="mt-4 flex items-center space-x-2">
                                             <button
                                                 onClick={() => handleEditService(service)}
-                                                className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm"
+                                                className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm cursor-pointer"
                                             >
                                                 <Edit size={14} className="inline mr-1" />
                                                 Edit
                                             </button>
                                             <button
                                                 onClick={() => handleViewServiceDetails(service)}
-                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm cursor-pointer"
                                             >
                                                 <ViewIcon size={14} className="inline mr-1" />
                                                 View
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteService(service.id)}
-                                                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                                                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer"
                                             >
                                                 <Trash2 size={14} className="inline mr-1" />
                                                 Delete
