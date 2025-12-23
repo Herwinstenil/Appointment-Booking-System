@@ -3390,7 +3390,7 @@ const AdminDashboard = () => {
                                                     <select
                                                         value={securitySettings.sessionTimeout}
                                                         onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
                                                     >
                                                         <option value="15">15 minutes</option>
                                                         <option value="30">30 minutes</option>
@@ -3403,7 +3403,7 @@ const AdminDashboard = () => {
                                                     <select
                                                         value={securitySettings.passwordExpiry}
                                                         onChange={(e) => handleSecurityChange('passwordExpiry', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
                                                     >
                                                         <option value="30">30 days</option>
                                                         <option value="60">60 days</option>
@@ -3413,7 +3413,7 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
 
-                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-[1.02]">
+                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer">
                                                 <Key size={20} />
                                                 Change Password
                                             </button>
