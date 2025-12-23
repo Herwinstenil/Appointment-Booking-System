@@ -2376,7 +2376,7 @@ const AdminDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
                                             Revenue
                                         </div>
                                         <div className="relative">
@@ -2397,7 +2397,7 @@ const AdminDashboard = () => {
                                                     <div className="py-1">
                                                         <button
                                                             onClick={() => setChartType('area')}
-                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
                                                         >
                                                             <Activity size={16} className="mr-3" />
                                                             Area Chart
@@ -2434,10 +2434,10 @@ const AdminDashboard = () => {
                                                 return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
-                                                            className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
+                                                            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
                                                             style={{ height: `${Math.max((data.revenue / maxRevenue) * 100, 5)}%` }}
                                                         >
-                                                            <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
                                                         </div>
                                                         <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
                                                         <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
@@ -2471,7 +2471,7 @@ const AdminDashboard = () => {
                                                         <polyline
                                                             points={points}
                                                             fill="none"
-                                                            stroke="#10b981"
+                                                            stroke="#f02450ff"
                                                             strokeWidth="3"
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
@@ -2487,7 +2487,7 @@ const AdminDashboard = () => {
                                                                     cx={x}
                                                                     cy={y}
                                                                     r="6"
-                                                                    fill="#10b981"
+                                                                    fill="#f02450ff"
                                                                     className="hover:r-8 transition-all cursor-pointer"
                                                                 />
                                                             );
@@ -2496,8 +2496,8 @@ const AdminDashboard = () => {
                                                         {/* Gradient definition */}
                                                         <defs>
                                                             <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                                <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-                                                                <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+                                                                <stop offset="0%" stopColor="#f02450ff" stopOpacity="0.8" />
+                                                                <stop offset="100%" stopColor="#f02450ff" stopOpacity="0.1" />
                                                             </linearGradient>
                                                         </defs>
                                                     </>
