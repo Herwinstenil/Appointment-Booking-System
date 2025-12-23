@@ -2406,7 +2406,10 @@ const AdminDashboard = () => {
 
                                                     <div className="border-t border-gray-100 py-1">
                                                         <button
-                                                            onClick={() => setIsFullScreen(!isFullScreen)}
+                                                            onClick={() => {
+                                                                setIsFullScreen(!isFullScreen);
+                                                                setShowChartMenu(false);
+                                                            }}
                                                             className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                                                         >
                                                             <Eye size={16} className="mr-3" />
