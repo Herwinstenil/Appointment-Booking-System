@@ -3000,25 +3000,11 @@ const AdminDashboard = () => {
 
                                                     <div className="py-1">
                                                         <button
-                                                            onClick={() => setBookingChartType('bar')}
-                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'bar' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
-                                                        >
-                                                            <BarChart3 size={16} className="mr-3" />
-                                                            Bar Chart
-                                                        </button>
-                                                        <button
                                                             onClick={() => setBookingChartType('area')}
                                                             className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'area' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
                                                         >
                                                             <Activity size={16} className="mr-3" />
                                                             Area Chart
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setBookingChartType('line')}
-                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${bookingChartType === 'line' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
-                                                        >
-                                                            <TrendingUp size={16} className="mr-3" />
-                                                            Line Chart
                                                         </button>
                                                     </div>
 
