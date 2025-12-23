@@ -2403,7 +2403,7 @@ const ClientDashboard = () => {
                                 {activeTab === 'personal' && (
                                     <div className="space-y-6">
                                         {/* Personal Information */}
-                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                                                 <User className="text-emerald-500" size={24} />
                                                 Personal Information
@@ -2656,7 +2656,7 @@ const ClientDashboard = () => {
                             {/* Sidebar */}
                             <div className="space-y-6">
                                 {/* Quick Actions */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
@@ -2680,7 +2680,7 @@ const ClientDashboard = () => {
                                 </div>
 
                                 {/* Business Stats */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:scale-105 group">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Business Stats</h3>
                                     <div className="space-y-4">
                                         {[
@@ -2691,7 +2691,7 @@ const ClientDashboard = () => {
                                         ].map((stat, index) => {
                                             const StatIcon = stat.icon;
                                             return (
-                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-emerald-50 transition-all duration-300">
+                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-emerald-50 transition-all duration-300 transform hover:-translate-y-1">
                                                     <div className="flex items-center gap-3">
                                                         <StatIcon size={18} className="text-emerald-500" />
                                                         <span className="text-gray-700 group-hover:text-emerald-700">{stat.label}</span>
