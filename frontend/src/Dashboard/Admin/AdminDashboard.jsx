@@ -2537,7 +2537,6 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-
                             {/* Performance Metrics */}
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <h3 className="text-xl font-bold text-gray-800 mb-6">System Performance</h3>
@@ -2974,7 +2973,7 @@ const AdminDashboard = () => {
                             {/* Booking Trend */}
                             <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 ${isBookingFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Weekly Booking Trend</h3>
+                                    <h3 className="text-xl font-bold text-gray-800">Booking Trend</h3>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
