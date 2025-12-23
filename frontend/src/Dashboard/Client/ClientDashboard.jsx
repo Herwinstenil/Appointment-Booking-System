@@ -2295,14 +2295,14 @@ const ClientDashboard = () => {
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500"
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer"
                                         >
                                             <XCircle size={20} />
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25"
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 cursor-pointer"
                                         >
                                             <Save size={20} />
                                             Save Changes
@@ -2311,7 +2311,7 @@ const ClientDashboard = () => {
                                 ) : (
                                     <button
                                         onClick={handleStartEditing}
-                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25"
+                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 cursor-pointer"
                                     >
                                         <Edit3 size={20} />
                                         Edit Profile
@@ -2384,7 +2384,7 @@ const ClientDashboard = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
+                                        className={`flex items-center gap-2 px-6 py-3 cursor-pointer rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeTab === tab.id
                                             ? 'bg-white text-emerald-600 shadow-lg'
                                             : 'text-gray-600 hover:text-emerald-600'
                                             }`}
@@ -2539,7 +2539,7 @@ const ClientDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleNotificationChange(key)}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${value
+                                                        className={`relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${value
                                                             ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
                                                             : 'bg-gray-300'
                                                             }`}
@@ -2574,7 +2574,7 @@ const ClientDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleSecurityChange(item.key, !securitySettings[item.key])}
-                                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${securitySettings[item.key]
+                                                        className={`relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${securitySettings[item.key]
                                                             ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
                                                             : 'bg-gray-300'
                                                             }`}
@@ -2593,7 +2593,7 @@ const ClientDashboard = () => {
                                                     <select
                                                         value={securitySettings.sessionTimeout}
                                                         onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 cursor-pointer"
                                                     >
                                                         <option value="15">15 minutes</option>
                                                         <option value="30">30 minutes</option>
@@ -2606,7 +2606,7 @@ const ClientDashboard = () => {
                                                     <select
                                                         value={securitySettings.passwordExpiry}
                                                         onChange={(e) => handleSecurityChange('passwordExpiry', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
+                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 cursor-pointer"
                                                     >
                                                         <option value="30">30 days</option>
                                                         <option value="60">60 days</option>
@@ -2616,7 +2616,7 @@ const ClientDashboard = () => {
                                                 </div>
                                             </div>
 
-                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 transform hover:scale-[1.02]">
+                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 transform hover:scale-[1.02] cursor-pointer">
                                                 <Key size={20} />
                                                 Change Password
                                             </button>
