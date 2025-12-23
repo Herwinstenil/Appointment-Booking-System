@@ -2074,19 +2074,19 @@ const ClientDashboard = () => {
                                             <div className="flex flex-col gap-2 mt-4 lg:mt-0 lg:ml-6">
                                                 <button
                                                     onClick={() => handleRequestAction(request.id, 'Approved')}
-                                                    className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors transform hover:scale-105"
+                                                    className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors transform hover:scale-105 cursor-pointer"
                                                 >
                                                     Approve
                                                 </button>
                                                 <button
                                                     onClick={() => handleRequestAction(request.id, 'Declined')}
-                                                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105"
+                                                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105 cursor-pointer"
                                                 >
                                                     Decline
                                                 </button>
                                                 <button
                                                     onClick={() => handleViewRequest(request)}
-                                                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors transform hover:scale-105"
+                                                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors transform hover:scale-105 cursor-pointer"
                                                 >
                                                     View Details
                                                 </button>
@@ -3260,7 +3260,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => closeModal(setShowRequestModal)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
                                 </button>
@@ -3307,7 +3307,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowRequestModal)}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
                                 </button>
