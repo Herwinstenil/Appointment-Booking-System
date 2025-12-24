@@ -3792,7 +3792,7 @@ const AdminDashboard = () => {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-rose-600 to-pink-700 shadow-2xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
                 <div className="flex items-center justify-between p-6 border-b border-white/20">
-                    <h1 className="text-xl font-bold text-white tracking-tight">Admin Dashboard</h1>
+                    <h1 className="text-xl font-bold text-white tracking-tight">Admin Panel</h1>
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="lg:hidden p-1 rounded-md hover:bg-white/20 text-white transition-colors duration-200"

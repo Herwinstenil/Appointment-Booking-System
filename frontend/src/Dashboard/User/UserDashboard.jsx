@@ -1219,7 +1219,7 @@ const UserDashboard = () => {
                     >
                         <Home className="w-5 h-5" />
                     </button>
-                    <h1 className="text-xl font-bold text-white tracking-tight">User Dashboard</h1>
+                    <h1 className="text-xl font-bold text-white tracking-tight">User Panel</h1>
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="lg:hidden p-1 rounded-md hover:bg-white/20 text-white transition-colors duration-200"
