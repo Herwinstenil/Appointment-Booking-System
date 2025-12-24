@@ -170,6 +170,10 @@ const AdminDashboard = () => {
     const [showSystemDetailsModal, setShowSystemDetailsModal] = useState(false);
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
 
+    // Revenue Dashboard Modal State
+    const [showRevenueDetailsModal, setShowRevenueDetailsModal] = useState(false);
+    const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
+
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
@@ -433,6 +437,19 @@ const AdminDashboard = () => {
         // Open all activities modal
         console.log('Viewing all activities...');
         setShowAllActivitiesModal(true);
+    };
+
+    // Revenue Dashboard handlers
+    const handleViewRevenueDetails = () => {
+        // Open revenue details modal
+        console.log('Viewing revenue details...');
+        setShowRevenueDetailsModal(true);
+    };
+
+    const handleViewAllTransactions = () => {
+        // Open all transactions modal
+        console.log('Viewing all transactions...');
+        setShowAllTransactionsModal(true);
     };
 
     const handleNotificationChange = (key) => {
@@ -2127,6 +2144,255 @@ const AdminDashboard = () => {
                                 >
                                     <Download size={18} className="inline mr-2" />
                                     Export Log
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Revenue Details Modal Component
+    const RevenueDetailsModal = () => {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Revenue Details</h3>
+                                <p className="text-gray-600 mt-1">Detailed breakdown of revenue by category</p>
+                            </div>
+                            <button
+                                onClick={() => setShowRevenueDetailsModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Revenue Breakdown */}
+                        <div className="space-y-6">
+                            {revenueByCategory.map((category, index) => (
+                                <div key={index} className="bg-gray-50 p-6 rounded-2xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 ${category.color} rounded-xl flex items-center justify-center text-white font-bold text-lg`}>
+                                                {category.percentage}%
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xl font-bold text-gray-800">{category.category}</h4>
+                                                <p className="text-gray-600">Revenue breakdown and growth metrics</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-3xl font-bold text-rose-600">${category.amount.toLocaleString()}</p>
+                                            <div className={`flex items-center gap-1 text-sm font-medium ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {category.growth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                {category.growth}% growth
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Detailed Metrics */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-white p-4 rounded-xl">
+                                            <p className="text-sm text-gray-600">Monthly Average</p>
+                                            <p className="text-lg font-bold text-gray-900">${Math.round(category.amount / 12).toLocaleString()}</p>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-xl">
+                                            <p className="text-sm text-gray-600">Top Service</p>
+                                            <p className="text-lg font-bold text-gray-900">Premium Support</p>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-xl">
+                                            <p className="text-sm text-gray-600">Client Count</p>
+                                            <p className="text-lg font-bold text-gray-900">{Math.round(category.amount / 1000)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Summary */}
+                        <div className="mt-8 bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-2xl border border-rose-100">
+                            <h4 className="text-lg font-bold text-gray-800 mb-4">Revenue Summary</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Revenue</p>
+                                    <p className="text-2xl font-bold text-rose-600">${revenueMetrics.totalRevenue.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Growth Rate</p>
+                                    <p className="text-2xl font-bold text-green-600">+{revenueMetrics.growthPercentage}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-end space-x-3">
+                            <button
+                                onClick={() => setShowRevenueDetailsModal(false)}
+                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // All Transactions Modal Component
+    const AllTransactionsModal = () => {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">All Transactions</h3>
+                                <p className="text-gray-600 mt-1">Complete list of all revenue transactions</p>
+                            </div>
+                            <button
+                                onClick={() => setShowAllTransactionsModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Filters */}
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
+                                    <option value="all">All Transactions</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Date Range:</span>
+                                <input
+                                    type="date"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                />
+                                <span className="text-gray-500">to</span>
+                                <input
+                                    type="date"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Transactions Table */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
+                                    <span className="text-sm text-gray-600">{filteredRecentTransactions.length} transactions found</span>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredRecentTransactions.map((transaction) => (
+                                            <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                            {transaction.avatar}
+                                                        </div>
+                                                        <div className="ml-3">
+                                                            <div className="text-sm font-medium text-gray-900">{transaction.client}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
+                                                <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.date}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : transaction.status === 'pending'
+                                                            ? 'bg-amber-100 text-amber-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {transaction.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                                                        <ViewIcon size={16} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="flex items-center justify-between mt-6">
+                            <div className="text-sm text-gray-600">
+                                Showing 1 to {filteredRecentTransactions.length} of {filteredRecentTransactions.length} transactions
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                    Previous
+                                </button>
+                                <button className="px-3 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors cursor-pointer">
+                                    1
+                                </button>
+                                <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Total: ${filteredRecentTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowAllTransactionsModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <Download size={18} className="inline mr-2" />
+                                    Export Transactions
                                 </button>
                             </div>
                         </div>
