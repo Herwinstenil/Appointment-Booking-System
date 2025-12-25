@@ -170,10 +170,6 @@ const AdminDashboard = () => {
     const [showSystemDetailsModal, setShowSystemDetailsModal] = useState(false);
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
 
-    // Revenue Dashboard Modal State
-    const [showRevenueDetailsModal, setShowRevenueDetailsModal] = useState(false);
-    const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
-
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
