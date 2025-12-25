@@ -439,19 +439,6 @@ const AdminDashboard = () => {
         setShowAllActivitiesModal(true);
     };
 
-    // Revenue Dashboard handlers
-    const handleViewRevenueDetails = () => {
-        // Open revenue details modal
-        console.log('Viewing revenue details...');
-        setShowRevenueDetailsModal(true);
-    };
-
-    const handleViewAllTransactions = () => {
-        // Open all transactions modal
-        console.log('Viewing all transactions...');
-        setShowAllTransactionsModal(true);
-    };
-
     const handleNotificationChange = (key) => {
         setNotifications(prev => ({
             ...prev,
