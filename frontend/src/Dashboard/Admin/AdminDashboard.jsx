@@ -2140,7 +2140,6 @@ const AdminDashboard = () => {
         );
     };
 
-
     // Revenue Details Modal Component
     const RevenueDetailsModal = () => {
         return (
