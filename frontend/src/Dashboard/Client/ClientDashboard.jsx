@@ -3076,33 +3076,33 @@ const ClientDashboard = () => {
                             </div>
                         </div>
 
-                         {/* Pagination Info */}
-                            <div className="flex items-center justify-between mb-6 p-6">
-                                <div className="text-sm text-gray-600">
-                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={transactionsPage === 1}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        Previous
-                                    </button>
-                                    <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
-                                        {transactionsPage}
-                                    </span>
-                                    <button
-                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
-                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
+                        {/* Pagination Info */}
+                        <div className="flex items-center justify-between mb-6 p-6">
+                            <div className="text-sm text-gray-600">
+                                Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
                             </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={transactionsPage === 1}
+                                    className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
+                                    {transactionsPage}
+                                </span>
+                                <button
+                                    onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
+                                    disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
+                                    className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                             <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500">
                                 Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
                             </div>
                             <div className="flex items-center justify-end space-x-3">
@@ -3112,12 +3112,12 @@ const ClientDashboard = () => {
                                 >
                                     Close
                                 </button>
-                                 <button
-                                                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                                                >
-                                                                    <Download size={18} className="inline mr-2" />
-                                                                    Export Transactions
-                                                                </button>
+                                <button
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <Download size={18} className="inline mr-2" />
+                                    Export Transactions
+                                </button>
                             </div>
                         </div>
                     </div>
