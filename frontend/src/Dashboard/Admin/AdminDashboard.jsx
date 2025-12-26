@@ -3599,7 +3599,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Recent Transactions</h3>
                                     <button
-                                        onClick={() => setShowRevenueDetailsModal(true)}
+                                        onClick={() => setShowAllTransactionsModal(true)}
                                         className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
                                     >
                                         View All
