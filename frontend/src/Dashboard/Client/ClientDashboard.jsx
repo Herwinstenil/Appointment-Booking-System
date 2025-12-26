@@ -3164,24 +3164,24 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
                             <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                                 <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-500 mb-4">
-                                    Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
-                                </div>
-                                <div className="flex items-center justify-end space-x-3">
-                                    <button
-                                        onClick={() => closeModal(setShowAllTransactionsModal)}
-                                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
-                                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                    >
-                                        <Download size={18} className="inline mr-2" />
-                                        Export Transactions
-                                    </button>
-                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="text-sm text-gray-500 mb-4">
+                                        Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                                    </div>
+                                    <div className="flex items-center justify-end space-x-3">
+                                        <button
+                                            onClick={() => closeModal(setShowAllTransactionsModal)}
+                                            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                        >
+                                            Close
+                                        </button>
+                                        <button
+                                            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                        >
+                                            <Download size={18} className="inline mr-2" />
+                                            Export Transactions
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
