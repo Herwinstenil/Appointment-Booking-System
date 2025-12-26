@@ -4188,7 +4188,7 @@ const AdminDashboard = () => {
             {/* Revenue Details Modal */}
             {showRevenueDetailsModal && <RevenueDetailsModal />}
 
-            {/* System Details Modal */}
+            {/* Revenue Transactions Modal */}
             {showSystemDetailsModal && <SystemDetailsModal />}
 
             {/* Overlay for mobile */}
