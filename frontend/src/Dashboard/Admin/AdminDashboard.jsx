@@ -4186,7 +4186,7 @@ const AdminDashboard = () => {
             {showAllActivitiesModal && <AllActivitiesModal />}
 
             {/* System Details Modal */}
-            {showSystemDetailsModal && <SystemDetailsModal />}
+            {showRevenueDetailsModal && <RevenueDetailsModal />}
 
             {/* System Details Modal */}
             {showSystemDetailsModal && <SystemDetailsModal />}
