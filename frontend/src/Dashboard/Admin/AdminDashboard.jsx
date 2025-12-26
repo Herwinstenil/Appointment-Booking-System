@@ -4185,6 +4185,12 @@ const AdminDashboard = () => {
             {/* All Activities Modal */}
             {showAllActivitiesModal && <AllActivitiesModal />}
 
+            {/* System Details Modal */}
+            {showSystemDetailsModal && <SystemDetailsModal />}
+
+            {/* System Details Modal */}
+            {showSystemDetailsModal && <SystemDetailsModal />}
+
             {/* Overlay for mobile */}
             {sidebarOpen && (
                 <div
