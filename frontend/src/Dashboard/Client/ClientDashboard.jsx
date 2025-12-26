@@ -3030,6 +3030,7 @@ const ClientDashboard = () => {
                     </div>
                 </div>
             )}
+
             {/* All Transactions Modal */}
             {showAllTransactionsModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
@@ -3076,14 +3077,11 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Removed the duplicate display - keeping only the table */}
-
                             {/* Transactions Table */}
                             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6">
                                 <div className="px-6 py-4 border-b border-gray-200">
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
-                                        {/* Fixed: Use allTransactions instead of filteredRecentTransactions */}
                                         <span className="text-sm text-gray-600">
                                             {allTransactions.length} transactions found
                                         </span>
@@ -3107,7 +3105,7 @@ const ClientDashboard = () => {
                                                 <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center">
-                                                            <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                                                                 {transaction.avatar}
                                                             </div>
                                                             <div className="ml-3">
@@ -3116,7 +3114,7 @@ const ClientDashboard = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
-                                                    <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
+                                                    <td className="px-6 py-4 text-sm font-semibold text-emerald-600">${transaction.amount}</td>
                                                     <td className="px-6 py-4 text-sm text-gray-900">{transaction.date}</td>
                                                     <td className="px-6 py-4">
                                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
