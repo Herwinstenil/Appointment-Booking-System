@@ -4189,7 +4189,7 @@ const AdminDashboard = () => {
             {showRevenueDetailsModal && <RevenueDetailsModal />}
 
             {/* Revenue Transactions Modal */}
-            {showSystemDetailsModal && <SystemDetailsModal />}
+            {showAllTransactionsModal && <AllTransactionsModal />}
 
             {/* Overlay for mobile */}
             {sidebarOpen && (
