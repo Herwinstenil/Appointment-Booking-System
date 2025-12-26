@@ -3050,32 +3050,6 @@ const ClientDashboard = () => {
                             </div>
                         </div>
                         <div className="p-6">
-                            {/* Pagination Info */}
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="text-sm text-gray-600">
-                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={transactionsPage === 1}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        Previous
-                                    </button>
-                                    <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
-                                        {transactionsPage}
-                                    </span>
-                                    <button
-                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
-                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
-                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
-
                             <div className="space-y-4">
                                 {allTransactions.slice((transactionsPage - 1) * transactionsPerPage, transactionsPage * transactionsPerPage).map((transaction) => (
                                     <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-all duration-300">
@@ -3101,6 +3075,31 @@ const ClientDashboard = () => {
                                 ))}
                             </div>
                         </div>
+                         {/* Pagination Info */}
+                            <div className="flex items-center justify-between mb-6 p-6">
+                                <div className="text-sm text-gray-600">
+                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={transactionsPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
+                                        {transactionsPage}
+                                    </span>
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
+                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                             <div className="flex items-center justify-end space-x-3">
                                 <button
