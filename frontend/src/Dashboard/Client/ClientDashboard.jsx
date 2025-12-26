@@ -3075,6 +3075,7 @@ const ClientDashboard = () => {
                                 ))}
                             </div>
                         </div>
+
                          {/* Pagination Info */}
                             <div className="flex items-center justify-between mb-6 p-6">
                                 <div className="text-sm text-gray-600">
@@ -3101,6 +3102,9 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                             <div className="text-sm text-gray-500">
+                                Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                            </div>
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => closeModal(setShowAllTransactionsModal)}
