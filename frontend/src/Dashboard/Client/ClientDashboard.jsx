@@ -3030,164 +3030,164 @@ const ClientDashboard = () => {
                     </div>
                 </div>
             )}
-{/* All Transactions Modal */}
-{showAllTransactionsModal && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h3 className="text-2xl font-bold text-gray-900">All Transactions</h3>
-                        <p className="text-gray-600 mt-1">Complete transaction history with pagination</p>
-                    </div>
-                    <button
-                        onClick={() => closeModal(setShowAllTransactionsModal)}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                    >
-                        <X size={24} />
-                    </button>
-                </div>
-            </div>
+            {/* All Transactions Modal */}
+            {showAllTransactionsModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">All Transactions</h3>
+                                    <p className="text-gray-600 mt-1">Complete transaction history with pagination</p>
+                                </div>
+                                <button
+                                    onClick={() => closeModal(setShowAllTransactionsModal)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
 
-            {/* Modal Body */}
-            <div className="p-6">
-                {/* Filters */}
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
-                        <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
-                            <option value="all">All Transactions</option>
-                            <option value="completed">Completed</option>
-                            <option value="pending">Pending</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">Date Range:</span>
-                        <input
-                            type="date"
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                        />
-                        <span className="text-gray-500">to</span>
-                        <input
-                            type="date"
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                        />
-                    </div>
-                </div>
-                
-                {/* Removed the duplicate display - keeping only the table */}
+                        {/* Modal Body */}
+                        <div className="p-6">
+                            {/* Filters */}
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+                                    <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
+                                        <option value="all">All Transactions</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Date Range:</span>
+                                    <input
+                                        type="date"
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                    />
+                                    <span className="text-gray-500">to</span>
+                                    <input
+                                        type="date"
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                    />
+                                </div>
+                            </div>
 
-                {/* Transactions Table */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
-                            {/* Fixed: Use allTransactions instead of filteredRecentTransactions */}
-                            <span className="text-sm text-gray-600">
-                                {allTransactions.length} transactions found
-                            </span>
+                            {/* Removed the duplicate display - keeping only the table */}
+
+                            {/* Transactions Table */}
+                            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6">
+                                <div className="px-6 py-4 border-b border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
+                                        {/* Fixed: Use allTransactions instead of filteredRecentTransactions */}
+                                        <span className="text-sm text-gray-600">
+                                            {allTransactions.length} transactions found
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="bg-gray-50 border-b border-gray-200">
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {/* Fixed: Use allTransactions.slice() instead of filteredRecentTransactions */}
+                                            {allTransactions.slice((transactionsPage - 1) * transactionsPerPage, transactionsPage * transactionsPerPage).map((transaction) => (
+                                                <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center">
+                                                            <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                                {transaction.avatar}
+                                                            </div>
+                                                            <div className="ml-3">
+                                                                <div className="text-sm font-medium text-gray-900">{transaction.client}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
+                                                    <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">{transaction.date}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : transaction.status === 'pending'
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                            }`}>
+                                                            {transaction.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                                                            <ViewIcon size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Pagination Info */}
+                            <div className="flex items-center justify-between mb-6 p-6">
+                                <div className="text-sm text-gray-600">
+                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={transactionsPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
+                                        {transactionsPage}
+                                    </span>
+                                    <button
+                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
+                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
+                                        className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                                <div className="text-sm text-gray-500 mb-4">
+                                    Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                                </div>
+                                <div className="flex items-center justify-end space-x-3">
+                                    <button
+                                        onClick={() => closeModal(setShowAllTransactionsModal)}
+                                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    >
+                                        <Download size={18} className="inline mr-2" />
+                                        Export Transactions
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {/* Fixed: Use allTransactions.slice() instead of filteredRecentTransactions */}
-                                {allTransactions.slice((transactionsPage - 1) * transactionsPerPage, transactionsPage * transactionsPerPage).map((transaction) => (
-                                    <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center">
-                                                <div className="w-8 h-8 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                    {transaction.avatar}
-                                                </div>
-                                                <div className="ml-3">
-                                                    <div className="text-sm font-medium text-gray-900">{transaction.client}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">{transaction.date}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
-                                                ? 'bg-green-100 text-green-800'
-                                                : transaction.status === 'pending'
-                                                    ? 'bg-amber-100 text-amber-800'
-                                                    : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {transaction.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-                                                <ViewIcon size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
-
-                {/* Pagination Info */}
-                <div className="flex items-center justify-between mb-6 p-6">
-                    <div className="text-sm text-gray-600">
-                        Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setTransactionsPage(prev => Math.max(prev - 1, 1))}
-                            disabled={transactionsPage === 1}
-                            className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                            Previous
-                        </button>
-                        <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">
-                            {transactionsPage}
-                        </span>
-                        <button
-                            onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
-                            disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
-                            className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                    <div className="text-sm text-gray-500 mb-4">
-                        Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
-                    </div>
-                    <div className="flex items-center justify-end space-x-3">
-                        <button
-                            onClick={() => closeModal(setShowAllTransactionsModal)}
-                            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                        >
-                            Close
-                        </button>
-                        <button
-                            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                        >
-                            <Download size={18} className="inline mr-2" />
-                            Export Transactions
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-)}
+            )}
 
             {/* User Details Modal */}
             {showUserModal && selectedUser && (
