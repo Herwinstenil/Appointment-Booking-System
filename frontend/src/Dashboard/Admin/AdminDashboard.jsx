@@ -170,6 +170,10 @@ const AdminDashboard = () => {
     const [showSystemDetailsModal, setShowSystemDetailsModal] = useState(false);
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
 
+    // Revenue Dashboard Modal States
+    const [showRevenueDetailsModal, setShowRevenueDetailsModal] = useState(false);
+    const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
+
     // Service Category Management State
     const [services, setServices] = useState([
         { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
@@ -3303,7 +3307,10 @@ const AdminDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Revenue by Category</h3>
-                                    <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
+                                    <button
+                                        onClick={() => setShowRevenueDetailsModal(true)}
+                                        className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                                    >
                                         View Details
                                     </button>
                                 </div>
