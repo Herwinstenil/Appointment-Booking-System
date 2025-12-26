@@ -3164,6 +3164,7 @@ const ClientDashboard = () => {
                                 </div>
                             </div>
                             <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                                 <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-500 mb-4">
                                     Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
                                 </div>
@@ -3180,6 +3181,7 @@ const ClientDashboard = () => {
                                         <Download size={18} className="inline mr-2" />
                                         Export Transactions
                                     </button>
+                                </div>
                                 </div>
                             </div>
                         </div>
