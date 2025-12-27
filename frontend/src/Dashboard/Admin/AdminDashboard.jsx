@@ -22,6 +22,7 @@ import {
     Key,
     Mail,
     Phone,
+    Database,
     Calendar,
     Activity,
     Camera,
@@ -694,7 +695,42 @@ const AdminDashboard = () => {
             time: '4 days ago, 11:00 AM',
             status: 'completed',
             icon: FileText
-        }
+        },
+         {
+        id: 6,
+        action: 'Backed up database successfully',
+        time: '5 days ago, 10:00 PM',
+        status: 'success',
+        icon: Database
+    },
+    {
+        id: 7,
+        action: 'Scheduled system maintenance for next week',
+        time: '6 days ago, 2:30 PM',
+        status: 'scheduled',
+        icon: Calendar
+    },
+    {
+        id: 8,
+        action: 'Updated payment gateway settings',
+        time: '1 week ago, 4:15 PM',
+        status: 'modified',
+        icon: CreditCard
+    },
+    {
+        id: 9,
+        action: 'Added 5 new team members to the system',
+        time: '1 week ago, 11:45 AM',
+        status: 'created',
+        icon: Users
+    },
+    {
+        id: 10,
+        action: 'Resolved 15 pending support tickets',
+        time: '2 weeks ago, 3:00 PM',
+        status: 'completed',
+        icon: MessageSquare
+    }
     ];
 
     const getStatusColor = (status) => {
