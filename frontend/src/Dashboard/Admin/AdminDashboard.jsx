@@ -23,6 +23,10 @@ import {
     Mail,
     Phone,
     Database,
+    Zap, 
+    FileCheck, 
+    Send, 
+    Server, 
     Calendar,
     Activity,
     Camera,
@@ -730,7 +734,42 @@ const AdminDashboard = () => {
             time: '2 weeks ago, 3:00 PM',
             status: 'completed',
             icon: MessageSquare
-        }
+        },
+         {
+        id: 11,
+        action: 'System performance optimized',
+        time: '2 weeks ago, 9:30 AM',
+        status: 'success',
+        icon: Zap
+    },
+    {
+        id: 12,
+        action: 'Updated privacy policy document',
+        time: '2 weeks ago, 5:20 PM',
+        status: 'modified',
+        icon: FileCheck
+    },
+    {
+        id: 13,
+        action: 'Sent bulk email notification to 500 users',
+        time: '3 weeks ago, 10:00 AM',
+        status: 'completed',
+        icon: Send
+    },
+    {
+        id: 14,
+        action: 'Server downtime alert - resolved in 15 minutes',
+        time: '3 weeks ago, 1:45 AM',
+        status: 'alert',
+        icon: Server
+    },
+    {
+        id: 15,
+        action: 'Created new admin role "Support Manager"',
+        time: '1 month ago, 9:00 AM',
+        status: 'created',
+        icon: Shield
+    }
     ];
 
     const getStatusColor = (status) => {
