@@ -45,7 +45,10 @@ import {
     Clock4,
     Users,
     FolderOpen,
-    MessageSquare
+    MessageSquare,
+    ArrowUpRight,
+    ArrowDownRight,
+    BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../Context/AuthContext.jsx';
 
@@ -55,6 +58,11 @@ const UserDashboard = () => {
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    // Chart state
+    const [chartType, setChartType] = useState('bar');
+    const [showChartMenu, setShowChartMenu] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Profile state
     const [isEditing, setIsEditing] = useState(false);
@@ -141,6 +149,21 @@ const UserDashboard = () => {
         { month: 'Dec', amount: 1150, bookings: 6 },
         { month: 'Jan', amount: 1250, bookings: 7 }
     ];
+
+    // Transform monthly spending data for chart
+    const revenueTrend = monthlySpending.map((data, index) => {
+        let growth = 0;
+        if (index > 0) {
+            const prevAmount = monthlySpending[index - 1].amount;
+            growth = ((data.amount - prevAmount) / prevAmount) * 100;
+        }
+        return {
+            label: data.month,
+            revenue: data.amount,
+            growth: Math.round(growth * 100) / 100, // Round to 2 decimal places
+            bookings: data.bookings
+        };
+    });
 
     const recentActivities = [
         {
@@ -344,16 +367,67 @@ const UserDashboard = () => {
                         {/* Charts and Upcoming Appointments */}
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
                             {/* Monthly Spending Chart */}
-                            <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div className={`xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Monthly Spending</h3>
                                     <div className="flex items-center gap-4">
-                                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                                            <MoreVertical size={16} />
-                                        </button>
+                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                            <div className="w-3 h-3 bg-violet-600 rounded-full"></div>
+                                            Spending
+                                        </div>
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setShowChartMenu(!showChartMenu)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                <MoreVertical size={16} />
+                                            </button>
+
+                                            {/* Chart Menu Dropdown */}
+                                            {showChartMenu && (
+                                                <div className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
+                                                    <div className="px-4 py-2 border-b border-gray-100">
+                                                        <p className="text-sm font-semibold text-gray-800">Chart Options</p>
+                                                    </div>
+
+                                                    <div className="py-1">
+                                                        <button
+                                                            onClick={() => setChartType('bar')}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'bar' ? 'text-violet-600 bg-pink-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <BarChart3 size={16} className="mr-3" />
+                                                            Bar Chart
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="py-1">
+                                                        <button
+                                                            onClick={() => setChartType('area')}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-violet-600 bg-pink-50' : 'text-gray-700'}`}
+                                                        >
+                                                            <Activity size={16} className="mr-3" />
+                                                            Area Chart
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="border-t border-gray-100 py-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                setIsFullScreen(!isFullScreen);
+                                                                setShowChartMenu(false);
+                                                            }}
+                                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                        >
+                                                            <ViewIcon size={16} className="mr-3" />
+                                                            {isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="h-64 flex items-end justify-between space-x-2 relative">
+                                <div className="h-64 relative">
                                     {/* Grid Lines */}
                                     <div className="absolute inset-0 flex flex-col justify-between">
                                         {[0, 1, 2, 3, 4].map((i) => (
@@ -361,24 +435,106 @@ const UserDashboard = () => {
                                         ))}
                                     </div>
 
-                                    {monthlySpending.map((data, index) => (
-                                        <div key={index} className="flex-1 flex flex-col items-center group relative">
-                                            <div
-                                                className="w-full bg-gradient-to-t from-violet-500 to-fuchsia-500 rounded-t-lg transition-all duration-500 hover:from-violet-600 hover:to-fuchsia-600 cursor-pointer relative overflow-hidden"
-                                                style={{ height: `${(data.amount / 1300) * 100}%` }}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-2 font-medium">{data.month}</p>
-                                            <p className="text-xs text-gray-500">${data.amount}</p>
-
-                                            {/* Hover Tooltip */}
-                                            <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
-                                                <div className="font-semibold">${data.amount}</div>
-                                                <div className="text-xs text-gray-300">{data.bookings} bookings</div>
-                                            </div>
+                                    {chartType === 'bar' ? (
+                                        // Bar Chart
+                                        <div className="h-full flex items-end justify-between space-x-2">
+                                            {(() => {
+                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                return revenueTrend.map((data, index) => (
+                                                    <div key={index} className="flex-1 flex flex-col items-center group relative">
+                                                        <div
+                                                            className="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-t-lg transition-all duration-500 hover:from-violet-600 hover:to-fuchsia-600 cursor-pointer relative overflow-hidden"
+                                                            style={{ height: `${Math.max((data.revenue / maxRevenue) * 100, 5)}%` }}
+                                                        >
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+                                                        </div>
+                                                        <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
+                                                        <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
+                                                    </div>
+                                                ));
+                                            })()}
                                         </div>
-                                    ))}
+                                    ) : (
+                                        // Line/Area Chart
+                                        <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
+                                            {(() => {
+                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                const points = revenueTrend.map((data, index) => {
+                                                    const x = (index / (revenueTrend.length - 1)) * 400;
+                                                    const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
+                                                    return `${x},${y}`;
+                                                }).join(' ');
+
+                                                return (
+                                                    <>
+                                                        {/* Area fill for area chart */}
+                                                        {chartType === 'area' && (
+                                                            <polygon
+                                                                points={`0,256 ${points} 400,256`}
+                                                                fill="url(#areaGradient)"
+                                                                opacity="0.3"
+                                                            />
+                                                        )}
+
+                                                        {/* Line */}
+                                                        <polyline
+                                                            points={points}
+                                                            fill="none"
+                                                            stroke="#8b5cf6"
+                                                            strokeWidth="3"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        />
+
+                                                        {/* Data points */}
+                                                        {revenueTrend.map((data, index) => {
+                                                            const x = (index / (revenueTrend.length - 1)) * 400;
+                                                            const y = 256 - (data.revenue / maxRevenue) * 200;
+                                                            return (
+                                                                <circle
+                                                                    key={index}
+                                                                    cx={x}
+                                                                    cy={y}
+                                                                    r="6"
+                                                                    fill="#8b5cf6"
+                                                                    className="hover:r-8 transition-all cursor-pointer"
+                                                                />
+                                                            );
+                                                        })}
+
+                                                        {/* Gradient definition */}
+                                                        <defs>
+                                                            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.8" />
+                                                                <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.1" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                    </>
+                                                );
+                                            })()}
+                                        </svg>
+                                    )}
+
+                                    {/* Labels for line/area chart */}
+                                    {chartType !== 'bar' && (
+                                        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2">
+                                            {revenueTrend.map((data, index) => (
+                                                <div key={index} className="text-center group relative">
+                                                    <p className="text-xs text-gray-600 font-medium">{data.label}</p>
+                                                    <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
+
+                                                    {/* Hover Tooltip */}
+                                                    <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
+                                                        <div className="font-semibold">${data.revenue.toLocaleString()}</div>
+                                                        <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                            {Math.abs(data.growth)}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
