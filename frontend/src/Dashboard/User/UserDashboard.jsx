@@ -60,7 +60,7 @@ const UserDashboard = () => {
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
     // Chart state
-    const [chartType, setChartType] = useState('bar');
+    const [chartType, setChartType] = useState('area');
     const [showChartMenu, setShowChartMenu] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
 
