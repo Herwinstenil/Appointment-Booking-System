@@ -1134,7 +1134,7 @@ const AdminDashboard = () => {
                         <div className="flex items-center justify-end space-x-3">
                             <button
                                 onClick={handleCloseViewModal}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                className="px-6 py-3 border-2 border-gray-300 bg-gradient-to-r from-rose-500 to-pink-600  text-white rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                             >
                                 Close
                             </button>
