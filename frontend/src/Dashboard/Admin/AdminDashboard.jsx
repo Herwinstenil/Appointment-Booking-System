@@ -2175,7 +2175,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Pagination */}
-                        {totalPages > 1 && (
+                        {totalPages > 0 && (
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-gray-600">
                                     Showing {startIndex + 1} to {Math.min(startIndex + activitiesPerPage, filteredActivities.length)} of {filteredActivities.length} activities
