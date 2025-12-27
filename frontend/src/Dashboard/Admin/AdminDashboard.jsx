@@ -3029,7 +3029,7 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {recentActivities.map((activity) => {
+                                    {recentActivities.slice(0, 5).map((activity) => {
                                         const ActivityIcon = activity.icon;
                                         return (
                                             <div
