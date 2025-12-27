@@ -72,6 +72,9 @@ const UserDashboard = () => {
     const [profileImage, setProfileImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
+    // Modal States
+    const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
+
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
         firstName: 'John',
@@ -269,6 +272,319 @@ const UserDashboard = () => {
     const rescheduleAppointment = (appointmentId) => {
         // This would open a reschedule modal in a real app
         alert(`Reschedule appointment ${appointmentId}`);
+    };
+
+    // View All Activities Handler
+    const handleViewAllActivities = () => {
+        setShowAllActivitiesModal(true);
+    };
+
+    // All Activities Modal Component
+    const AllActivitiesModal = () => {
+        const [currentPage, setCurrentPage] = useState(1);
+        const [filterStatus, setFilterStatus] = useState('all');
+        const [searchTerm, setSearchTerm] = useState('');
+        const activitiesPerPage = 10;
+
+        // Extended activities data for the modal
+        const allActivities = [
+            ...recentActivities,
+            {
+                id: 5,
+                action: 'Completed SEO Optimization service',
+                time: '4 days ago, 10:00 AM',
+                status: 'completion',
+                icon: CheckCircle
+            },
+            {
+                id: 6,
+                action: 'Booked Digital Marketing Consultation',
+                time: '5 days ago, 2:00 PM',
+                status: 'booking',
+                icon: Calendar
+            },
+            {
+                id: 7,
+                action: 'Updated payment method',
+                time: '1 week ago, 4:30 PM',
+                status: 'profile',
+                icon: User
+            },
+            {
+                id: 8,
+                action: 'Rated Content Writing service 4 stars',
+                time: '1 week ago, 11:15 AM',
+                status: 'rating',
+                icon: Star
+            },
+            {
+                id: 9,
+                action: 'Cancelled Graphic Design session',
+                time: '2 weeks ago, 9:45 AM',
+                status: 'cancellation',
+                icon: XCircle
+            },
+            {
+                id: 10,
+                action: 'Booked Social Media Management',
+                time: '2 weeks ago, 3:20 PM',
+                status: 'booking',
+                icon: Calendar
+            },
+            {
+                id: 11,
+                action: 'Completed Mobile App Planning',
+                time: '3 weeks ago, 1:00 PM',
+                status: 'completion',
+                icon: CheckCircle
+            },
+            {
+                id: 12,
+                action: 'Updated notification preferences',
+                time: '3 weeks ago, 5:30 PM',
+                status: 'profile',
+                icon: User
+            },
+            {
+                id: 13,
+                action: 'Booked UI/UX Design Review',
+                time: '4 weeks ago, 10:30 AM',
+                status: 'booking',
+                icon: Calendar
+            },
+            {
+                id: 14,
+                action: 'Rated Web Development service 5 stars',
+                time: '4 weeks ago, 2:15 PM',
+                status: 'rating',
+                icon: Star
+            },
+            {
+                id: 15,
+                action: 'Updated profile picture',
+                time: '5 weeks ago, 11:45 AM',
+                status: 'profile',
+                icon: User
+            },
+            {
+                id: 16,
+                action: 'Completed Digital Marketing service',
+                time: '6 weeks ago, 9:30 AM',
+                status: 'completion',
+                icon: CheckCircle
+            },
+            {
+                id: 17,
+                action: 'Booked IT Support Session',
+                time: '6 weeks ago, 3:45 PM',
+                status: 'booking',
+                icon: Calendar
+            },
+            {
+                id: 18,
+                action: 'Cancelled Content Writing session',
+                time: '7 weeks ago, 1:20 PM',
+                status: 'cancellation',
+                icon: XCircle
+            },
+            {
+                id: 19,
+                action: 'Updated contact information',
+                time: '8 weeks ago, 4:10 PM',
+                status: 'profile',
+                icon: User
+            },
+            {
+                id: 20,
+                action: 'Rated SEO Optimization service 5 stars',
+                time: '8 weeks ago, 10:55 AM',
+                status: 'rating',
+                icon: Star
+            },
+            {
+                id: 21,
+                action: 'Completed Social Media Management',
+                time: '9 weeks ago, 2:30 PM',
+                status: 'completion',
+                icon: CheckCircle
+            },
+            {
+                id: 22,
+                action: 'Booked Graphic Design service',
+                time: '10 weeks ago, 11:15 AM',
+                status: 'booking',
+                icon: Calendar
+            },
+            {
+                id: 23,
+                action: 'Updated password',
+                time: '10 weeks ago, 5:40 PM',
+                status: 'profile',
+                icon: User
+            },
+            {
+                id: 24,
+                action: 'Cancelled Mobile App Development',
+                time: '11 weeks ago, 9:25 AM',
+                status: 'cancellation',
+                icon: XCircle
+            },
+            {
+                id: 25,
+                action: 'Rated IT Support service 4 stars',
+                time: '12 weeks ago, 3:50 PM',
+                status: 'rating',
+                icon: Star
+            }
+        ];
+
+        // Filter activities based on status and search term
+        const filteredActivities = allActivities.filter(activity => {
+            const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
+            const matchesSearch = searchTerm === '' ||
+                activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                activity.time.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesStatus && matchesSearch;
+        });
+
+        // Pagination
+        const totalPages = Math.ceil(filteredActivities.length / activitiesPerPage);
+        const startIndex = (currentPage - 1) * activitiesPerPage;
+        const paginatedActivities = filteredActivities.slice(startIndex, startIndex + activitiesPerPage);
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">All Activities</h3>
+                                <p className="text-gray-600 mt-1">Complete activity log and system events</p>
+                            </div>
+                            <button
+                                onClick={() => setShowAllActivitiesModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Filters and Search */}
+                        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">Filter by:</span>
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => {
+                                        setFilterStatus(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm cursor-pointer"
+                                >
+                                    <option value="all">All Activities</option>
+                                    <option value="booking">Bookings</option>
+                                    <option value="rating">Ratings</option>
+                                    <option value="profile">Profile Updates</option>
+                                    <option value="cancellation">Cancellations</option>
+                                    <option value="completion">Completions</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2 flex-1">
+                                <span className="text-sm font-medium text-gray-700">Search:</span>
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search activities..."
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Activities List */}
+                        <div className="space-y-4 mb-6">
+                            {paginatedActivities.map((activity) => {
+                                const ActivityIcon = activity.icon;
+                                return (
+                                    <div
+                                        key={activity.id}
+                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-[1.02] group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
+                                                <ActivityIcon size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-800 group-hover:text-violet-700">{activity.action}</p>
+                                                <p className="text-sm text-gray-600">{activity.time}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                            {activity.status}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600">
+                                    Showing {startIndex + 1} to {Math.min(startIndex + activitiesPerPage, filteredActivities.length)} of {filteredActivities.length} activities
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="px-3 py-2 text-sm text-gray-700">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Total activities: {allActivities.length}
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowAllActivitiesModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     const sidebarItems = [
@@ -576,7 +892,10 @@ const UserDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Recent Activities</h3>
-                                    <button className="text-violet-600 hover:text-violet-700 text-sm font-medium transition-colors">
+                                    <button
+                                        onClick={handleViewAllActivities}
+                                        className="text-violet-600 hover:text-violet-700 text-sm font-medium transition-colors cursor-pointer"
+                                    >
                                         View All
                                     </button>
                                 </div>
@@ -1482,6 +1801,9 @@ const UserDashboard = () => {
                 ></div>
             )}
 
+            {/* All Activities Modal */}
+            {showAllActivitiesModal && <AllActivitiesModal />}
+
             {/* Add CSS animations */}
             <style>{`
                 @keyframes fadeIn {
@@ -1494,7 +1816,7 @@ const UserDashboard = () => {
                         transform: translateY(0);
                     }
                 }
-                
+
                 @keyframes dropdown {
                     from {
                         opacity: 0;
@@ -1505,7 +1827,7 @@ const UserDashboard = () => {
                         transform: translateY(0) scale(1);
                     }
                 }
-                
+
                 @keyframes slideIn {
                     from {
                         opacity: 0;
@@ -1516,19 +1838,19 @@ const UserDashboard = () => {
                         transform: translateX(0);
                     }
                 }
-                
+
                 .animate-fadeIn {
                     animation: fadeIn 0.4s ease-out;
                 }
-                
+
                 .animate-dropdown {
                     animation: dropdown 0.2s ease-out;
                 }
-                
+
                 .animate-slideIn {
                     animation: slideIn 0.5s ease-out;
                 }
-                
+
                 /* Smooth scrolling */
                 .overflow-y-auto {
                     scroll-behavior: smooth;
