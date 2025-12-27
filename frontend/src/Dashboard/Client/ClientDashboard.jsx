@@ -3536,7 +3536,7 @@ const ClientDashboard = () => {
                                             status: 'Active'
                                         });
                                     }}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -3679,7 +3679,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => setShowEditServiceModal(false)}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -3889,7 +3889,7 @@ const ClientDashboard = () => {
                                         });
                                         setBookingErrors({});
                                     }}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -4075,7 +4075,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => setShowEditBookingModal(false)}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -4190,7 +4190,7 @@ const ClientDashboard = () => {
                                             status: 'Active'
                                         });
                                     }}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
@@ -4302,7 +4302,7 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => setShowEditUserModal(false)}
-                                    className="px-6 py-3 bg-gray-500 text-white rounded-xl font-semibold hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
