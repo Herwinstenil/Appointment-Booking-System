@@ -392,16 +392,6 @@ const UserDashboard = () => {
 
                                                     <div className="py-1">
                                                         <button
-                                                            onClick={() => setChartType('bar')}
-                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'bar' ? 'text-violet-600 bg-pink-50' : 'text-gray-700'}`}
-                                                        >
-                                                            <BarChart3 size={16} className="mr-3" />
-                                                            Bar Chart
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="py-1">
-                                                        <button
                                                             onClick={() => setChartType('area')}
                                                             className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-violet-600 bg-pink-50' : 'text-gray-700'}`}
                                                         >
