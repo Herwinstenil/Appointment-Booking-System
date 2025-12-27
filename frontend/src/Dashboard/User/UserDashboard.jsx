@@ -579,8 +579,8 @@ const UserDashboard = () => {
                                 >
                                     Close
                                 </button>
-                                <button
-                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                 <button
+                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Download size={18} className="inline mr-2" />
                                     Export Log
