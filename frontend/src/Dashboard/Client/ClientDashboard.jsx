@@ -3171,7 +3171,7 @@ const ClientDashboard = () => {
                                     <div className="flex items-center justify-end space-x-3">
                                         <button
                                             onClick={() => closeModal(setShowAllTransactionsModal)}
-                                            className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                         >
                                             Close
                                         </button>
