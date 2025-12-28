@@ -125,6 +125,9 @@ const UserDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeAppointmentTab, setActiveAppointmentTab] = useState('All');
 
+    // Dashboard search state
+    const [dashboardSearchTerm, setDashboardSearchTerm] = useState('');
+
     // Booking History State
     const [bookingHistory, setBookingHistory] = useState([
         { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
@@ -293,6 +296,17 @@ const UserDashboard = () => {
             appointment.status.toLowerCase().includes(searchLower);
 
         return matchesTab && matchesSearch;
+    });
+
+    // Filtered booking history based on search term
+    const filteredBookingHistory = bookingHistory.filter(booking => {
+        const searchLower = dashboardSearchTerm.toLowerCase();
+        return dashboardSearchTerm === '' ||
+            booking.service.toLowerCase().includes(searchLower) ||
+            booking.provider.toLowerCase().includes(searchLower) ||
+            booking.date.toLowerCase().includes(searchLower) ||
+            booking.amount.toLowerCase().includes(searchLower) ||
+            booking.status.toLowerCase().includes(searchLower);
     });
 
     // View All Activities Handler
@@ -1165,6 +1179,16 @@ const UserDashboard = () => {
                                 <p className="text-gray-600">View your complete booking history and past appointments</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search booking history..."
+                                        value={dashboardSearchTerm}
+                                        onChange={(e) => setDashboardSearchTerm(e.target.value)}
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                                    />
+                                </div>
                                 <button className="flex items-center gap-2 px-4 py-2  bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                                     <Download size={16} />
                                     Export History
@@ -1226,7 +1250,7 @@ const UserDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-600">{bookingHistory.length} bookings found</span>
+                                        <span className="text-sm text-gray-600">{filteredBookingHistory.length} bookings found</span>
                                     </div>
                                 </div>
                             </div>
@@ -1244,7 +1268,7 @@ const UserDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {bookingHistory.map((booking) => (
+                                        {filteredBookingHistory.map((booking) => (
                                             <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="text-sm font-medium text-gray-900">{booking.service}</div>
