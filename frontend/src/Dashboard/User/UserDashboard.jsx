@@ -121,6 +121,10 @@ const UserDashboard = () => {
         { id: 5, service: 'Mobile App Planning', provider: 'App Masters', date: '2024-01-12', time: '9:00 AM', status: 'Cancelled', amount: '$180', duration: '1.5 hours' }
     ]);
 
+    // Appointments filtering state
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeAppointmentTab, setActiveAppointmentTab] = useState('All');
+
     // Booking History State
     const [bookingHistory, setBookingHistory] = useState([
         { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
@@ -273,6 +277,23 @@ const UserDashboard = () => {
         // This would open a reschedule modal in a real app
         alert(`Reschedule appointment ${appointmentId}`);
     };
+
+    // Filtered appointments based on search and tab
+    const filteredAppointments = appointments.filter(appointment => {
+        // Filter by tab
+        const matchesTab = activeAppointmentTab === 'All' || appointment.status === activeAppointmentTab;
+
+        // Filter by search term
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = searchTerm === '' ||
+            appointment.service.toLowerCase().includes(searchLower) ||
+            appointment.provider.toLowerCase().includes(searchLower) ||
+            appointment.date.toLowerCase().includes(searchLower) ||
+            appointment.time.toLowerCase().includes(searchLower) ||
+            appointment.status.toLowerCase().includes(searchLower);
+
+        return matchesTab && matchesSearch;
+    });
 
     // View All Activities Handler
     const handleViewAllActivities = () => {
@@ -981,6 +1002,8 @@ const UserDashboard = () => {
                                     <input
                                         type="text"
                                         placeholder="Search appointments..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                                     />
                                 </div>
@@ -1039,7 +1062,8 @@ const UserDashboard = () => {
                             {['All', 'Upcoming', 'Completed', 'Cancelled'].map((tab) => (
                                 <button
                                     key={tab}
-                                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${tab === 'All'
+                                    onClick={() => setActiveAppointmentTab(tab)}
+                                    className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${activeAppointmentTab === tab
                                         ? 'bg-white text-violet-600 shadow-lg'
                                         : 'text-gray-600 hover:text-violet-600'
                                         }`}
@@ -1055,68 +1079,78 @@ const UserDashboard = () => {
 
                         {/* Appointments List */}
                         <div className="space-y-4">
-                            {appointments.map((appointment) => (
-                                <div key={appointment.id} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-4 mb-4">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
-                                                    <Calendar size={24} />
+                            {filteredAppointments.length > 0 ? (
+                                filteredAppointments.map((appointment) => (
+                                    <div key={appointment.id} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-4 mb-4">
+                                                    <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
+                                                        <Calendar size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
+                                                        <p className="text-sm text-gray-600">{appointment.provider} • {appointment.duration}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
-                                                    <p className="text-sm text-gray-600">{appointment.provider} • {appointment.duration}</p>
+                                                <div className="flex items-center gap-4 mb-4">
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Upcoming'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : appointment.status === 'Completed'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {appointment.status}
+                                                    </span>
+                                                    <span className="text-sm text-gray-600">
+                                                        <Calendar size={14} className="inline mr-1" />
+                                                        {appointment.date}
+                                                    </span>
+                                                    <span className="text-sm text-gray-600">
+                                                        <Clock size={14} className="inline mr-1" />
+                                                        {appointment.time}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 mb-4">
-                                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Upcoming'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : appointment.status === 'Completed'
-                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                        : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {appointment.status}
-                                                </span>
-                                                <span className="text-sm text-gray-600">
-                                                    <Calendar size={14} className="inline mr-1" />
-                                                    {appointment.date}
-                                                </span>
-                                                <span className="text-sm text-gray-600">
-                                                    <Clock size={14} className="inline mr-1" />
-                                                    {appointment.time}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col gap-2 mt-4 lg:mt-0 lg:ml-6">
-                                            <div className="text-right">
-                                                <p className="text-2xl font-bold text-violet-600">{appointment.amount}</p>
-                                                <p className="text-sm text-gray-500">Total</p>
-                                            </div>
-                                            {appointment.status === 'Upcoming' && (
-                                                <div className="flex gap-2 mt-2">
-                                                    <button
-                                                        onClick={() => rescheduleAppointment(appointment.id)}
-                                                        className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                                                    >
-                                                        Reschedule
+                                            <div className="flex flex-col gap-2 mt-4 lg:mt-0 lg:ml-6">
+                                                <div className="text-right">
+                                                    <p className="text-2xl font-bold text-violet-600">{appointment.amount}</p>
+                                                    <p className="text-sm text-gray-500">Total</p>
+                                                </div>
+                                                {appointment.status === 'Upcoming' && (
+                                                    <div className="flex gap-2 mt-2">
+                                                        <button
+                                                            onClick={() => rescheduleAppointment(appointment.id)}
+                                                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                                        >
+                                                            Reschedule
+                                                        </button>
+                                                        <button
+                                                            onClick={() => cancelAppointment(appointment.id)}
+                                                            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {appointment.status === 'Completed' && (
+                                                    <button className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors">
+                                                        Rate Service
                                                     </button>
-                                                    <button
-                                                        onClick={() => cancelAppointment(appointment.id)}
-                                                        className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {appointment.status === 'Completed' && (
-                                                <button className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors">
-                                                    Rate Service
-                                                </button>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Search className="text-gray-400" size={24} />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No appointments found</h3>
+                                    <p className="text-gray-600">Try adjusting your search or filter criteria</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 );
