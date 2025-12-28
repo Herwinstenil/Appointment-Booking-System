@@ -74,6 +74,7 @@ const UserDashboard = () => {
 
     // Modal States
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
+    const [showBookingModal, setShowBookingModal] = useState(false);
 
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
@@ -312,6 +313,229 @@ const UserDashboard = () => {
     // View All Activities Handler
     const handleViewAllActivities = () => {
         setShowAllActivitiesModal(true);
+    };
+
+    // Booking Modal Component
+    const BookingModal = () => {
+        const [bookingForm, setBookingForm] = useState({
+            name: profileData.firstName + ' ' + profileData.lastName,
+            email: profileData.email,
+            phone: profileData.phone,
+            service: '',
+            date: '',
+            time: ''
+        });
+        const [selectedDate, setSelectedDate] = useState(null);
+        const [selectedTime, setSelectedTime] = useState(null);
+
+        const services = [
+            { name: 'Consultation', duration: '30 min', price: '$50' },
+            { name: 'Full Service', duration: '60 min', price: '$100' },
+            { name: 'Premium Package', duration: '90 min', price: '$150' },
+            { name: 'Web Development Consultation', duration: '1 hour', price: '$150' },
+            { name: 'UI/UX Design Review', duration: '1.5 hours', price: '$120' },
+            { name: 'IT Support Session', duration: '45 mins', price: '$80' },
+            { name: 'Digital Marketing Consultation', duration: '2 hours', price: '$200' },
+            { name: 'Mobile App Planning', duration: '1.5 hours', price: '$180' }
+        ];
+
+        const handleBookingSubmit = () => {
+            if (bookingForm.name && bookingForm.email && bookingForm.phone && bookingForm.service && bookingForm.date && bookingForm.time) {
+                // Create new appointment
+                const newAppointment = {
+                    id: appointments.length + 1,
+                    service: bookingForm.service,
+                    provider: 'Tech Solutions Inc.', // Default provider
+                    date: bookingForm.date,
+                    time: bookingForm.time,
+                    status: 'Upcoming',
+                    amount: services.find(s => s.name === bookingForm.service)?.price || '$100',
+                    duration: services.find(s => s.name === bookingForm.service)?.duration || '1 hour'
+                };
+
+                // Add to appointments list
+                setAppointments(prev => [...prev, newAppointment]);
+
+                // Add to recent activities
+                const newActivity = {
+                    id: recentActivities.length + 1,
+                    action: `Booked ${bookingForm.service}`,
+                    time: 'Just now',
+                    status: 'booking',
+                    icon: Calendar
+                };
+                setRecentActivities(prev => [newActivity, ...prev]);
+
+                // Reset form and close modal
+                setBookingForm({
+                    name: profileData.firstName + ' ' + profileData.lastName,
+                    email: profileData.email,
+                    phone: profileData.phone,
+                    service: '',
+                    date: '',
+                    time: ''
+                });
+                setSelectedDate(null);
+                setSelectedTime(null);
+                setShowBookingModal(false);
+
+                alert('Appointment booked successfully!');
+            } else {
+                alert('Please fill in all fields');
+            }
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Book New Service</h3>
+                                <p className="text-gray-600 mt-1">Schedule your next appointment</p>
+                            </div>
+                            <button
+                                onClick={() => setShowBookingModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
+                                <input
+                                    type="text"
+                                    value={bookingForm.name}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    placeholder="John Doe"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value={bookingForm.email}
+                                        onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                        placeholder="john@example.com"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Phone</label>
+                                    <input
+                                        type="tel"
+                                        value={bookingForm.phone}
+                                        onChange={(e) => {
+                                            let value = e.target.value;
+                                            if (!value.startsWith('+91 ')) {
+                                                value = '+91 ' + value.replace(/^\+91\s*/, '');
+                                            }
+                                            value = '+91 ' + value.slice(4).replace(/\D/g, '').slice(0, 10);
+                                            setBookingForm({ ...bookingForm, phone: value });
+                                        }}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                        placeholder="+91 1234567890"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Service</label>
+                                <select
+                                    value={bookingForm.service}
+                                    onChange={(e) => setBookingForm({ ...bookingForm, service: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                >
+                                    <option value="">Select a service</option>
+                                    {services.map((service, idx) => (
+                                        <option key={idx} value={service.name}>
+                                            {service.name} - {service.duration} - {service.price}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block font-medium mb-2">Select Date</label>
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={(date) => {
+                                            setSelectedDate(date);
+                                            setBookingForm({
+                                                ...bookingForm,
+                                                date: date ? date.toISOString().split('T')[0] : ''
+                                            });
+                                        }}
+                                        dateFormat="yyyy-MM-dd"
+                                        className="border p-3 rounded w-full"
+                                        minDate={new Date()}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block font-medium mb-2">Select Time</label>
+                                    <DatePicker
+                                        selected={selectedTime}
+                                        onChange={(time) => {
+                                            setSelectedTime(time);
+                                            setBookingForm({
+                                                ...bookingForm,
+                                                time: time ? time.toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                }) : ''
+                                            });
+                                        }}
+                                        showTimeSelect
+                                        showTimeSelectOnly
+                                        timeIntervals={30}
+                                        timeCaption="Time"
+                                        dateFormat="h:mm aa"
+                                        className="border p-3 rounded w-full"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                All fields are required
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowBookingModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleBookingSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <CheckCircle size={18} className="inline mr-2" />
+                                    Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     // All Activities Modal Component
@@ -1022,7 +1246,8 @@ const UserDashboard = () => {
                                     />
                                 </div>
                                 <button
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                                    onClick={() => setShowBookingModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Plus size={16} />
                                     Book New Service
@@ -1866,6 +2091,9 @@ const UserDashboard = () => {
 
             {/* All Activities Modal */}
             {showAllActivitiesModal && <AllActivitiesModal />}
+
+            {/* Booking Modal */}
+            {showBookingModal && <BookingModal />}
 
             {/* Add CSS animations */}
             <style>{`

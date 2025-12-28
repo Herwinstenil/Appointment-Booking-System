@@ -21,7 +21,7 @@ export default function AppointmentBooking() {
     // Determine where to navigate back to based on the origin
     const from = location.state?.from;
     const backPath = from === 'dashboard' ? '/dashboard/user' : '/';
-    const backText = from === 'dashboard' ? 'Back to Dashboard' : 'Back to Home';
+   
 
     const handleSubmit = () => {
         if (formData.name && formData.email && formData.phone && formData.service && formData.date && formData.time) {
@@ -48,7 +48,6 @@ export default function AppointmentBooking() {
                             className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
                         >
                             <Home className="w-4 h-4" />
-                            {backText}
                         </button>
                     </div>
                     <h2 className="text-4xl font-bold text-center mb-2">Book Your Appointment</h2>
