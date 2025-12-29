@@ -350,7 +350,7 @@ const UserDashboard = () => {
             if (!bookingForm.email.trim()) {
                 newErrors.email = 'Email is required';
             }
-            if (!bookingForm.phone.trim()) {
+            if (!bookingForm.phone.trim() || bookingForm.phone.trim() === '+91' || bookingForm.phone.length <= 4) {
                 newErrors.phone = 'Phone number is required';
             }
             if (!bookingForm.service) {
