@@ -297,7 +297,6 @@ const UserDashboard = () => {
             appointment.date.toLowerCase().includes(searchLower) ||
             appointment.time.toLowerCase().includes(searchLower) ||
             appointment.status.toLowerCase().includes(searchLower);
-
         return matchesTab && matchesSearch;
     });
 

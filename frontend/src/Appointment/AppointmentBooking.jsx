@@ -28,9 +28,9 @@ export default function AppointmentBooking() {
         if (!formData.name) newErrors.name = 'Full Name is required';
         if (!formData.email) newErrors.email = 'Email is required';
         if (!formData.phone || formData.phone === '+91 ') newErrors.phone = 'Phone is required';
-        if (!formData.service) newErrors.service = 'Service is required';
-        if (!formData.date) newErrors.date = 'Date is required';
-        if (!formData.time) newErrors.time = 'Time is required';
+        if (!formData.service) newErrors.service = 'Please select a service';
+        if (!formData.date) newErrors.date = 'Please select a date';
+        if (!formData.time) newErrors.time = 'Please select a time';
 
         if (Object.keys(newErrors).length === 0) {
             alert('Appointment request submitted! We\'ll contact you shortly.');
