@@ -535,6 +535,7 @@ const UserDashboard = () => {
                                         dateFormat="h:mm aa"
                                         className="border p-3 rounded w-full"
                                     />
+                                     {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
                                 </div>
                             </div>
                         </div>
