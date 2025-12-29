@@ -329,6 +329,7 @@ const UserDashboard = () => {
         });
         const [selectedDate, setSelectedDate] = useState(null);
         const [selectedTime, setSelectedTime] = useState(null);
+        const [errors, setErrors] = useState({});
 
         const services = [
             { name: 'Consultation', duration: '30 min', price: '$50' },
@@ -342,7 +343,30 @@ const UserDashboard = () => {
         ];
 
         const handleBookingSubmit = () => {
-            if (bookingForm.name && bookingForm.email && bookingForm.phone && bookingForm.service && bookingForm.date && bookingForm.time) {
+            const newErrors = {};
+
+            if (!bookingForm.name.trim()) {
+                newErrors.name = 'Full name is required';
+            }
+            if (!bookingForm.email.trim()) {
+                newErrors.email = 'Email is required';
+            }
+            if (!bookingForm.phone.trim()) {
+                newErrors.phone = 'Phone number is required';
+            }
+            if (!bookingForm.service) {
+                newErrors.service = 'Please select a service';
+            }
+            if (!bookingForm.date) {
+                newErrors.date = 'Please select a date';
+            }
+            if (!bookingForm.time) {
+                newErrors.time = 'Please select a time';
+            }
+
+            setErrors(newErrors);
+
+            if (Object.keys(newErrors).length === 0) {
                 // Create new appointment
                 const newAppointment = {
                     id: appointments.length + 1,
@@ -379,11 +403,10 @@ const UserDashboard = () => {
                 });
                 setSelectedDate(null);
                 setSelectedTime(null);
+                setErrors({});
                 setShowBookingModal(false);
 
                 alert('Appointment booked successfully!');
-            } else {
-                alert('Please fill in all fields');
             }
         };
 
@@ -418,6 +441,7 @@ const UserDashboard = () => {
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
                                     placeholder="John Doe"
                                 />
+                                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -430,6 +454,7 @@ const UserDashboard = () => {
                                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
                                         placeholder="john@example.com"
                                     />
+                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                                 </div>
 
                                 <div>
@@ -448,6 +473,7 @@ const UserDashboard = () => {
                                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
                                         placeholder="+91 1234567890"
                                     />
+                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                                 </div>
                             </div>
 
@@ -465,6 +491,7 @@ const UserDashboard = () => {
                                         </option>
                                     ))}
                                 </select>
+                                {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -483,6 +510,7 @@ const UserDashboard = () => {
                                         className="border p-3 rounded w-full"
                                         minDate={new Date()}
                                     />
+                                    {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
                                 </div>
 
                                 <div>
