@@ -9,7 +9,7 @@ export default function AppointmentBooking() {
     const location = useLocation();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -24,14 +24,22 @@ export default function AppointmentBooking() {
     const backPath = from === 'dashboard' ? '/dashboard/user' : '/';
 
     const handleSubmit = () => {
-        if (formData.name && formData.email && formData.phone && formData.service && formData.date && formData.time) {
+        const newErrors = {};
+        if (!formData.name) newErrors.name = 'Full Name is required';
+        if (!formData.email) newErrors.email = 'Email is required';
+        if (!formData.phone || formData.phone === '+91 ') newErrors.phone = 'Phone is required';
+        if (!formData.service) newErrors.service = 'Service is required';
+        if (!formData.date) newErrors.date = 'Date is required';
+        if (!formData.time) newErrors.time = 'Time is required';
+
+        if (Object.keys(newErrors).length === 0) {
             alert('Appointment request submitted! We\'ll contact you shortly.');
             setFormData({ name: '', email: '', phone: '+91 ', service: '', date: '', time: '' });
             setSelectedDate(null);
             setSelectedTime(null);
-            setError('');
+            setErrors({});
         } else {
-            setError('Please fill in all fields');
+            setErrors(newErrors);
         }
     };
 
@@ -66,6 +74,7 @@ export default function AppointmentBooking() {
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 placeholder="John Doe"
                             />
+                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -78,6 +87,7 @@ export default function AppointmentBooking() {
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                     placeholder="john@example.com"
                                 />
+                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                             </div>
 
                             <div>
@@ -96,6 +106,7 @@ export default function AppointmentBooking() {
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                     placeholder="+91 1234567890"
                                 />
+                                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                             </div>
                         </div>
 
@@ -126,6 +137,7 @@ export default function AppointmentBooking() {
                                     className="border p-2 rounded w-full"
                                     minDate={new Date()}
                                 />
+                                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
                             </div>
 
                             <div>
@@ -143,14 +155,9 @@ export default function AppointmentBooking() {
                                     dateFormat="h:mm aa"
                                     className="border p-2 rounded w-full"
                                 />
+                                {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
                             </div>
                         </div>
-
-                        {error && (
-                            <div className="text-red-500 text-center font-semibold">
-                                {error}
-                            </div>
-                        )}
 
                         <button
                             onClick={handleSubmit}
