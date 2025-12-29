@@ -122,6 +122,7 @@ export default function AppointmentBooking() {
                                     <option key={idx} value={service.name}>{service.name}</option>
                                 ))}
                             </select>
+                            {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
