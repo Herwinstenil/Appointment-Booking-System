@@ -9,6 +9,7 @@ export default function AppointmentBooking() {
     const location = useLocation();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
+    const [error, setError] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -21,14 +22,16 @@ export default function AppointmentBooking() {
     // Determine where to navigate back to based on the origin
     const from = location.state?.from;
     const backPath = from === 'dashboard' ? '/dashboard/user' : '/';
-   
 
     const handleSubmit = () => {
         if (formData.name && formData.email && formData.phone && formData.service && formData.date && formData.time) {
             alert('Appointment request submitted! We\'ll contact you shortly.');
             setFormData({ name: '', email: '', phone: '+91 ', service: '', date: '', time: '' });
+            setSelectedDate(null);
+            setSelectedTime(null);
+            setError('');
         } else {
-            alert('Please fill in all fields');
+            setError('Please fill in all fields');
         }
     };
 
@@ -115,7 +118,10 @@ export default function AppointmentBooking() {
                                 <label className="block font-medium">Select Date</label>
                                 <DatePicker
                                     selected={selectedDate}
-                                    onChange={(date) => setSelectedDate(date)}
+                                    onChange={(date) => {
+                                        setSelectedDate(date);
+                                        setFormData({ ...formData, date: date ? date.toISOString().split('T')[0] : '' });
+                                    }}
                                     dateFormat="yyyy-MM-dd"
                                     className="border p-2 rounded w-full"
                                     minDate={new Date()}
@@ -126,7 +132,10 @@ export default function AppointmentBooking() {
                                 <label className="block font-medium">Select Time</label>
                                 <DatePicker
                                     selected={selectedTime}
-                                    onChange={(time) => setSelectedTime(time)}
+                                    onChange={(time) => {
+                                        setSelectedTime(time);
+                                        setFormData({ ...formData, time: time ? time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '' });
+                                    }}
                                     showTimeSelect
                                     showTimeSelectOnly
                                     timeIntervals={30}
@@ -136,6 +145,12 @@ export default function AppointmentBooking() {
                                 />
                             </div>
                         </div>
+
+                        {error && (
+                            <div className="text-red-500 text-center font-semibold">
+                                {error}
+                            </div>
+                        )}
 
                         <button
                             onClick={handleSubmit}
