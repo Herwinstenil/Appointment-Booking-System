@@ -77,6 +77,8 @@ const UserDashboard = () => {
     // Modal States
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
     const [showBookingModal, setShowBookingModal] = useState(false);
+    const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [justBooked, setJustBooked] = useState(false);
 
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
@@ -186,7 +188,7 @@ const UserDashboard = () => {
         };
     });
 
-    const recentActivities = [
+    const [recentActivities, setRecentActivities] = useState([
         {
             id: 1,
             action: 'Booked Web Development Consultation',
@@ -215,7 +217,7 @@ const UserDashboard = () => {
             status: 'cancellation',
             icon: XCircle
         }
-    ];
+    ]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -412,7 +414,15 @@ const UserDashboard = () => {
                 setSelectedTime(null);
                 setErrors({});
                 setShowBookingModal(false);
-                alert('Appointment booked successfully!');
+                setJustBooked(true);
+                // Delay success notification to ensure modal closes first
+                setTimeout(() => {
+                    setBookingSuccess(true);
+                    setTimeout(() => {
+                        setBookingSuccess(false);
+                        setJustBooked(false);
+                    }, 3000);
+                }, 100);
             }
         };
 
@@ -1283,8 +1293,13 @@ const UserDashboard = () => {
                                     />
                                 </div>
                                 <button
-                                    onClick={() => setShowBookingModal(true)}
+                                    onClick={() => {
+                                        if (!justBooked) {
+                                            setShowBookingModal(true);
+                                        }
+                                    }}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    disabled={justBooked}
                                 >
                                     <Plus size={16} />
                                     Book New Service
@@ -2131,6 +2146,17 @@ const UserDashboard = () => {
 
             {/* Booking Modal */}
             {showBookingModal && <BookingModal />}
+
+            {/* Booking Success Notification */}
+            {bookingSuccess && (
+                <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                    <CheckCircle size={24} />
+                    <div>
+                        <p className="font-semibold">Appointment Booked Successfully!</p>
+                        <p className="text-sm opacity-90">Your appointment has been scheduled.</p>
+                    </div>
+                </div>
+            )}
 
             {/* Add CSS animations */}
             <style>{`
