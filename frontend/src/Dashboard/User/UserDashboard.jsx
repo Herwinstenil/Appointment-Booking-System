@@ -115,14 +115,22 @@ const UserDashboard = () => {
         loginAlerts: true
     });
 
-    // Appointments State
-    const [appointments, setAppointments] = useState([
-        { id: 1, service: 'Web Development Consultation', provider: 'Tech Solutions Inc.', date: '2024-01-20', time: '10:00 AM', status: 'Upcoming', amount: '$150', duration: '1 hour' },
-        { id: 2, service: 'UI/UX Design Review', provider: 'Creative Designs LLC', date: '2024-01-18', time: '2:00 PM', status: 'Completed', amount: '$120', duration: '1.5 hours' },
-        { id: 3, service: 'IT Support Session', provider: 'Tech Support Pro', date: '2024-01-15', time: '11:00 AM', status: 'Completed', amount: '$80', duration: '45 mins' },
-        { id: 4, service: 'Digital Marketing Consultation', provider: 'Growth Marketing Co.', date: '2024-01-22', time: '3:30 PM', status: 'Upcoming', amount: '$200', duration: '2 hours' },
-        { id: 5, service: 'Mobile App Planning', provider: 'App Masters', date: '2024-01-12', time: '9:00 AM', status: 'Cancelled', amount: '$180', duration: '1.5 hours' }
-    ]);
+    // Appointments State - Load from localStorage or use defaults
+    const [appointments, setAppointments] = useState(() => {
+        const savedAppointments = localStorage.getItem('userAppointments');
+        return savedAppointments ? JSON.parse(savedAppointments) : [
+            { id: 1, service: 'Web Development Consultation', provider: 'Tech Solutions Inc.', date: '2024-01-20', time: '10:00 AM', status: 'Upcoming', amount: '$150', duration: '1 hour' },
+            { id: 2, service: 'UI/UX Design Review', provider: 'Creative Designs LLC', date: '2024-01-18', time: '2:00 PM', status: 'Completed', amount: '$120', duration: '1.5 hours' },
+            { id: 3, service: 'IT Support Session', provider: 'Tech Support Pro', date: '2024-01-15', time: '11:00 AM', status: 'Completed', amount: '$80', duration: '45 mins' },
+            { id: 4, service: 'Digital Marketing Consultation', provider: 'Growth Marketing Co.', date: '2024-01-22', time: '3:30 PM', status: 'Upcoming', amount: '$200', duration: '2 hours' },
+            { id: 5, service: 'Mobile App Planning', provider: 'App Masters', date: '2024-01-12', time: '9:00 AM', status: 'Cancelled', amount: '$180', duration: '1.5 hours' }
+        ];
+    });
+
+    // Save appointments to localStorage whenever appointments change
+    useEffect(() => {
+        localStorage.setItem('userAppointments', JSON.stringify(appointments));
+    }, [appointments]);
 
     // Appointments filtering state
     const [searchTerm, setSearchTerm] = useState('');
