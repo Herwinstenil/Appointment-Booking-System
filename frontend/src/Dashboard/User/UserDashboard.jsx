@@ -404,7 +404,6 @@ const UserDashboard = () => {
                 setSelectedTime(null);
                 setErrors({});
                 setShowBookingModal(false);
-
                 alert('Appointment booked successfully!');
             }
         };
