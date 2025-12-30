@@ -1364,7 +1364,7 @@ const UserDashboard = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => cancelAppointment(appointment.id)}
-                                                        className="text-xs text-red-600 hover:text-red-800"
+                                                        className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
                                                     >
                                                         Cancel
                                                     </button>
