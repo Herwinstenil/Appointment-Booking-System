@@ -1341,7 +1341,7 @@ const UserDashboard = () => {
                                     {appointments.filter(apt => apt.status === 'Upcoming').map((appointment) => (
                                         <div
                                             key={appointment.id}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group cursor-pointer"
+                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group"
                                         >
                                             <div>
                                                 <p className="font-medium text-gray-800 group-hover:text-violet-700">{appointment.service}</p>
