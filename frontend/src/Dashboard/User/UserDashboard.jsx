@@ -77,6 +77,8 @@ const UserDashboard = () => {
     // Modal States
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
     const [showBookingModal, setShowBookingModal] = useState(false);
+    const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [justBooked, setJustBooked] = useState(false);
 
@@ -290,8 +292,11 @@ const UserDashboard = () => {
     };
 
     const rescheduleAppointment = (appointmentId) => {
-        // This would open a reschedule modal in a real app
-        alert(`Reschedule appointment ${appointmentId}`);
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        if (appointment) {
+            setSelectedAppointment(appointment);
+            setShowRescheduleModal(true);
+        }
     };
 
     // Filtered appointments based on search and tab
@@ -576,6 +581,179 @@ const UserDashboard = () => {
                                 >
                                     <CheckCircle size={18} className="inline mr-2" />
                                     Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Reschedule Modal Component
+    const RescheduleModal = () => {
+        const [rescheduleForm, setRescheduleForm] = useState({
+            date: selectedAppointment?.date || '',
+            time: selectedAppointment?.time || ''
+        });
+        const [selectedDate, setSelectedDate] = useState(null);
+        const [selectedTime, setSelectedTime] = useState(null);
+        const [errors, setErrors] = useState({});
+
+        const handleRescheduleSubmit = () => {
+            const newErrors = {};
+
+            if (!rescheduleForm.date) {
+                newErrors.date = 'Please select a date';
+            }
+            if (!rescheduleForm.time) {
+                newErrors.time = 'Please select a time';
+            }
+
+            setErrors(newErrors);
+
+            if (Object.keys(newErrors).length === 0) {
+                // Update the appointment
+                setAppointments(appointments.map(apt =>
+                    apt.id === selectedAppointment.id ? {
+                        ...apt,
+                        date: rescheduleForm.date,
+                        time: rescheduleForm.time
+                    } : apt
+                ));
+
+                // Add to recent activities
+                const newActivity = {
+                    id: recentActivities.length + 1,
+                    action: `Rescheduled ${selectedAppointment.service}`,
+                    time: 'Just now',
+                    status: 'reschedule',
+                    icon: Calendar
+                };
+                setRecentActivities(prev => [newActivity, ...prev]);
+
+                // Reset form and close modal
+                setRescheduleForm({
+                    date: '',
+                    time: ''
+                });
+                setSelectedDate(null);
+                setSelectedTime(null);
+                setErrors({});
+                setShowRescheduleModal(false);
+                setSelectedAppointment(null);
+            }
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Reschedule Appointment</h3>
+                                <p className="text-gray-600 mt-1">Change your appointment date and time</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowRescheduleModal(false);
+                                    setSelectedAppointment(null);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Current Appointment Info */}
+                        <div className="bg-gray-50 p-4 rounded-xl mb-6">
+                            <h4 className="font-semibold text-gray-800 mb-2">Current Appointment</h4>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center text-white">
+                                    <Calendar size={20} />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-800">{selectedAppointment?.service}</p>
+                                    <p className="text-sm text-gray-600">{selectedAppointment?.provider}</p>
+                                    <p className="text-sm text-gray-500">{selectedAppointment?.date} at {selectedAppointment?.time}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block font-medium mb-2">New Date</label>
+                                    <DatePicker
+                                        selected={selectedDate}
+                                        onChange={(date) => {
+                                            setSelectedDate(date);
+                                            setRescheduleForm({
+                                                ...rescheduleForm,
+                                                date: date ? date.toISOString().split('T')[0] : ''
+                                            });
+                                        }}
+                                        dateFormat="yyyy-MM-dd"
+                                        className="border p-3 rounded w-full"
+                                        minDate={new Date()}
+                                    />
+                                    {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block font-medium mb-2">New Time</label>
+                                    <DatePicker
+                                        selected={selectedTime}
+                                        onChange={(time) => {
+                                            setSelectedTime(time);
+                                            setRescheduleForm({
+                                                ...rescheduleForm,
+                                                time: time ? time.toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                }) : ''
+                                            });
+                                        }}
+                                        showTimeSelect
+                                        showTimeSelectOnly
+                                        timeIntervals={30}
+                                        timeCaption="Time"
+                                        dateFormat="h:mm aa"
+                                        className="border p-3 rounded w-full"
+                                    />
+                                    {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Please select both date and time
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowRescheduleModal(false);
+                                        setSelectedAppointment(null);
+                                    }}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleRescheduleSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <Calendar size={18} className="inline mr-2" />
+                                    Reschedule Appointment
                                 </button>
                             </div>
                         </div>
@@ -2146,6 +2324,9 @@ const UserDashboard = () => {
 
             {/* Booking Modal */}
             {showBookingModal && <BookingModal />}
+
+            {/* Reschedule Modal */}
+            {showRescheduleModal && <RescheduleModal />}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
