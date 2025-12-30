@@ -1358,7 +1358,7 @@ const UserDashboard = () => {
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <button
                                                         onClick={() => rescheduleAppointment(appointment.id)}
-                                                        className="text-xs text-blue-600 hover:text-blue-800"
+                                                        className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
                                                     >
                                                         Reschedule
                                                     </button>
