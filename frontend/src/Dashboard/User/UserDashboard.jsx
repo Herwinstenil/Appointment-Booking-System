@@ -596,7 +596,7 @@ const UserDashboard = () => {
             date: selectedAppointment?.date || '',
             time: selectedAppointment?.time || ''
         });
-        const [selectedDate, setSelectedDate] = useState(null);
+        const [selectedDate, setSelectedDate] = useState(selectedAppointment?.date ? new Date(selectedAppointment.date) : null);
         const [selectedTime, setSelectedTime] = useState(null);
         const [errors, setErrors] = useState({});
 

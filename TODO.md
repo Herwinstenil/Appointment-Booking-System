@@ -1,13 +1,14 @@
 # Reschedule Button Implementation Plan
 
 ## Tasks to Complete:
-- [ ] Add state variables for reschedule modal and selected appointment
-- [ ] Create RescheduleModal component with date/time picker
-- [ ] Update rescheduleAppointment function to open modal instead of alert
-- [ ] Implement reschedule submission logic to update appointment data
-- [ ] Add reschedule activity to recent activities list
-- [ ] Render RescheduleModal in the component return statement
-- [ ] Test the reschedule functionality
+- [x] Add state variables for reschedule modal and selected appointment
+- [x] Create RescheduleModal component with date/time picker
+- [x] Update rescheduleAppointment function to open modal instead of alert
+- [x] Implement reschedule submission logic to update appointment data
+- [x] Add reschedule activity to recent activities list
+- [x] Render RescheduleModal in the component return statement
+- [x] Test the reschedule functionality
+- [x] Fix date picker initialization issue in RescheduleModal
 
 ## Implementation Details:
 - Modal should be similar to BookingModal but pre-populated with current appointment data
