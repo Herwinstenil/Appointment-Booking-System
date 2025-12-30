@@ -776,8 +776,9 @@ const UserDashboard = () => {
 
     // Rating Modal Component
     const RatingModal = () => {
+        const [rating, setRating] = useState(0);
         const [ratingForm, setRatingForm] = useState({
-            rating: rating,
+            rating: 0,
             comment: ''
         });
         const [errors, setErrors] = useState({});
