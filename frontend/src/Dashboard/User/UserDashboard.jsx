@@ -81,6 +81,7 @@ const UserDashboard = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
     const [justBooked, setJustBooked] = useState(false);
     const [rating, setRating] = useState(0);
     const [ratingSubmitted, setRatingSubmitted] = useState(false);
@@ -653,6 +654,13 @@ const UserDashboard = () => {
                 setErrors({});
                 setShowRescheduleModal(false);
                 setSelectedAppointment(null);
+                // Show success notification
+                setTimeout(() => {
+                    setRescheduleSuccess(true);
+                    setTimeout(() => {
+                        setRescheduleSuccess(false);
+                    }, 3000);
+                }, 100);
             }
         };
 
@@ -2518,6 +2526,17 @@ const UserDashboard = () => {
                     <div>
                         <p className="font-semibold">Appointment Booked Successfully!</p>
                         <p className="text-sm opacity-90">Your appointment has been scheduled.</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Reschedule Success Notification */}
+            {rescheduleSuccess && (
+                <div className="fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                    <CheckCircle size={24} />
+                    <div>
+                        <p className="font-semibold">Appointment Rescheduled Successfully!</p>
+                        <p className="text-sm opacity-90">Your appointment has been updated.</p>
                     </div>
                 </div>
             )}
