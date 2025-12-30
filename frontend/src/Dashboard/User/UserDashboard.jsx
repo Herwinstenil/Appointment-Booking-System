@@ -78,9 +78,12 @@ const UserDashboard = () => {
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+    const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [justBooked, setJustBooked] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
@@ -296,6 +299,14 @@ const UserDashboard = () => {
         if (appointment) {
             setSelectedAppointment(appointment);
             setShowRescheduleModal(true);
+        }
+    };
+
+    const rateAppointment = (appointmentId) => {
+        const appointment = appointments.find(apt => apt.id === appointmentId);
+        if (appointment) {
+            setSelectedAppointment(appointment);
+            setShowRatingModal(true);
         }
     };
 
@@ -754,6 +765,171 @@ const UserDashboard = () => {
                                 >
                                     <Calendar size={18} className="inline mr-2" />
                                     Reschedule Appointment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Rating Modal Component
+    const RatingModal = () => {
+        const [ratingForm, setRatingForm] = useState({
+            rating: rating,
+            comment: ''
+        });
+        const [errors, setErrors] = useState({});
+
+        const handleRatingSubmit = () => {
+            const newErrors = {};
+
+            if (!ratingForm.rating || ratingForm.rating < 1 || ratingForm.rating > 5) {
+                newErrors.rating = 'Please select a rating between 1 and 5 stars';
+            }
+
+            setErrors(newErrors);
+
+            if (Object.keys(newErrors).length === 0) {
+                // Update the appointment with rating
+                setAppointments(appointments.map(apt =>
+                    apt.id === selectedAppointment.id ? {
+                        ...apt,
+                        rating: ratingForm.rating,
+                        comment: ratingForm.comment
+                    } : apt
+                ));
+
+                // Add to recent activities
+                const newActivity = {
+                    id: recentActivities.length + 1,
+                    action: `Rated ${selectedAppointment.service} ${ratingForm.rating} stars`,
+                    time: 'Just now',
+                    status: 'rating',
+                    icon: Star
+                };
+                setRecentActivities(prev => [newActivity, ...prev]);
+
+                // Reset form and close modal
+                setRatingForm({
+                    rating: 0,
+                    comment: ''
+                });
+                setRating(0);
+                setRatingSubmitted(true);
+                setErrors({});
+                setShowRatingModal(false);
+                setSelectedAppointment(null);
+            }
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Rate Your Service</h3>
+                                <p className="text-gray-600 mt-1">Share your experience with this service</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowRatingModal(false);
+                                    setSelectedAppointment(null);
+                                    setRating(0);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Service Info */}
+                        <div className="bg-gray-50 p-4 rounded-xl mb-6">
+                            <h4 className="font-semibold text-gray-800 mb-2">Service Details</h4>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-lg flex items-center justify-center text-white">
+                                    <Calendar size={20} />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-800">{selectedAppointment?.service}</p>
+                                    <p className="text-sm text-gray-600">{selectedAppointment?.provider}</p>
+                                    <p className="text-sm text-gray-500">{selectedAppointment?.date} at {selectedAppointment?.time}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Rating Stars */}
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-4">How would you rate this service?</label>
+                                <div className="flex items-center gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            onClick={() => {
+                                                setRating(star);
+                                                setRatingForm({ ...ratingForm, rating: star });
+                                            }}
+                                            className={`p-2 rounded-full transition-all duration-200 ${star <= rating ? 'text-amber-500' : 'text-gray-300'
+                                                } hover:scale-110`}
+                                        >
+                                            <Star
+                                                size={32}
+                                                fill={star <= rating ? 'currentColor' : 'none'}
+                                                className="transition-all duration-200"
+                                            />
+                                        </button>
+                                    ))}
+                                    <span className="ml-4 text-sm text-gray-600">
+                                        {rating > 0 && `${rating} star${rating > 1 ? 's' : ''}`}
+                                    </span>
+                                </div>
+                                {errors.rating && <p className="text-red-500 text-sm mt-2">{errors.rating}</p>}
+                            </div>
+
+                            {/* Comment */}
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Additional Comments (Optional)</label>
+                                <textarea
+                                    value={ratingForm.comment}
+                                    onChange={(e) => setRatingForm({ ...ratingForm, comment: e.target.value })}
+                                    rows="4"
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600 resize-none"
+                                    placeholder="Tell us about your experience..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Your feedback helps us improve
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowRatingModal(false);
+                                        setSelectedAppointment(null);
+                                        setRating(0);
+                                    }}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Skip
+                                </button>
+                                <button
+                                    onClick={handleRatingSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <Star size={18} className="inline mr-2" />
+                                    Submit Rating
                                 </button>
                             </div>
                         </div>
@@ -1602,7 +1778,10 @@ const UserDashboard = () => {
                                                     </div>
                                                 )}
                                                 {appointment.status === 'Completed' && (
-                                                    <button className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors">
+                                                    <button
+                                                        onClick={() => rateAppointment(appointment.id)}
+                                                        className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+                                                    >
                                                         Rate Service
                                                     </button>
                                                 )}
@@ -2327,6 +2506,9 @@ const UserDashboard = () => {
 
             {/* Reschedule Modal */}
             {showRescheduleModal && <RescheduleModal />}
+
+            {/* Rating Modal */}
+            {showRatingModal && <RatingModal />}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
