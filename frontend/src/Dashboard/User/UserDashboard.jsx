@@ -2722,7 +2722,7 @@ const UserDashboard = () => {
             {showRatingModal && <RatingModal />}
 
              {/* Filter Modal */}
-            {ShowFilterModal && <RatingModal />}
+            {ShowFilterModal && <ShowFilterModal />}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
