@@ -2721,6 +2721,8 @@ const UserDashboard = () => {
             {/* Rating Modal */}
             {showRatingModal && <RatingModal />}
 
+            
+
             {/* Booking Success Notification */}
             {bookingSuccess && (
                 <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
