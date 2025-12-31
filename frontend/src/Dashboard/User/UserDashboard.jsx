@@ -2033,7 +2033,6 @@ const UserDashboard = () => {
                                     />
                                 </div>
                                 <button
-                                    onClick={handleExportHistory}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Download size={16} />
