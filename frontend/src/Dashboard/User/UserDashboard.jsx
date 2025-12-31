@@ -242,57 +242,6 @@ const UserDashboard = () => {
         navigate('/');
     };
 
-    const handleExportHistory = () => {
-        // Create new PDF document
-        const doc = new jsPDF();
-
-        // Add title
-        doc.setFontSize(20);
-        doc.text('Booking History Report', 20, 20);
-
-        // Add date
-        doc.setFontSize(12);
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
-
-        // Prepare table data
-        const tableData = filteredBookingHistory.map(booking => [
-            booking.service,
-            booking.provider,
-            booking.date,
-            booking.amount,
-            booking.status,
-            `${booking.rating}/5`
-        ]);
-
-        // Add table
-        doc.autoTable({
-            head: [['Service', 'Provider', 'Date', 'Amount', 'Status', 'Rating']],
-            body: tableData,
-            startY: 45,
-            styles: {
-                fontSize: 10,
-                cellPadding: 3,
-            },
-            headStyles: {
-                fillColor: [139, 69, 246], // Violet color
-                textColor: 255,
-                fontStyle: 'bold',
-            },
-            alternateRowStyles: {
-                fillColor: [248, 250, 252], // Light gray
-            },
-        });
-
-        // Add footer
-        const pageHeight = doc.internal.pageSize.height;
-        doc.setFontSize(8);
-        doc.text(`Total Records: ${filteredBookingHistory.length}`, 20, pageHeight - 20);
-
-        // Save the PDF
-        const fileName = `booking_history_${new Date().toISOString().split('T')[0]}.pdf`;
-        doc.save(fileName);
-    };
-
     const handleNotificationChange = (key) => {
         setNotifications(prev => ({
             ...prev,
