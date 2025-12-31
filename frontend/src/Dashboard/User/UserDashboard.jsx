@@ -241,6 +241,33 @@ const UserDashboard = () => {
         navigate('/');
     };
 
+    const handleExportHistory = () => {
+        // Prepare CSV data
+        const headers = ['Service', 'Provider', 'Date', 'Amount', 'Status', 'Rating'];
+        const csvData = [
+            headers.join(','),
+            ...filteredBookingHistory.map(booking => [
+                `"${booking.service}"`,
+                `"${booking.provider}"`,
+                booking.date,
+                booking.amount,
+                booking.status,
+                booking.rating
+            ].join(','))
+        ].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `booking_history_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const handleNotificationChange = (key) => {
         setNotifications(prev => ({
             ...prev,
@@ -2031,7 +2058,10 @@ const UserDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button className="flex items-center gap-2 px-4 py-2  bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                <button
+                                    onClick={handleExportHistory}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
                                     <Download size={16} />
                                     Export History
                                 </button>
@@ -2721,7 +2751,7 @@ const UserDashboard = () => {
             {/* Rating Modal */}
             {showRatingModal && <RatingModal />}
 
-             {/* Filter Modal */}
+            {/* Filter Modal */}
             {showFilterModal && <FilterModal />}
 
             {/* Booking Success Notification */}
