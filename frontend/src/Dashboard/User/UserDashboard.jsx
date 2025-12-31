@@ -79,6 +79,7 @@ const UserDashboard = () => {
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [showRescheduleModal, setShowRescheduleModal] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [showFilterModal, setShowFilterModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
@@ -939,6 +940,204 @@ const UserDashboard = () => {
                                 >
                                     <Star size={18} className="inline mr-2" />
                                     Submit Rating
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Filter Modal Component
+    const FilterModal = () => {
+        const [filterForm, setFilterForm] = useState({
+            status: 'all',
+            dateFrom: '',
+            dateTo: '',
+            amountMin: '',
+            amountMax: '',
+            rating: 'all'
+        });
+
+        const handleFilterSubmit = () => {
+            // Apply filters to booking history
+            let filtered = bookingHistory;
+
+            // Status filter
+            if (filterForm.status !== 'all') {
+                filtered = filtered.filter(booking => booking.status.toLowerCase() === filterForm.status);
+            }
+
+            // Date range filter
+            if (filterForm.dateFrom) {
+                filtered = filtered.filter(booking => new Date(booking.date) >= new Date(filterForm.dateFrom));
+            }
+            if (filterForm.dateTo) {
+                filtered = filtered.filter(booking => new Date(booking.date) <= new Date(filterForm.dateTo));
+            }
+
+            // Amount range filter
+            if (filterForm.amountMin) {
+                const minAmount = parseFloat(filterForm.amountMin.replace('$', ''));
+                filtered = filtered.filter(booking => parseFloat(booking.amount.replace('$', '')) >= minAmount);
+            }
+            if (filterForm.amountMax) {
+                const maxAmount = parseFloat(filterForm.amountMax.replace('$', ''));
+                filtered = filtered.filter(booking => parseFloat(booking.amount.replace('$', '')) <= maxAmount);
+            }
+
+            // Rating filter
+            if (filterForm.rating !== 'all') {
+                const ratingValue = parseInt(filterForm.rating);
+                filtered = filtered.filter(booking => booking.rating >= ratingValue);
+            }
+
+            // Update the filtered booking history state
+            setBookingHistory(filtered);
+            setShowFilterModal(false);
+        };
+
+        const handleClearFilters = () => {
+            setFilterForm({
+                status: 'all',
+                dateFrom: '',
+                dateTo: '',
+                amountMin: '',
+                amountMax: '',
+                rating: 'all'
+            });
+            setBookingHistory([
+                { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
+                { id: 2, service: 'Graphic Design', provider: 'Creative Studio', date: '2023-12-28', amount: '$300', status: 'Completed', rating: 4 },
+                { id: 3, service: 'SEO Optimization', provider: 'Digital Growth', date: '2023-12-15', amount: '$450', status: 'Completed', rating: 5 },
+                { id: 4, service: 'Content Writing', provider: 'Wordsmith Pro', date: '2023-12-05', amount: '$250', status: 'Completed', rating: 4 },
+                { id: 5, service: 'Social Media Management', provider: 'Social Boost', date: '2023-11-20', amount: '$400', status: 'Completed', rating: 3 }
+            ]);
+            setShowFilterModal(false);
+        };
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Filter Booking History</h3>
+                                <p className="text-gray-600 mt-1">Customize your booking history view</p>
+                            </div>
+                            <button
+                                onClick={() => setShowFilterModal(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        <div className="space-y-6">
+                            {/* Status Filter */}
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Status</label>
+                                <select
+                                    value={filterForm.status}
+                                    onChange={(e) => setFilterForm({ ...filterForm, status: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                >
+                                    <option value="all">All Statuses</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+
+                            {/* Date Range */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Date From</label>
+                                    <input
+                                        type="date"
+                                        value={filterForm.dateFrom}
+                                        onChange={(e) => setFilterForm({ ...filterForm, dateFrom: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Date To</label>
+                                    <input
+                                        type="date"
+                                        value={filterForm.dateTo}
+                                        onChange={(e) => setFilterForm({ ...filterForm, dateTo: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Amount Range */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Min Amount</label>
+                                    <input
+                                        type="text"
+                                        placeholder="$0"
+                                        value={filterForm.amountMin}
+                                        onChange={(e) => setFilterForm({ ...filterForm, amountMin: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Max Amount</label>
+                                    <input
+                                        type="text"
+                                        placeholder="$1000"
+                                        value={filterForm.amountMax}
+                                        onChange={(e) => setFilterForm({ ...filterForm, amountMax: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Rating Filter */}
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Minimum Rating</label>
+                                <select
+                                    value={filterForm.rating}
+                                    onChange={(e) => setFilterForm({ ...filterForm, rating: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                >
+                                    <option value="all">All Ratings</option>
+                                    <option value="5">5 Stars</option>
+                                    <option value="4">4+ Stars</option>
+                                    <option value="3">3+ Stars</option>
+                                    <option value="2">2+ Stars</option>
+                                    <option value="1">1+ Stars</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Apply filters to refine your results
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={handleClearFilters}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Clear Filters
+                                </button>
+                                <button
+                                    onClick={handleFilterSubmit}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    <Filter size={18} className="inline mr-2" />
+                                    Apply Filters
                                 </button>
                             </div>
                         </div>
@@ -1836,7 +2035,10 @@ const UserDashboard = () => {
                                     <Download size={16} />
                                     Export History
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                <button
+                                    onClick={() => setShowFilterModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
                                     <Filter size={16} />
                                     Filter
                                 </button>
