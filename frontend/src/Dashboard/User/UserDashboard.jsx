@@ -1157,7 +1157,14 @@ const UserDashboard = () => {
             date: selectedAppointment?.date || '',
             amount: selectedAppointment?.amount || ''
         });
-        const [selectedDate, setSelectedDate] = useState(selectedAppointment?.date ? new Date(selectedAppointment.date) : null);
+        const [selectedDate, setSelectedDate] = useState(() => {
+            if (selectedAppointment?.date) {
+                // Parse the date string properly
+                const dateParts = selectedAppointment.date.split('-');
+                return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            }
+            return null;
+        });
         const [errors, setErrors] = useState({});
 
         const services = [
