@@ -1318,6 +1318,13 @@ const UserDashboard = () => {
                                             dateFormat="yyyy-MM-dd"
                                             className="border p-3 rounded w-full pr-12"
                                             minDate={new Date()}
+                                            showIcon
+                                            icon={
+                                                <Calendar
+                                                    size={20}
+                                                    className="text-violet-500 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                                                />
+                                            }
                                         />
                                     </div>
                                     {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
