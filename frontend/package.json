@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "gapi-script": "^1.2.0",
     "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.555.0",
     "react": "^18.2.0",
     "react-datepicker": "^8.10.0",
