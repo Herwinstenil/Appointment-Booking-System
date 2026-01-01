@@ -82,6 +82,7 @@ const UserDashboard = () => {
     const [showRescheduleModal, setShowRescheduleModal] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
+    const [showViewBookingModal, setShowViewBookingModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
@@ -340,6 +341,15 @@ const UserDashboard = () => {
             booking.amount.toLowerCase().includes(searchLower) ||
             booking.status.toLowerCase().includes(searchLower);
     });
+
+    // View Booking Handler
+    const handleViewBooking = (bookingId) => {
+        const booking = bookingHistory.find(b => b.id === bookingId);
+        if (booking) {
+            setSelectedAppointment(booking);
+            setShowViewBookingModal(true);
+        }
+    };
 
     // View All Activities Handler
     const handleViewAllActivities = () => {
@@ -996,6 +1006,130 @@ const UserDashboard = () => {
                                 >
                                     <Star size={18} className="inline mr-2" />
                                     Submit Rating
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // View Booking Modal Component
+    const ViewBookingModal = () => {
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                    {/* Modal Header */}
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-2xl font-bold text-gray-900">Booking Details</h3>
+                                <p className="text-gray-600 mt-1">Complete information about this booking</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setShowViewBookingModal(false);
+                                    setSelectedAppointment(null);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Modal Body */}
+                    <div className="p-6">
+                        {/* Booking Info */}
+                        <div className="bg-gray-50 p-6 rounded-xl mb-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
+                                    <Calendar size={24} />
+                                </div>
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-800">{selectedAppointment?.service}</h4>
+                                    <p className="text-sm text-gray-600">{selectedAppointment?.provider}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm text-gray-500">Date</p>
+                                    <p className="font-medium text-gray-900">{selectedAppointment?.date}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Time</p>
+                                    <p className="font-medium text-gray-900">{selectedAppointment?.time}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Amount</p>
+                                    <p className="font-medium text-gray-900 text-violet-600">{selectedAppointment?.amount}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500">Duration</p>
+                                    <p className="font-medium text-gray-900">{selectedAppointment?.duration}</p>
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <p className="text-sm text-gray-500">Status</p>
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedAppointment?.status === 'Completed'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-red-100 text-red-800'
+                                    }`}>
+                                    {selectedAppointment?.status}
+                                </span>
+                            </div>
+                            {selectedAppointment?.status === 'Completed' && (
+                                <div className="mt-4">
+                                    <p className="text-sm text-gray-500">Rating</p>
+                                    <div className="flex items-center">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                size={16}
+                                                className={i < selectedAppointment.rating ? "text-amber-500 fill-amber-500" : "text-gray-300"}
+                                            />
+                                        ))}
+                                        <span className="ml-2 text-sm text-gray-600">{selectedAppointment.rating}/5</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Additional Details */}
+                        <div className="space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <h5 className="font-semibold text-gray-800 mb-2">Service Provider</h5>
+                                <p className="text-gray-600">{selectedAppointment?.provider}</p>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <h5 className="font-semibold text-gray-800 mb-2">Booking ID</h5>
+                                <p className="text-gray-600">#{selectedAppointment?.id}</p>
+                            </div>
+                            {selectedAppointment?.comment && (
+                                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                    <h5 className="font-semibold text-gray-800 mb-2">Your Comments</h5>
+                                    <p className="text-gray-600">{selectedAppointment.comment}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Modal Footer */}
+                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-500">
+                                Booking details
+                            </div>
+                            <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowViewBookingModal(false);
+                                        setSelectedAppointment(null);
+                                    }}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Close
                                 </button>
                             </div>
                         </div>
@@ -2206,7 +2340,10 @@ const UserDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <button className="p-1 text-blue-600 hover:text-blue-800 transition-colors">
+                                                        <button
+                                                            onClick={() => handleViewBooking(booking.id)}
+                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                                                        >
                                                             <ViewIcon size={16} />
                                                         </button>
                                                         <button className="p-1 text-violet-600 hover:text-violet-800 transition-colors">
@@ -2782,6 +2919,9 @@ const UserDashboard = () => {
 
             {/* Filter Modal */}
             {showFilterModal && <FilterModal />}
+
+            {/* View Booking Modal */}
+            {showViewBookingModal && <ViewBookingModal />}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
