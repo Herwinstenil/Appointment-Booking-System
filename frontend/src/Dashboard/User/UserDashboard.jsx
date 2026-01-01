@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import {
     BookOpen,
     History,
@@ -342,6 +344,60 @@ const UserDashboard = () => {
     // View All Activities Handler
     const handleViewAllActivities = () => {
         setShowAllActivitiesModal(true);
+    };
+
+    // Export History Handler
+    const handleExportHistory = () => {
+        const doc = new jsPDF();
+
+        // Add title
+        doc.setFontSize(20);
+        doc.text('Booking History Report', 20, 20);
+
+        // Add user info
+        doc.setFontSize(12);
+        doc.text(`User: ${profileData.firstName} ${profileData.lastName}`, 20, 35);
+        doc.text(`Email: ${profileData.email}`, 20, 45);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 55);
+
+        // Prepare table data
+        const tableData = filteredBookingHistory.map(booking => [
+            booking.service,
+            booking.provider,
+            booking.date,
+            booking.amount,
+            booking.status,
+            `${booking.rating}/5`
+        ]);
+
+        // Add table
+        doc.autoTable({
+            head: [['Service', 'Provider', 'Date', 'Amount', 'Status', 'Rating']],
+            body: tableData,
+            startY: 70,
+            styles: {
+                fontSize: 10,
+                cellPadding: 3,
+            },
+            headStyles: {
+                fillColor: [139, 69, 246], // Violet color
+                textColor: 255,
+                fontStyle: 'bold',
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252], // Light gray
+            },
+        });
+
+        // Add summary at the bottom
+        const finalY = doc.lastAutoTable.finalY + 20;
+        doc.setFontSize(12);
+        doc.text(`Total Bookings: ${filteredBookingHistory.length}`, 20, finalY);
+        doc.text(`Total Spent: $${filteredBookingHistory.reduce((sum, booking) => sum + parseFloat(booking.amount.replace('$', '')), 0).toFixed(2)}`, 20, finalY + 10);
+        doc.text(`Average Rating: ${(filteredBookingHistory.reduce((sum, booking) => sum + booking.rating, 0) / filteredBookingHistory.length).toFixed(1)}/5`, 20, finalY + 20);
+
+        // Save the PDF
+        doc.save(`booking_history_${profileData.firstName}_${profileData.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     // Booking Modal Component
@@ -2031,7 +2087,10 @@ const UserDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
+                                <button
+                                    onClick={handleExportHistory}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
                                     <Download size={16} />
                                     Export History
                                 </button>
