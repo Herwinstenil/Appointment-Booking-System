@@ -1157,6 +1157,7 @@ const UserDashboard = () => {
             date: selectedAppointment?.date || '',
             amount: selectedAppointment?.amount || ''
         });
+
         const [errors, setErrors] = useState({});
 
         const services = [
@@ -1228,7 +1229,6 @@ const UserDashboard = () => {
                     date: '',
                     amount: ''
                 });
-                setSelectedDate(null);
                 setErrors({});
                 setShowEditBookingModal(false);
                 setSelectedAppointment(null);
