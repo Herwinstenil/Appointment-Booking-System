@@ -1305,19 +1305,21 @@ const UserDashboard = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block font-medium mb-2">Date</label>
-                                    <DatePicker
-                                        selected={selectedDate}
-                                        onChange={(date) => {
-                                            setSelectedDate(date);
-                                            setEditForm({
-                                                ...editForm,
-                                                date: date ? date.toISOString().split('T')[0] : ''
-                                            });
-                                        }}
-                                        dateFormat="yyyy-MM-dd"
-                                        className="border p-3 rounded w-full"
-                                        minDate={new Date()}
-                                    />
+                                    <div className="relative">
+                                        <DatePicker
+                                            selected={selectedDate}
+                                            onChange={(date) => {
+                                                setSelectedDate(date);
+                                                setEditForm({
+                                                    ...editForm,
+                                                    date: date ? date.toISOString().split('T')[0] : ''
+                                                });
+                                            }}
+                                            dateFormat="yyyy-MM-dd"
+                                            className="border p-3 rounded w-full pr-12"
+                                            minDate={new Date()}
+                                        />
+                                    </div>
                                     {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
                                 </div>
 
