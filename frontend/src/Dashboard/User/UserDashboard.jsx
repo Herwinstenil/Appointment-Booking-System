@@ -1322,7 +1322,7 @@ const UserDashboard = () => {
                                             icon={
                                                 <Calendar
                                                     size={20}
-                                                    className="text-violet-500 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                                                    className="text-black-500 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
                                                 />
                                             }
                                         />
