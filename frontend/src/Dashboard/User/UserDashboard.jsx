@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import {
     BookOpen,
     History,
@@ -371,7 +371,7 @@ const UserDashboard = () => {
         ]);
 
         // Add table
-        doc.autoTable({
+        autoTable(doc, {
             head: [['Service', 'Provider', 'Date', 'Amount', 'Status', 'Rating']],
             body: tableData,
             startY: 70,
