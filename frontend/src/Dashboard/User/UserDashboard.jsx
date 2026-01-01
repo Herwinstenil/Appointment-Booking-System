@@ -1157,14 +1157,6 @@ const UserDashboard = () => {
             date: selectedAppointment?.date || '',
             amount: selectedAppointment?.amount || ''
         });
-        const [selectedDate, setSelectedDate] = useState(() => {
-            if (selectedAppointment?.date) {
-                // Parse the date string properly
-                const dateParts = selectedAppointment.date.split('-');
-                return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-            }
-            return null;
-        });
         const [errors, setErrors] = useState({});
 
         const services = [
@@ -1304,30 +1296,20 @@ const UserDashboard = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block font-medium mb-2">Date</label>
-                                    <div className="relative">
-                                        <DatePicker
-                                            selected={selectedDate}
-                                            onChange={(date) => {
-                                                setSelectedDate(date);
-                                                setEditForm({
-                                                    ...editForm,
-                                                    date: date ? date.toISOString().split('T')[0] : ''
-                                                });
-                                            }}
-                                            dateFormat="yyyy-MM-dd"
-                                            className="border p-3 rounded w-full pr-12"
-                                            minDate={new Date()}
-                                            showIcon
-                                            icon={
-                                                <Calendar
-                                                    size={20}
-                                                    className="text-black-500 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                                                />
-                                            }
-                                        />
-                                    </div>
-                                    {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Date *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="date"
+                                        value={editForm.date}
+                                        onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${errors.date ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
+                                            }`}
+                                    />
+                                    {errors.date && (
+                                        <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+                                    )}
                                 </div>
 
                                 <div>
