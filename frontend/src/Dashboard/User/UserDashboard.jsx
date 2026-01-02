@@ -2994,7 +2994,7 @@ const UserDashboard = () => {
                                 </div>
 
                                 {/* User Stats */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Your Stats</h3>
                                     <div className="space-y-4">
                                         {[
@@ -3005,7 +3005,7 @@ const UserDashboard = () => {
                                         ].map((stat, index) => {
                                             const StatIcon = stat.icon;
                                             return (
-                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-violet-50 transition-all duration-300">
+                                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group">
                                                     <div className="flex items-center gap-3">
                                                         <StatIcon size={18} className="text-violet-500" />
                                                         <span className="text-gray-700 group-hover:text-violet-700">{stat.label}</span>
