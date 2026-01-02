@@ -2742,7 +2742,7 @@ const UserDashboard = () => {
                                 {activeTab === 'personal' && (
                                     <div className="space-y-6">
                                         {/* Personal Information */}
-                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                             <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                                                 <User className="text-violet-500" size={24} />
                                                 Personal Information
