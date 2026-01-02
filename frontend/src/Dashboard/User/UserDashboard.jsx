@@ -361,6 +361,26 @@ const UserDashboard = () => {
         }
     };
 
+    // Delete Booking Handler
+    const handleDeleteBooking = (bookingId) => {
+        if (window.confirm('Are you sure you want to delete this booking from your history?')) {
+            setBookingHistory(bookingHistory.filter(booking => booking.id !== bookingId));
+
+            // Add to recent activities
+            const deletedBooking = bookingHistory.find(b => b.id === bookingId);
+            if (deletedBooking) {
+                const newActivity = {
+                    id: recentActivities.length + 1,
+                    action: `Deleted booking for ${deletedBooking.service}`,
+                    time: 'Just now',
+                    status: 'deletion',
+                    icon: Trash2
+                };
+                setRecentActivities(prev => [newActivity, ...prev]);
+            }
+        }
+    };
+
     // View All Activities Handler
     const handleViewAllActivities = () => {
         setShowAllActivitiesModal(true);
@@ -2571,7 +2591,10 @@ const UserDashboard = () => {
                                                         >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button className="p-1 text-red-600 hover:text-red-800 transition-colors">
+                                                        <button
+                                                            onClick={() => handleDeleteBooking(booking.id)}
+                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                                                        >
                                                             <Trash2 size={16} />
                                                         </button>
                                                     </div>
