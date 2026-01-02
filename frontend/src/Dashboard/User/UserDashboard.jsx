@@ -2970,7 +2970,7 @@ const UserDashboard = () => {
                             {/* Sidebar */}
                             <div className="space-y-6">
                                 {/* Quick Actions */}
-                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
