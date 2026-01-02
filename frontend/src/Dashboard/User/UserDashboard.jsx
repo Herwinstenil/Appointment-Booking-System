@@ -1557,6 +1557,13 @@ const UserDashboard = () => {
                                 >
                                     Clear Filters
                                 </button>
+                                <div className="flex items-center space-x-3">
+                                <button
+                                    onClick={() => setShowUserFilterModal(false)}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     onClick={handleFilterSubmit}
                                     className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
@@ -1564,6 +1571,7 @@ const UserDashboard = () => {
                                     <Filter size={18} className="inline mr-2" />
                                     Apply Filters
                                 </button>
+                                </div>
                         </div>
                     </div>
                 </div>
