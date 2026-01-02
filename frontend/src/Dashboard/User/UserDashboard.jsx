@@ -1551,9 +1551,6 @@ const UserDashboard = () => {
                     {/* Modal Footer */}
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                         <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
-                                Apply filters to refine your results
-                            </div>
                             <div className="flex items-center space-x-3">
                                 <button
                                     onClick={handleClearFilters}
