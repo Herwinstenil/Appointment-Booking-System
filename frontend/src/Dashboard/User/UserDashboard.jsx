@@ -1551,13 +1551,13 @@ const UserDashboard = () => {
                     {/* Modal Footer */}
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                         <div className="flex items-center justify-between">
-                                <button
-                                    onClick={handleClearFilters}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Clear Filters
-                                </button>
-                                <div className="flex items-center space-x-3">
+                            <button
+                                onClick={handleClearFilters}
+                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                            >
+                                Clear Filters
+                            </button>
+                            <div className="flex items-center space-x-3">
                                 <button
                                     onClick={() => setShowUserFilterModal(false)}
                                     className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
@@ -1571,7 +1571,7 @@ const UserDashboard = () => {
                                     <Filter size={18} className="inline mr-2" />
                                     Apply Filters
                                 </button>
-                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
