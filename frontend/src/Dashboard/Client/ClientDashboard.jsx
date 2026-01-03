@@ -1069,7 +1069,7 @@ const ClientDashboard = () => {
         { name: 'Services', icon: FolderOpen },
         { name: 'Availability', icon: Calendar },
         { name: 'Bookings', icon: BookOpen },
-        { name: 'Requests', icon: MessageSquare },
+        { name: 'Reschedule Request', icon: MessageSquare },
         { name: 'Users', icon: Users },
         { name: 'Profile', icon: User },
     ];
@@ -1971,13 +1971,13 @@ const ClientDashboard = () => {
                     </div>
                 );
 
-            case 'Requests':
+            case 'Reschedule Request':
                 return (
                     <div className="p-8 animate-fadeIn">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                    Reschedule & Cancel Requests
+                                    Reschedule Request
                                 </h2>
                                 <p className="text-gray-600">Manage client requests for rescheduling or canceling bookings</p>
                             </div>
