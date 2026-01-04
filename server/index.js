@@ -9,7 +9,12 @@ const adminRoutes = require('./routes/admin');
 const clientRoutes = require('./routes/client');
 
 const app = express();
-const prisma = new PrismaClient();
+
+// Prisma 7.x: Pass DATABASE_URL directly to PrismaClient
+const prisma = new PrismaClient({
+  datasourceUrl: process.env.DATABASE_URL,
+});
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -29,8 +34,27 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'Appointment Booking API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    database: process.env.DATABASE_URL ? 'Configured' : 'Not configured'
   });
+});
+
+// Database test endpoint
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const result = await prisma.$queryRaw`SELECT version()`;
+    res.json({
+      success: true,
+      message: 'Database connection successful',
+      version: result[0].version
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
 });
 
 // API Routes
@@ -106,17 +130,24 @@ process.on('SIGINT', async () => {
 // Start server
 const startServer = async () => {
   try {
-    // Test database connection
+    // Test database connection with Prisma 7
     await prisma.$connect();
     console.log('✅ Database connected successfully');
+    
+    // Test query to verify connection
+    const result = await prisma.$queryRaw`SELECT version()`;
+    console.log(`📊 Database version: ${result[0].version}`);
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🧪 DB test: http://localhost:${PORT}/api/db-test`);
       console.log(`🔐 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🗄️  Database: ${process.env.DATABASE_URL ? 'Configured' : 'Not configured'}`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
+    console.error('❌ DATABASE_URL:', process.env.DATABASE_URL);
     await prisma.$disconnect();
     process.exit(1);
   }
