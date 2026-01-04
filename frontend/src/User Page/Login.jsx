@@ -20,7 +20,7 @@ export default function Login() {
         role: ''
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Clear previous errors
         setErrors({ email: '', password: '', role: '' });
 
@@ -29,32 +29,34 @@ export default function Login() {
         if (!formData.email) {
             setErrors(prev => ({ ...prev, email: 'required' }));
             hasErrors = true;
-        } else if (!formData.email.includes('@gmail.com')) {
-            setErrors(prev => ({ ...prev, email: 'Email must include @gmail.com' }));
+        } else if (!formData.email.includes('@')) {
+            setErrors(prev => ({ ...prev, email: 'Please enter a valid email' }));
             hasErrors = true;
         }
         if (!formData.password) {
             setErrors(prev => ({ ...prev, password: 'required' }));
             hasErrors = true;
         }
-        if (formData.email && formData.password && !formData.role) {
-            setErrors(prev => ({ ...prev, role: 'please choose your role' }));
-            hasErrors = true;
-        }
 
         if (!hasErrors) {
             setIsLoading(true);
-            setTimeout(() => {
-                setIsLoading(false);
-                login(formData.role);
-                if (formData.role === 'user') {
-                    navigate('/');
-                } else if (formData.role === 'admin') {
+            const result = await login(formData.email, formData.password);
+            setIsLoading(false);
+
+            if (result.success) {
+                // Navigation based on user role from API
+                const userRole = localStorage.getItem('userRole');
+                if (userRole === 'USER') {
+                    navigate('/dashboard/user');
+                } else if (userRole === 'ADMIN') {
                     navigate('/dashboard/admin');
-                } else if (formData.role === 'client') {
+                } else if (userRole === 'CLIENT') {
                     navigate('/dashboard/client');
                 }
-            }, 1500);
+            } else {
+                // Show error
+                alert(result.message);
+            }
         }
     };
 

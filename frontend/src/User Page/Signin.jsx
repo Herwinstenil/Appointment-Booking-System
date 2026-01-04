@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
+import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Signin() {
     const navigate = useNavigate();
+    const { register } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -23,7 +25,7 @@ export default function Signin() {
         confirmPassword: ''
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Clear previous errors
         setErrors({
             username: '',
@@ -67,10 +69,29 @@ export default function Signin() {
 
         if (!hasErrors) {
             setIsLoading(true);
-            setTimeout(() => {
-                setIsLoading(false);
-                alert(`Sign-in attempt: ${formData.username} - ${formData.email} - ${formData.mobile}`);
-            }, 1500);
+            const result = await register({
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                mobile: formData.mobile,
+                role: 'USER' // Default role for signin
+            });
+            setIsLoading(false);
+
+            if (result.success) {
+                // Navigation is handled by AuthContext based on user role
+                const userRole = localStorage.getItem('userRole');
+                if (userRole === 'USER') {
+                    navigate('/dashboard/user');
+                } else if (userRole === 'ADMIN') {
+                    navigate('/dashboard/admin');
+                } else if (userRole === 'CLIENT') {
+                    navigate('/dashboard/client');
+                }
+            } else {
+                // Show error
+                alert(result.message);
+            }
         }
     };
 

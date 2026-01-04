@@ -13,36 +13,125 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const API_BASE_URL = 'http://localhost:5000/api';
 
     // Check for existing auth state on mount
     useEffect(() => {
-        const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const token = localStorage.getItem('token');
         const role = localStorage.getItem('userRole');
-        if (loggedIn && role) {
+        const userData = localStorage.getItem('user');
+
+        if (token && role && userData) {
             setIsLoggedIn(true);
             setUserRole(role);
+            setUser(JSON.parse(userData));
         }
+        setLoading(false);
     }, []);
 
-    const login = (role) => {
-        setIsLoggedIn(true);
-        setUserRole(role);
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userRole', role);
+    const login = async (email, password) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const { user, token } = data.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('userRole', user.role);
+                localStorage.setItem('user', JSON.stringify(user));
+                setIsLoggedIn(true);
+                setUserRole(user.role);
+                setUser(user);
+                return { success: true };
+            } else {
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: 'Network error. Please try again.' };
+        }
     };
 
-    const logout = () => {
+    const register = async (userData) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const { user, token } = data.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('userRole', user.role);
+                localStorage.setItem('user', JSON.stringify(user));
+                setIsLoggedIn(true);
+                setUserRole(user.role);
+                setUser(user);
+                return { success: true };
+            } else {
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Register error:', error);
+            return { success: false, message: 'Network error. Please try again.' };
+        }
+    };
+
+    const logout = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                await fetch(`${API_BASE_URL}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+
+        // Clear local state regardless of API call success
         setIsLoggedIn(false);
         setUserRole(null);
+        setUser(null);
+        localStorage.removeItem('token');
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userRole');
+        localStorage.removeItem('user');
+    };
+
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token');
+        return token ? { 'Authorization': `Bearer ${token}` } : {};
     };
 
     const value = {
         isLoggedIn,
         userRole,
+        user,
+        loading,
         login,
-        logout
+        register,
+        logout,
+        getAuthHeaders,
+        API_BASE_URL
     };
 
     return (

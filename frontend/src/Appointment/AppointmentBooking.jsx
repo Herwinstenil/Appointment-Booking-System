@@ -1,53 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, Home } from 'lucide-react';
+import { useAuth } from '../Context/AuthContext.jsx';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 
 export default function AppointmentBooking() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { isLoggedIn, getAuthHeaders, API_BASE_URL } = useAuth();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [errors, setErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
+    const [services, setServices] = useState([]);
+    const [servicesLoading, setServicesLoading] = useState(true);
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '+91 ',
-        service: '',
+        serviceId: '',
         date: '',
-        time: ''
+        time: '',
+        notes: ''
     });
 
     // Determine where to navigate back to based on the origin
     const from = location.state?.from;
     const backPath = from === 'dashboard' ? '/dashboard/user' : '/';
 
-    const handleSubmit = () => {
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!isLoggedIn) {
+            navigate('/user/login', { state: { from: 'appointment' } });
+        }
+    }, [isLoggedIn, navigate]);
+
+    // Fetch available services
+    useEffect(() => {
+        const fetchServices = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/client/services`, {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setServices(data.data.services);
+                }
+            } catch (error) {
+                console.error('Error fetching services:', error);
+            } finally {
+                setServicesLoading(false);
+            }
+        };
+
+        if (isLoggedIn) {
+            fetchServices();
+        }
+    }, [isLoggedIn, API_BASE_URL, getAuthHeaders]);
+
+    const handleSubmit = async () => {
         const newErrors = {};
-        if (!formData.name) newErrors.name = 'Full Name is required';
-        if (!formData.email) newErrors.email = 'Email is required';
-        if (!formData.phone || formData.phone === '+91 ') newErrors.phone = 'Phone is required';
-        if (!formData.service) newErrors.service = 'Please select a service';
+        if (!formData.serviceId) newErrors.serviceId = 'Please select a service';
         if (!formData.date) newErrors.date = 'Please select a date';
         if (!formData.time) newErrors.time = 'Please select a time';
 
         if (Object.keys(newErrors).length === 0) {
-            alert('Appointment request submitted! We\'ll contact you shortly.');
-            setFormData({ name: '', email: '', phone: '+91 ', service: '', date: '', time: '' });
-            setSelectedDate(null);
-            setSelectedTime(null);
-            setErrors({});
+            setIsLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Appointment booked successfully!');
+                    setFormData({ serviceId: '', date: '', time: '', notes: '' });
+                    setSelectedDate(null);
+                    setSelectedTime(null);
+                    setErrors({});
+                } else {
+                    alert(data.message || 'Failed to book appointment');
+                }
+            } catch (error) {
+                console.error('Booking error:', error);
+                alert('Network error. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
         } else {
             setErrors(newErrors);
         }
     };
-
-    const services = [
-        { name: 'Consultation', duration: '30 min', price: '$50' },
-        { name: 'Full Service', duration: '60 min', price: '$100' },
-        { name: 'Premium Package', duration: '90 min', price: '$150' }
-    ];
 
     return (
         <div className="min-h-screen bg-gray-100 py-20 px-4">
@@ -66,63 +113,26 @@ export default function AppointmentBooking() {
 
                     <div className="space-y-6">
                         <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                                placeholder="John Doe"
-                            />
-                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Email</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                                    placeholder="john@example.com"
-                                />
-                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Phone</label>
-                                <input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) => {
-                                        let value = e.target.value;
-                                        if (!value.startsWith('+91 ')) {
-                                            value = '+91 ' + value.replace(/^\+91\s*/, '');
-                                        }
-                                        value = '+91 ' + value.slice(4).replace(/\D/g, '').slice(0, 10);
-                                        setFormData({ ...formData, phone: value });
-                                    }}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                                    placeholder="+91 1234567890"
-                                />
-                                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                            </div>
-                        </div>
-
-                        <div>
                             <label className="block text-gray-700 font-semibold mb-2">Service</label>
-                            <select
-                                value={formData.service}
-                                onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                            >
-                                <option value="">Select a service</option>
-                                {services.map((service, idx) => (
-                                    <option key={idx} value={service.name}>{service.name}</option>
-                                ))}
-                            </select>
-                            {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
+                            {servicesLoading ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
+                                    Loading services...
+                                </div>
+                            ) : (
+                                <select
+                                    value={formData.serviceId}
+                                    onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                >
+                                    <option value="">Select a service</option>
+                                    {services.map((service) => (
+                                        <option key={service.id} value={service.id}>
+                                            {service.name} - ${service.price} ({service.duration})
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                            {errors.serviceId && <p className="text-red-500 text-sm mt-1">{errors.serviceId}</p>}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
