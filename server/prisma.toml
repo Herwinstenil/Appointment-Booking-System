@@ -1,0 +1,3 @@
+[datasource] 
+provider = "postgresql" 
+url = "postgresql://postgres:STENIL%402003@localhost:5432/appointment_booking?schema=public"

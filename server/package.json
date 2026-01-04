@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
-    "@prisma/client": "^7.2.0"
+    "@prisma/client": "^7.2.0",
+    "dotenv": "^17.2.3"
   }
 }
