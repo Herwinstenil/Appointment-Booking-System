@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const appointmentRoutes = require('./routes/appointments');
@@ -10,10 +11,9 @@ const clientRoutes = require('./routes/client');
 
 const app = express();
 
-// Prisma 7.x: Pass DATABASE_URL directly to PrismaClient
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+// Prisma 7.x: Use adapter for database connection
+const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 const PORT = process.env.PORT || 5000;
 
@@ -65,7 +65,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/client', clientRoutes);
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found'

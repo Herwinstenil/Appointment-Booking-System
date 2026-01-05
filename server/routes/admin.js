@@ -2,10 +2,12 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 // Get admin dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {

@@ -3,9 +3,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 // Register new user
 router.post('/register', [

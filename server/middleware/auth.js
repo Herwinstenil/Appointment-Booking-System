@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { PrismaPg } = require('@prisma/adapter-pg');
+
+const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 // Middleware to verify JWT token
 const authenticateToken = async (req, res, next) => {

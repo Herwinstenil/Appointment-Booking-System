@@ -1,9 +1,11 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('../middleware/auth');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 // Get user profile
 router.get('/profile', authenticateToken, async (req, res) => {
