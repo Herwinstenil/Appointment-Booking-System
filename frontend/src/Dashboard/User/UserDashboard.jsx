@@ -138,6 +138,9 @@ const UserDashboard = () => {
     // Booking History State - Load from API
     const [bookingHistory, setBookingHistory] = useState([]);
 
+    // Bookings State
+    const [bookings, setBookings] = useState([]);
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchUserData = async () => {
@@ -145,27 +148,44 @@ const UserDashboard = () => {
                 setLoading(true);
                 setError(null);
 
-                // Fetch appointments
-                const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/appointments`, {
-                    headers: getAuthHeaders()
+                const headers = getAuthHeaders();
+
+                // Fetch all appointments (both upcoming and completed)
+                const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/appointments?limit=200`, {
+                    headers
                 });
 
                 if (appointmentsResponse.ok) {
                     const appointmentsData = await appointmentsResponse.json();
-                    setAppointments(appointmentsData.data || appointmentsData);
-                }
+                    const allAppointments = appointmentsData.data?.appointments || [];
 
-                // Fetch booking history (user's appointments)
-                const userId = user?.id; // Assuming user object has id
-                if (userId) {
-                    const bookingHistoryResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}/appointments`, {
-                        headers: getAuthHeaders()
-                    });
+                    // Transform data to match component expectations
+                    const transformedAppointments = allAppointments.map(apt => ({
+                        id: apt.id,
+                        service: apt.service?.name || 'Unknown Service',
+                        provider: apt.client?.company || apt.client?.firstName + ' ' + apt.client?.lastName || 'Unknown Provider',
+                        date: apt.date ? new Date(apt.date).toLocaleDateString() : '',
+                        time: apt.time || '',
+                        status: apt.status || 'Unknown',
+                        amount: `$${apt.amount || 0}`,
+                        duration: apt.duration || '1 hour',
+                        rating: apt.rating || 0,
+                        comment: apt.comment || '',
+                        serviceId: apt.service?.id,
+                        clientId: apt.client?.id,
+                        createdAt: apt.createdAt
+                    }));
 
-                    if (bookingHistoryResponse.ok) {
-                        const bookingHistoryData = await bookingHistoryResponse.json();
-                        setBookingHistory(bookingHistoryData.data || bookingHistoryData);
-                    }
+                    // Separate upcoming and completed appointments
+                    const upcoming = transformedAppointments.filter(apt =>
+                        apt.status === 'PENDING' || apt.status === 'CONFIRMED'
+                    );
+                    const completed = transformedAppointments.filter(apt =>
+                        apt.status === 'COMPLETED'
+                    );
+
+                    setAppointments(upcoming);
+                    setBookingHistory(completed);
                 }
 
             } catch (err) {
@@ -177,7 +197,7 @@ const UserDashboard = () => {
         };
 
         fetchUserData();
-    }, [getAuthHeaders, user]);
+    }, [getAuthHeaders]);
 
     // Appointments filtering state
     const [searchTerm, setSearchTerm] = useState('');

@@ -83,45 +83,73 @@ const AdminDashboard = () => {
 
                 const headers = getAuthHeaders();
 
-                // Fetch dashboard stats
-                const statsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, {
-                    headers
-                });
+                // Fetch all dashboard data in parallel
+                const [
+                    statsResponse,
+                    usersResponse,
+                    servicesResponse,
+                    bookingsResponse,
+                    revenueByCategoryResponse,
+                    recentTransactionsResponse,
+                    performanceMetricsResponse,
+                    popularServicesResponse,
+                    recentActivitiesResponse
+                ] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/services?limit=100`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/appointments?limit=100`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/popular-services`, { headers }),
+                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers })
+                ]);
 
-                if (!statsResponse.ok) {
-                    throw new Error('Failed to fetch dashboard stats');
+                // Process responses
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    // Stats are already handled in the component
                 }
-
-                const statsData = await statsResponse.json();
-
-                // Fetch users
-                const usersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users`, {
-                    headers
-                });
 
                 if (usersResponse.ok) {
                     const usersData = await usersResponse.json();
-                    setUsers(usersData.data || usersData); // Adjust based on API response structure
+                    setUsers(usersData.data?.users || []);
                 }
-
-                // Fetch services
-                const servicesResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/services`, {
-                    headers
-                });
 
                 if (servicesResponse.ok) {
                     const servicesData = await servicesResponse.json();
-                    setServices(servicesData.data || servicesData); // Adjust based on API response structure
+                    setServices(servicesData.data?.services || []);
                 }
-
-                // Fetch appointments/bookings
-                const bookingsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/appointments`, {
-                    headers
-                });
 
                 if (bookingsResponse.ok) {
                     const bookingsData = await bookingsResponse.json();
-                    // Update booking data based on API response
+                    setBookings(bookingsData.data?.appointments || []);
+                }
+
+                if (revenueByCategoryResponse.ok) {
+                    const revenueData = await revenueByCategoryResponse.json();
+                    setRevenueByCategory(revenueData.data || []);
+                }
+
+                if (recentTransactionsResponse.ok) {
+                    const transactionsData = await recentTransactionsResponse.json();
+                    setRecentTransactions(transactionsData.data || []);
+                }
+
+                if (performanceMetricsResponse.ok) {
+                    const metricsData = await performanceMetricsResponse.json();
+                    setPerformanceMetrics(metricsData.data || []);
+                }
+
+                if (popularServicesResponse.ok) {
+                    const popularData = await popularServicesResponse.json();
+                    setPopularServices(popularData.data || []);
+                }
+
+                if (recentActivitiesResponse.ok) {
+                    const activitiesData = await recentActivitiesResponse.json();
+                    setRecentActivities(activitiesData.data || []);
                 }
 
             } catch (err) {
@@ -176,13 +204,7 @@ const AdminDashboard = () => {
     });
 
     // User Management State
-    const [users, setUsers] = useState([
-        { id: 1, name: 'John Smith', email: 'john@example.com', role: 'Admin', status: 'Active', joinDate: '2024-01-10', lastLogin: '2 hours ago', clients: 45, revenue: '$12,500' },
-        { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', role: 'Manager', status: 'Active', joinDate: '2024-01-08', lastLogin: '1 day ago', clients: 32, revenue: '$8,700' },
-        { id: 3, name: 'Mike Davis', email: 'mike@example.com', role: 'Support', status: 'Inactive', joinDate: '2024-01-05', lastLogin: '3 days ago', clients: 18, revenue: '$4,200' },
-        { id: 4, name: 'Emma Wilson', email: 'emma@example.com', role: 'Admin', status: 'Active', joinDate: '2024-01-03', lastLogin: '5 hours ago', clients: 56, revenue: '$15,300' },
-        { id: 5, name: 'Alex Brown', email: 'alex@example.com', role: 'Manager', status: 'Active', joinDate: '2024-01-01', lastLogin: '12 hours ago', clients: 41, revenue: '$11,800' }
-    ]);
+    const [users, setUsers] = useState([]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -247,13 +269,10 @@ const AdminDashboard = () => {
     const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
 
     // Service Category Management State
-    const [services, setServices] = useState([
-        { id: 1, name: 'Web Development', description: 'Custom website development services', status: 'Active', price: '$500', category: 'Development', clients: 24, rating: 4.8 },
-        { id: 2, name: 'Mobile App Development', description: 'iOS and Android app development', status: 'Active', price: '$800', category: 'Development', clients: 18, rating: 4.9 },
-        { id: 3, name: 'UI/UX Design', description: 'User interface and experience design', status: 'Active', price: '$300', category: 'Design', clients: 32, rating: 4.7 },
-        { id: 4, name: 'Digital Marketing', description: 'SEO and social media marketing', status: 'Inactive', price: '$400', category: 'Marketing', clients: 12, rating: 4.5 },
-        { id: 5, name: 'IT Consulting', description: 'Technical consultation services', status: 'Active', price: '$200', category: 'Consulting', clients: 28, rating: 4.6 }
-    ]);
+    const [services, setServices] = useState([]);
+
+    // Bookings State
+    const [bookings, setBookings] = useState([]);
 
     // Revenue Dashboard State
     const [timeRange, setTimeRange] = useState('daily');
@@ -462,34 +481,11 @@ const AdminDashboard = () => {
     const systemMetrics = getSystemMetrics(timeRange);
     const bookingData = getBookingData(timeRange);
 
-    const revenueByCategory = [
-        { category: 'Premium Services', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-rose-500' },
-        { category: 'Consultation', amount: 320000, percentage: 25.5, growth: 8.7, color: 'bg-blue-500' },
-        { category: 'Basic Services', amount: 280000, percentage: 22.3, growth: 3.2, color: 'bg-green-500' },
-        { category: 'Add-ons', amount: 203000, percentage: 16.2, growth: 12.8, color: 'bg-purple-500' }
-    ];
-
-    const recentTransactions = [
-        { id: 1, client: 'John Smith', service: 'Premium Support', amount: 299, date: '2024-01-15', status: 'completed', avatar: 'JS' },
-        { id: 2, client: 'Sarah Johnson', service: 'Consultation', amount: 150, date: '2024-01-15', status: 'completed', avatar: 'SJ' },
-        { id: 3, client: 'Mike Davis', service: 'Basic Service', amount: 89, date: '2024-01-14', status: 'pending', avatar: 'MD' },
-        { id: 4, client: 'Emma Wilson', service: 'Premium Support', amount: 299, date: '2024-01-14', status: 'completed', avatar: 'EW' },
-        { id: 5, client: 'Alex Brown', service: 'Add-on Package', amount: 75, date: '2024-01-13', status: 'completed', avatar: 'AB' }
-    ];
-
-    const performanceMetrics = [
-        { name: 'Conversion Rate', value: '3.2%', change: '+0.4%', positive: true },
-        { name: 'Avg Session Duration', value: '4m 12s', change: '+23s', positive: true },
-        { name: 'Bounce Rate', value: '42%', change: '-3.2%', positive: true },
-        { name: 'Customer Satisfaction', value: '4.8/5', change: '+0.2', positive: true }
-    ];
-
-    const popularServices = [
-        { service: 'Web Development', bookings: 234, revenue: 117000 },
-        { service: 'Mobile App Development', bookings: 189, revenue: 151200 },
-        { service: 'UI/UX Design', bookings: 156, revenue: 46800 },
-        { service: 'Consultation', bookings: 143, revenue: 28600 }
-    ];
+    // These will be populated from API responses
+    const [revenueByCategory, setRevenueByCategory] = useState([]);
+    const [recentTransactions, setRecentTransactions] = useState([]);
+    const [performanceMetrics, setPerformanceMetrics] = useState([]);
+    const [popularServices, setPopularServices] = useState([]);
 
     const navigate = useNavigate();
 
@@ -731,113 +727,8 @@ const AdminDashboard = () => {
         { id: 'activity', label: 'Activity', icon: Activity }
     ];
 
-    const recentActivities = [
-        {
-            id: 1,
-            action: 'Logged in to admin dashboard',
-            time: 'Today, 10:30 AM',
-            status: 'success',
-            icon: CheckCircle
-        },
-        {
-            id: 2,
-            action: 'Updated user permissions for 3 accounts',
-            time: 'Yesterday, 3:45 PM',
-            status: 'modified',
-            icon: Edit3
-        },
-        {
-            id: 3,
-            action: 'Created new service category "Premium Support"',
-            time: '2 days ago, 9:15 AM',
-            status: 'created',
-            icon: FolderOpen
-        },
-        {
-            id: 4,
-            action: 'Security alert: Unusual login attempt blocked',
-            time: '3 days ago, 2:20 PM',
-            status: 'alert',
-            icon: AlertCircle
-        },
-        {
-            id: 5,
-            action: 'Generated monthly revenue report',
-            time: '4 days ago, 11:00 AM',
-            status: 'completed',
-            icon: FileText
-        },
-        {
-            id: 6,
-            action: 'Backed up database successfully',
-            time: '5 days ago, 10:00 PM',
-            status: 'success',
-            icon: Database
-        },
-        {
-            id: 7,
-            action: 'Scheduled system maintenance for next week',
-            time: '6 days ago, 2:30 PM',
-            status: 'scheduled',
-            icon: Calendar
-        },
-        {
-            id: 8,
-            action: 'Updated payment gateway settings',
-            time: '1 week ago, 4:15 PM',
-            status: 'modified',
-            icon: CreditCard
-        },
-        {
-            id: 9,
-            action: 'Added 5 new team members to the system',
-            time: '1 week ago, 11:45 AM',
-            status: 'created',
-            icon: Users
-        },
-        {
-            id: 10,
-            action: 'Resolved 15 pending support tickets',
-            time: '2 weeks ago, 3:00 PM',
-            status: 'completed',
-            icon: MessageSquare
-        },
-        {
-            id: 11,
-            action: 'System performance optimized',
-            time: '2 weeks ago, 9:30 AM',
-            status: 'success',
-            icon: Zap
-        },
-        {
-            id: 12,
-            action: 'Updated privacy policy document',
-            time: '2 weeks ago, 5:20 PM',
-            status: 'modified',
-            icon: FileCheck
-        },
-        {
-            id: 13,
-            action: 'Sent bulk email notification to 500 users',
-            time: '3 weeks ago, 10:00 AM',
-            status: 'completed',
-            icon: Send
-        },
-        {
-            id: 14,
-            action: 'Server downtime alert - resolved in 15 minutes',
-            time: '3 weeks ago, 1:45 AM',
-            status: 'alert',
-            icon: Server
-        },
-        {
-            id: 15,
-            action: 'Created new admin role "Support Manager"',
-            time: '1 month ago, 9:00 AM',
-            status: 'created',
-            icon: Shield
-        }
-    ];
+    // These will be populated from API responses
+    const [recentActivities, setRecentActivities] = useState([]);
 
     const getStatusColor = (status) => {
         switch (status) {
