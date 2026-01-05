@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../../../Context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import {
@@ -54,10 +55,70 @@ import {
 } from 'lucide-react';
 
 const ClientDashboard = () => {
+    const navigate = useNavigate();
+    const { getAuthHeaders } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
-    const navigate = useNavigate();
+
+    // Loading and error states
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch data on component mount
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const headers = getAuthHeaders();
+
+                // Fetch dashboard stats
+                const statsResponse = await fetch('http://localhost:5000/api/client/dashboard/stats', {
+                    headers
+                });
+                if (!statsResponse.ok) throw new Error('Failed to fetch dashboard stats');
+                const statsData = await statsResponse.json();
+
+                // Fetch services
+                const servicesResponse = await fetch('http://localhost:5000/api/client/services', {
+                    headers
+                });
+                if (!servicesResponse.ok) throw new Error('Failed to fetch services');
+                const servicesData = await servicesResponse.json();
+
+                // Fetch appointments
+                const appointmentsResponse = await fetch('http://localhost:5000/api/client/appointments', {
+                    headers
+                });
+                if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
+                const appointmentsData = await appointmentsResponse.json();
+
+                // Fetch revenue
+                const revenueResponse = await fetch('http://localhost:5000/api/client/revenue', {
+                    headers
+                });
+                if (!revenueResponse.ok) throw new Error('Failed to fetch revenue');
+                const revenueData = await revenueResponse.json();
+
+                // Update state with fetched data
+                // Note: You'll need to map the API response to the expected format
+                // For now, using the fetched data directly
+                setServices(servicesData.services || []);
+                setBookings(appointmentsData.appointments || []);
+                // Update other state variables as needed
+
+            } catch (err) {
+                setError(err.message);
+                console.error('Error fetching dashboard data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [getAuthHeaders]);
 
     // Profile State
     const [isEditing, setIsEditing] = useState(false);

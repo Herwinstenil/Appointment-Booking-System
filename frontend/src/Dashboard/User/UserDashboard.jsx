@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -58,10 +58,14 @@ import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { logout, user } = useAuth();
+    const { logout, user, getAuthHeaders } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    // Loading and error states
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // Chart state
     const [chartType, setChartType] = useState('area');
@@ -128,22 +132,52 @@ const UserDashboard = () => {
         loginAlerts: true
     });
 
-    // Appointments State - Load from localStorage or use defaults
-    const [appointments, setAppointments] = useState(() => {
-        const savedAppointments = localStorage.getItem('userAppointments');
-        return savedAppointments ? JSON.parse(savedAppointments) : [
-            { id: 1, service: 'Web Development Consultation', provider: 'Tech Solutions Inc.', date: '2024-01-20', time: '10:00 AM', status: 'Upcoming', amount: '$150', duration: '1 hour' },
-            { id: 2, service: 'UI/UX Design Review', provider: 'Creative Designs LLC', date: '2024-01-18', time: '2:00 PM', status: 'Completed', amount: '$120', duration: '1.5 hours' },
-            { id: 3, service: 'IT Support Session', provider: 'Tech Support Pro', date: '2024-01-15', time: '11:00 AM', status: 'Completed', amount: '$80', duration: '45 mins' },
-            { id: 4, service: 'Digital Marketing Consultation', provider: 'Growth Marketing Co.', date: '2024-01-22', time: '3:30 PM', status: 'Upcoming', amount: '$200', duration: '2 hours' },
-            { id: 5, service: 'Mobile App Planning', provider: 'App Masters', date: '2024-01-12', time: '9:00 AM', status: 'Cancelled', amount: '$180', duration: '1.5 hours' }
-        ];
-    });
+    // Appointments State - Load from API
+    const [appointments, setAppointments] = useState([]);
 
-    // Save appointments to localStorage whenever appointments change
+    // Booking History State - Load from API
+    const [bookingHistory, setBookingHistory] = useState([]);
+
+    // Fetch data on component mount
     useEffect(() => {
-        localStorage.setItem('userAppointments', JSON.stringify(appointments));
-    }, [appointments]);
+        const fetchUserData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // Fetch appointments
+                const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/appointments`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (appointmentsResponse.ok) {
+                    const appointmentsData = await appointmentsResponse.json();
+                    setAppointments(appointmentsData.data || appointmentsData);
+                }
+
+                // Fetch booking history (user's appointments)
+                const userId = user?.id; // Assuming user object has id
+                if (userId) {
+                    const bookingHistoryResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}/appointments`, {
+                        headers: getAuthHeaders()
+                    });
+
+                    if (bookingHistoryResponse.ok) {
+                        const bookingHistoryData = await bookingHistoryResponse.json();
+                        setBookingHistory(bookingHistoryData.data || bookingHistoryData);
+                    }
+                }
+
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+                setError(err.message || 'Failed to load user data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [getAuthHeaders, user]);
 
     // Appointments filtering state
     const [searchTerm, setSearchTerm] = useState('');
@@ -152,26 +186,48 @@ const UserDashboard = () => {
     // Dashboard search state
     const [dashboardSearchTerm, setDashboardSearchTerm] = useState('');
 
-    // Booking History State
-    const [bookingHistory, setBookingHistory] = useState([
-        { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
-        { id: 2, service: 'Graphic Design', provider: 'Creative Studio', date: '2023-12-28', amount: '$300', status: 'Completed', rating: 4 },
-        { id: 3, service: 'SEO Optimization', provider: 'Digital Growth', date: '2023-12-15', amount: '$450', status: 'Completed', rating: 5 },
-        { id: 4, service: 'Content Writing', provider: 'Wordsmith Pro', date: '2023-12-05', amount: '$250', status: 'Completed', rating: 4 },
-        { id: 5, service: 'Social Media Management', provider: 'Social Boost', date: '2023-11-20', amount: '$400', status: 'Completed', rating: 3 }
-    ]);
+    // User Stats - Calculate from real data
+    const userStats = useMemo(() => {
+        const totalBookings = bookingHistory.length;
+        const completedBookings = bookingHistory.filter(b => b.status === 'Completed').length;
+        const upcomingBookings = appointments.filter(a => a.status === 'Upcoming').length;
+        const cancelledBookings = appointments.filter(a => a.status === 'Cancelled').length;
 
-    // User Stats
-    const userStats = {
-        totalBookings: 15,
-        completedBookings: 12,
-        upcomingBookings: 2,
-        cancelledBookings: 1,
-        totalSpent: 3850,
-        averageRating: 4.4,
-        favoriteCategory: 'Web Development',
-        loyaltyPoints: 1250
-    };
+        // Calculate total spent from booking history
+        const totalSpent = bookingHistory.reduce((sum, booking) => {
+            const amount = parseFloat(booking.amount.replace('$', ''));
+            return sum + (isNaN(amount) ? 0 : amount);
+        }, 0);
+
+        // Calculate average rating from completed bookings
+        const completedWithRating = bookingHistory.filter(b => b.status === 'Completed' && b.rating);
+        const averageRating = completedWithRating.length > 0
+            ? completedWithRating.reduce((sum, b) => sum + b.rating, 0) / completedWithRating.length
+            : 0;
+
+        // Find favorite category (most common service type)
+        const serviceCounts = {};
+        bookingHistory.forEach(booking => {
+            serviceCounts[booking.service] = (serviceCounts[booking.service] || 0) + 1;
+        });
+        const favoriteCategory = Object.keys(serviceCounts).reduce((a, b) =>
+            serviceCounts[a] > serviceCounts[b] ? a : b, 'Web Development'
+        );
+
+        // Calculate loyalty points (example: 10 points per completed booking)
+        const loyaltyPoints = completedBookings * 10;
+
+        return {
+            totalBookings,
+            completedBookings,
+            upcomingBookings,
+            cancelledBookings,
+            totalSpent: Math.round(totalSpent * 100) / 100, // Round to 2 decimal places
+            averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
+            favoriteCategory,
+            loyaltyPoints
+        };
+    }, [appointments, bookingHistory]);
 
     // Monthly Spending Data
     const monthlySpending = [

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
+import { useAuth } from '../../Context/AuthContext.jsx';
 import {
     Users,
     FolderOpen,
@@ -64,9 +65,75 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
+    const { getAuthHeaders } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    // Loading and error states
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch data on component mount
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const headers = getAuthHeaders();
+
+                // Fetch dashboard stats
+                const statsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, {
+                    headers
+                });
+
+                if (!statsResponse.ok) {
+                    throw new Error('Failed to fetch dashboard stats');
+                }
+
+                const statsData = await statsResponse.json();
+
+                // Fetch users
+                const usersResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users`, {
+                    headers
+                });
+
+                if (usersResponse.ok) {
+                    const usersData = await usersResponse.json();
+                    setUsers(usersData.data || usersData); // Adjust based on API response structure
+                }
+
+                // Fetch services
+                const servicesResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/services`, {
+                    headers
+                });
+
+                if (servicesResponse.ok) {
+                    const servicesData = await servicesResponse.json();
+                    setServices(servicesData.data || servicesData); // Adjust based on API response structure
+                }
+
+                // Fetch appointments/bookings
+                const bookingsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/appointments`, {
+                    headers
+                });
+
+                if (bookingsResponse.ok) {
+                    const bookingsData = await bookingsResponse.json();
+                    // Update booking data based on API response
+                }
+
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+                setError(err.message || 'Failed to load dashboard data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [getAuthHeaders]);
 
     // Profile state
     const [isEditing, setIsEditing] = useState(false);
@@ -2676,6 +2743,39 @@ const AdminDashboard = () => {
     const renderContent = () => {
         switch (activeItem) {
             case 'Dashboard':
+                // Show loading state
+                if (loading) {
+                    return (
+                        <div className="p-8 animate-fadeIn flex items-center justify-center min-h-[400px]">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto mb-4"></div>
+                                <p className="text-gray-600">Loading dashboard data...</p>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Show error state
+                if (error) {
+                    return (
+                        <div className="p-8 animate-fadeIn">
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                                <div className="text-red-600 mb-4">
+                                    <XCircle size={48} className="mx-auto" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Dashboard</h3>
+                                <p className="text-red-600 mb-4">{error}</p>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
