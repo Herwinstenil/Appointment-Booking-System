@@ -491,7 +491,8 @@ const AdminDashboard = () => {
 
     const handleLogout = () => {
         console.log('Logging out...');
-        navigate('/user/login');
+        const userRole = localStorage.getItem('userRole');
+        navigate(`/user/login?from=dashboard&role=${userRole}`);
     };
 
     // Dashboard button handlers

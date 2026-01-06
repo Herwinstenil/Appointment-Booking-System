@@ -318,7 +318,8 @@ const UserDashboard = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        const userRole = localStorage.getItem('userRole');
+        navigate(`/user/login?from=dashboard&role=${userRole}`);
     };
 
     const handleNotificationChange = (key) => {

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -17,6 +18,10 @@ export default function Login() {
         email: '',
         password: ''
     });
+
+    const from = searchParams.get('from');
+    const role = searchParams.get('role');
+    const showBackToHome = from === 'dashboard' && role === 'USER';
 
     const handleSubmit = async () => {
         // Clear previous errors
@@ -70,15 +75,17 @@ export default function Login() {
                 {/* Login Card */}
                 <div className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/20 transform transition-all duration-500 hover:shadow-3xl">
                     {/* Back Button */}
-                    <div className="flex justify-start mb-4">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
-                        >
-                            <Home className="w-4 h-4" />
-                            <span className="font-medium">Back to Home</span>
-                        </button>
-                    </div>
+                    {showBackToHome && (
+                        <div className="flex justify-start mb-4">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full hover:bg-gray-200 transition"
+                            >
+                                <Home className="w-4 h-4" />
+                                <span className="font-medium">Back to Home</span>
+                            </button>
+                        </div>
+                    )}
 
                     <div className="text-center mb-8">
                         <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 transform transition-all duration-500 hover:scale-110 hover:rotate-12 shadow-lg">
