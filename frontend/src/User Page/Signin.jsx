@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
+import { FcGoogle } from "react-icons/fc";
 import {
-    FaGoogle,
     FaFacebookF,
     FaTwitter as FaTwitterIcon,
     FaGithub as FaGithubIcon,
@@ -324,7 +324,7 @@ export default function Signin() {
                                 className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 border border-gray-300 hover:border-gray-400 group"
                                 title="Sign in with Google"
                             >
-                                <FaGoogle className="w-6 h-6 text-red-500 group-hover:text-red-600 transition-colors" />
+                                <FcGoogle className="w-6 h-6 text-red-500 group-hover:text-red-600 transition-colors" />
                             </button>
 
                             {/* Facebook Button */}
