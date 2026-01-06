@@ -11,7 +11,8 @@ export default function Signin() {
         email: '',
         mobile: '+91 ',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        role: ''
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -22,7 +23,8 @@ export default function Signin() {
         email: '',
         mobile: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        role: ''
     });
 
     const handleSubmit = async () => {
@@ -32,7 +34,8 @@ export default function Signin() {
             email: '',
             mobile: '',
             password: '',
-            confirmPassword: ''
+            confirmPassword: '',
+            role: ''
         });
 
         let hasErrors = false;
@@ -66,6 +69,10 @@ export default function Signin() {
             setErrors(prev => ({ ...prev, confirmPassword: 'Passwords do not match' }));
             hasErrors = true;
         }
+        if (!formData.role) {
+            setErrors(prev => ({ ...prev, role: 'Role is required' }));
+            hasErrors = true;
+        }
 
         if (!hasErrors) {
             setIsLoading(true);
@@ -74,7 +81,7 @@ export default function Signin() {
                 email: formData.email,
                 password: formData.password,
                 mobile: formData.mobile,
-                role: 'USER' // Default role for signin
+                role: formData.role
             });
             setIsLoading(false);
 
@@ -241,6 +248,25 @@ export default function Signin() {
                                 </button>
                             </div>
                             {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                        </div>
+
+                        {/* Role Selection */}
+                        <div className="transform transition-all duration-300">
+                            <label className="block text-gray-700 font-semibold mb-2">Role</label>
+                            <select
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                onFocus={() => setFocusedField('role')}
+                                onBlur={() => setFocusedField(null)}
+                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white ${focusedField === 'role' ? 'border-purple-600' : 'border-gray-200'
+                                    } focus:border-purple-600 focus:outline-none`}
+                            >
+                                <option value="" disabled>Select your role</option>
+                                <option value="USER">User</option>
+                                <option value="CLIENT">Client</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                            {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                         </div>
 
                         {/* Signin Button */}

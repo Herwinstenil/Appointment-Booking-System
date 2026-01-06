@@ -8,21 +8,19 @@ export default function Login() {
     const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
-        role: ''
+        password: ''
     });
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [focusedField, setFocusedField] = useState(null);
     const [errors, setErrors] = useState({
         email: '',
-        password: '',
-        role: ''
+        password: ''
     });
 
     const handleSubmit = async () => {
         // Clear previous errors
-        setErrors({ email: '', password: '', role: '' });
+        setErrors({ email: '', password: '' });
 
         let hasErrors = false;
 
@@ -60,11 +58,7 @@ export default function Login() {
         }
     };
 
-    const roles = [
-        { value: 'admin', label: 'Admin' },
-        { value: 'client', label: 'Client' },
-        { value: 'user', label: 'User' }
-    ];
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center px-4 relative overflow-hidden">
@@ -143,26 +137,7 @@ export default function Login() {
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                         </div>
 
-                        {/* Role Selection */}
-                        <div className="transform transition-all duration-300">
-                            <label className="block text-gray-700 font-semibold mb-2">Role</label>
-                            <select
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                onFocus={() => setFocusedField('role')}
-                                onBlur={() => setFocusedField(null)}
-                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white ${focusedField === 'role' ? 'border-purple-600' : 'border-gray-200'
-                                    } focus:border-purple-600 focus:outline-none`}
-                            >
-                                <option value="" disabled>Select your role</option>
-                                {roles.map((role) => (
-                                    <option key={role.value} value={role.value}>
-                                        {role.label}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
-                        </div>
+
 
                         {/* Login Button */}
                         <button
