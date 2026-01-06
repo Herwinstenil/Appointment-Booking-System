@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -11,12 +12,45 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+    const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const API_BASE_URL = 'http://localhost:5000/api';
+
+    // Check for social login callback on mount
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userParam = urlParams.get('user');
+
+        if (token && userParam) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userParam));
+                localStorage.setItem('token', token);
+                localStorage.setItem('userRole', user.role);
+                localStorage.setItem('user', JSON.stringify(user));
+                setIsLoggedIn(true);
+                setUserRole(user.role);
+                setUser(user);
+                // Clean up URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // Navigate based on role
+                const role = user.role;
+                if (role === 'USER') {
+                    navigate('/dashboard/user');
+                } else if (role === 'ADMIN') {
+                    navigate('/dashboard/admin');
+                } else if (role === 'CLIENT') {
+                    navigate('/dashboard/client');
+                }
+            } catch (error) {
+                console.error('Error parsing social login data:', error);
+            }
+        }
+    }, [navigate]);
 
     // Check for existing auth state on mount
     useEffect(() => {
@@ -122,6 +156,10 @@ export const AuthProvider = ({ children }) => {
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     };
 
+    const socialLogin = (provider) => {
+        window.location.href = `${API_BASE_URL}/auth/${provider}`;
+    };
+
     const value = {
         isLoggedIn,
         userRole,
@@ -131,6 +169,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         getAuthHeaders,
+        socialLogin,
         API_BASE_URL
     };
 

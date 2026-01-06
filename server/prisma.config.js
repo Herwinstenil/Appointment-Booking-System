@@ -7,6 +7,6 @@ module.exports = {
     path: 'prisma/migrations',
   },
   datasource: {
-    url: process.env.DATABASE_URL || '',
+    url: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public',
   },
 };

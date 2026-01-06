@@ -4,10 +4,170 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
+const TwitterStrategy = require('passport-twitter').Strategy;
+const GitHubStrategy = require('passport-github2').Strategy;
+const InstagramStrategy = require('passport-instagram').Strategy;
 
 const router = express.Router();
 const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
 const prisma = new PrismaClient({ adapter });
+
+// Passport strategies
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: '/api/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { googleId: profile.id } });
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: profile.emails[0].value } });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: profile.id }
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            googleId: profile.id,
+            email: profile.emails[0].value,
+            username: profile.displayName.replace(/\s/g, '').toLowerCase(),
+            firstName: profile.name.givenName,
+            lastName: profile.name.familyName
+          }
+        });
+      }
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+passport.use(new FacebookStrategy({
+  clientID: process.env.FACEBOOK_APP_ID,
+  clientSecret: process.env.FACEBOOK_APP_SECRET,
+  callbackURL: '/api/auth/facebook/callback',
+  profileFields: ['id', 'emails', 'name']
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { facebookId: profile.id } });
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: profile.emails[0].value } });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { facebookId: profile.id }
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            facebookId: profile.id,
+            email: profile.emails[0].value,
+            username: profile.displayName.replace(/\s/g, '').toLowerCase(),
+            firstName: profile.name.givenName,
+            lastName: profile.name.familyName
+          }
+        });
+      }
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+passport.use(new TwitterStrategy({
+  consumerKey: process.env.TWITTER_CONSUMER_KEY,
+  consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+  callbackURL: '/api/auth/twitter/callback'
+}, async (token, tokenSecret, profile, done) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { twitterId: profile.id } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          twitterId: profile.id,
+          username: profile.username,
+          firstName: profile.displayName
+        }
+      });
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackURL: '/api/auth/github/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { githubId: profile.id } });
+    if (!user) {
+      user = await prisma.user.findUnique({ where: { email: profile.emails[0].value } });
+      if (user) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { githubId: profile.id }
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            githubId: profile.id,
+            email: profile.emails[0].value,
+            username: profile.username,
+            firstName: profile.displayName
+          }
+        });
+      }
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+passport.use(new InstagramStrategy({
+  clientID: process.env.INSTAGRAM_CLIENT_ID,
+  clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
+  callbackURL: '/api/auth/instagram/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await prisma.user.findUnique({ where: { instagramId: profile.id } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          instagramId: profile.id,
+          username: profile.username,
+          firstName: profile.displayName
+        }
+      });
+    }
+    return done(null, user);
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
 
 // Register new user
 router.post('/register', [
@@ -229,6 +389,42 @@ router.post('/refresh', async (req, res) => {
       message: 'Invalid refresh token'
     });
   }
+});
+
+// Social login routes
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+});
+
+router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+router.get('/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+});
+
+router.get('/twitter', passport.authenticate('twitter'));
+
+router.get('/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+});
+
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+
+router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login' }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+});
+
+router.get('/instagram', passport.authenticate('instagram'));
+
+router.get('/instagram/callback', passport.authenticate('instagram', { failureRedirect: '/login' }), async (req, res) => {
+  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
 });
 
 module.exports = router;

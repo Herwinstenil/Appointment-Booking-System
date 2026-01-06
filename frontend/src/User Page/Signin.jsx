@@ -5,7 +5,7 @@ import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Signin() {
     const navigate = useNavigate();
-    const { register } = useAuth();
+    const { register, socialLogin } = useAuth();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -130,6 +130,43 @@ export default function Signin() {
                             Create Account
                         </h1>
                         <p className="text-gray-600">Sign in to get started</p>
+                    </div>
+
+                    {/* Social Login Buttons */}
+                    <div className="mb-6">
+                        <p className="text-center text-gray-600 mb-4">Or sign in with</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => socialLogin('google')}
+                                className="flex items-center justify-center gap-2 bg-red-500 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            >
+                                <span>Google</span>
+                            </button>
+                            <button
+                                onClick={() => socialLogin('facebook')}
+                                className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            >
+                                <span>Facebook</span>
+                            </button>
+                            <button
+                                onClick={() => socialLogin('twitter')}
+                                className="flex items-center justify-center gap-2 bg-blue-400 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            >
+                                <span>Twitter</span>
+                            </button>
+                            <button
+                                onClick={() => socialLogin('github')}
+                                className="flex items-center justify-center gap-2 bg-gray-800 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                            >
+                                <span>GitHub</span>
+                            </button>
+                            <button
+                                onClick={() => socialLogin('instagram')}
+                                className="flex items-center justify-center gap-2 bg-pink-500 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 col-span-2"
+                            >
+                                <span>Instagram</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div className="space-y-6">

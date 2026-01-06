@@ -12,7 +12,7 @@ model User {
   id        String   @id @default(cuid())
   username  String   @unique
   email     String   @unique
-  password  String
+  password  String?
   firstName String?
   lastName  String?
   role      Role     @default(USER)
@@ -27,6 +27,13 @@ model User {
   lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Social login IDs
+  googleId    String? @unique
+  facebookId  String? @unique
+  twitterId   String? @unique
+  githubId    String? @unique
+  instagramId String? @unique
 
   // Relations
   services               Service[]
