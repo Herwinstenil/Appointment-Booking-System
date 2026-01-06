@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
-import {  
-  FaGoogle,
-  FaFacebookF,
-  FaTwitter as FaTwitterIcon,
-  FaGithub as FaGithubIcon,
-  FaInstagram as FaInstagramIcon
+import {
+    FaGoogle,
+    FaFacebookF,
+    FaTwitter as FaTwitterIcon,
+    FaGithub as FaGithubIcon,
+    FaInstagram as FaInstagramIcon
 } from 'react-icons/fa';
 
 export default function Signin() {
@@ -305,65 +305,65 @@ export default function Signin() {
                         </button>
                     </div>
 
-                  {/* Social Login Buttons */}
-<div className="mb-6">
-    {/* Divider */}
-    <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or sign in with</span>
-        </div>
-    </div>
-    
-    <div className="flex justify-center space-x-4">
-        {/* Google Button */}
-        <button
-            onClick={() => handleSocialLogin('google')}
-            className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 border border-gray-300 hover:border-gray-400 group"
-            title="Sign in with Google"
-        >
-            <FaGoogle className="w-6 h-6 text-red-500 group-hover:text-red-600 transition-colors" />
-        </button>
+                    {/* Social Login Buttons */}
+                    <div className="mb-6">
+                        {/* Divider */}
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-white text-gray-500">Or sign in with</span>
+                            </div>
+                        </div>
 
-        {/* Facebook Button */}
-        <button
-            onClick={() => handleSocialLogin('facebook')}
-            className="w-12 h-12 flex items-center justify-center bg-[#1877F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#166FE5] group"
-            title="Sign in with Facebook"
-        >
-            <FaFacebookF className="w-5 h-5 text-white" />
-        </button>
+                        <div className="flex justify-center space-x-4">
+                            {/* Google Button */}
+                            <button
+                                onClick={() => handleSocialLogin('google')}
+                                className="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 border border-gray-300 hover:border-gray-400 group"
+                                title="Sign in with Google"
+                            >
+                                <FaGoogle className="w-6 h-6 text-red-500 group-hover:text-red-600 transition-colors" />
+                            </button>
 
-        {/* Twitter Button */}
-        <button
-            onClick={() => handleSocialLogin('twitter')}
-            className="w-12 h-12 flex items-center justify-center bg-[#1DA1F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#1a91da] group"
-            title="Sign in with Twitter"
-        >
-            <FaTwitterIcon className="w-5 h-5 text-white" />
-        </button>
+                            {/* Facebook Button */}
+                            <button
+                                onClick={() => handleSocialLogin('facebook')}
+                                className="w-12 h-12 flex items-center justify-center bg-[#1877F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#166FE5] group"
+                                title="Sign in with Facebook"
+                            >
+                                <FaFacebookF className="w-5 h-5 text-white" />
+                            </button>
 
-        {/* GitHub Button */}
-        <button
-            onClick={() => handleSocialLogin('github')}
-            className="w-12 h-12 flex items-center justify-center bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-gray-900 group"
-            title="Sign in with GitHub"
-        >
-            <FaGithubIcon className="w-5 h-5 text-white" />
-        </button>
+                            {/* Twitter Button */}
+                            <button
+                                onClick={() => handleSocialLogin('twitter')}
+                                className="w-12 h-12 flex items-center justify-center bg-[#1DA1F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#1a91da] group"
+                                title="Sign in with Twitter"
+                            >
+                                <FaTwitterIcon className="w-5 h-5 text-white" />
+                            </button>
 
-        {/* Instagram Button */}
-        <button
-            onClick={() => handleSocialLogin('instagram')}
-            className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 group"
-            title="Sign in with Instagram"
-        >
-            <FaInstagramIcon className="w-5 h-5 text-white" />
-        </button>
-    </div>
-</div>
+                            {/* GitHub Button */}
+                            <button
+                                onClick={() => handleSocialLogin('github')}
+                                className="w-12 h-12 flex items-center justify-center bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-gray-900 group"
+                                title="Sign in with GitHub"
+                            >
+                                <FaGithubIcon className="w-5 h-5 text-white" />
+                            </button>
+
+                            {/* Instagram Button */}
+                            <button
+                                onClick={() => handleSocialLogin('instagram')}
+                                className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 group"
+                                title="Sign in with Instagram"
+                            >
+                                <FaInstagramIcon className="w-5 h-5 text-white" />
+                            </button>
+                        </div>
+                    </div>
                     {/* Additional Links */}
                     <div className="text-center mt-6">
                         <span className="text-gray-600 text-sm">Already have an account? </span>
