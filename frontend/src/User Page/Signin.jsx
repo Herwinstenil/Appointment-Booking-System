@@ -135,7 +135,7 @@ export default function Signin() {
                         </button>
                     </div>
 
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-4">
                         <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 transform transition-all duration-500 hover:scale-110 hover:rotate-12 shadow-lg">
                             <User className="w-10 h-10 text-white" />
                         </div>
@@ -145,7 +145,7 @@ export default function Signin() {
                         <p className="text-gray-600">Sign in to get started</p>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Username Field */}
                         <div className="transform transition-all duration-300">
                             <label className="block text-gray-700 font-semibold mb-2">Username</label>
