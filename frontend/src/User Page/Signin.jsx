@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
 import { FcGoogle } from "react-icons/fc";
+import { SiX } from "react-icons/si";
 import {
     FaFacebookF,
-    FaTwitter as FaTwitterIcon,
     FaGithub as FaGithubIcon,
     FaInstagram as FaInstagramIcon
 } from 'react-icons/fa';
@@ -336,14 +336,15 @@ export default function Signin() {
                                 <FaFacebookF className="w-5 h-5 text-white" />
                             </button>
 
-                            {/* Twitter Button */}
-                            <button
-                                onClick={() => handleSocialLogin('twitter')}
-                                className="w-12 h-12 flex items-center justify-center bg-[#1DA1F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#1a91da] group"
-                                title="Sign in with Twitter"
-                            >
-                                <FaTwitterIcon className="w-5 h-5 text-white" />
-                            </button>
+                           {/* X (Twitter) Button */}
+<button
+  onClick={() => handleSocialLogin('twitter')}
+  className="w-12 h-12 flex items-center justify-center bg-black rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#111] group"
+  title="Sign in with X"
+>
+  <SiX className="w-5 h-5 text-white" />
+</button>
+
 
                             {/* GitHub Button */}
                             <button
