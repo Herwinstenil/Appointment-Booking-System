@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home, Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
+import {  
+  FaGoogle,
+  FaFacebookF,
+  FaTwitter as FaTwitterIcon,
+  FaGithub as FaGithubIcon,
+  FaInstagram as FaInstagramIcon
+} from 'react-icons/fa';
 
 export default function Signin() {
     const navigate = useNavigate();
@@ -102,6 +109,12 @@ export default function Signin() {
         }
     };
 
+    // Social login handlers
+    const handleSocialLogin = (provider) => {
+        alert(`${provider} login will be implemented soon!`);
+        // For now, just show alert. You'll need to implement actual OAuth flow
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Animated Background Elements */}
@@ -136,36 +149,60 @@ export default function Signin() {
                     <div className="mb-6">
                         <p className="text-center text-gray-600 mb-4">Or sign in with</p>
                         <div className="grid grid-cols-2 gap-3">
+                            {/* Google Button */}
                             <button
-                                onClick={() => socialLogin('google')}
-                                className="flex items-center justify-center gap-2 bg-red-500 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                onClick={() => handleSocialLogin('google')}
+                                className="flex items-center justify-center gap-3 bg-white text-gray-800 py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-300 hover:border-gray-400 group"
                             >
+                                <FaGoogle className="w-5 h-5" />
                                 <span>Google</span>
                             </button>
+
+                            {/* Facebook Button */}
                             <button
-                                onClick={() => socialLogin('facebook')}
-                                className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                onClick={() => handleSocialLogin('facebook')}
+                                className="flex items-center justify-center gap-3 bg-[#1877F2] text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-[#166FE5] group"
                             >
+                                <FaFacebookF className="w-5 h-5" />
                                 <span>Facebook</span>
                             </button>
+
+                            {/* Twitter Button */}
                             <button
-                                onClick={() => socialLogin('twitter')}
-                                className="flex items-center justify-center gap-2 bg-blue-400 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                onClick={() => handleSocialLogin('twitter')}
+                                className="flex items-center justify-center gap-3 bg-[#1DA1F2] text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-[#1a91da] group"
                             >
+                                <FaTwitterIcon className="w-5 h-5" />
                                 <span>Twitter</span>
                             </button>
+
+                            {/* GitHub Button */}
                             <button
-                                onClick={() => socialLogin('github')}
-                                className="flex items-center justify-center gap-2 bg-gray-800 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                                onClick={() => handleSocialLogin('github')}
+                                className="flex items-center justify-center gap-3 bg-gray-800 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-gray-900 group"
                             >
+                                <FaGithubIcon className="w-5 h-5" />
                                 <span>GitHub</span>
                             </button>
+
+                            {/* Instagram Button */}
                             <button
-                                onClick={() => socialLogin('instagram')}
-                                className="flex items-center justify-center gap-2 bg-pink-500 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 col-span-2"
+                                onClick={() => handleSocialLogin('instagram')}
+                                className="flex items-center justify-center gap-3 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 col-span-2 group"
                             >
+                                <FaInstagramIcon className="w-5 h-5" />
                                 <span>Instagram</span>
                             </button>
+                        </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
                         </div>
                     </div>
 
