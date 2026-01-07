@@ -117,7 +117,7 @@ export default function Login() {
                 setForgotFormData({ email: '', newPassword: '' });
                 // Navigation will happen automatically in resetPassword via login
             } else {
-                alert(result.message);
+                setForgotErrors(prev => ({ ...prev, newPassword: result.message }));
             }
         }
     };
