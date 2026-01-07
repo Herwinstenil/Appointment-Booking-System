@@ -63,8 +63,6 @@ export default function Login() {
         }
     };
 
-
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Animated Background Elements */}
@@ -143,8 +141,6 @@ export default function Login() {
                             </div>
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                         </div>
-
-
 
                         {/* Login Button */}
                         <button

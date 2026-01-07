@@ -151,7 +151,7 @@ const UserDashboard = () => {
                 const headers = getAuthHeaders();
 
                 // Fetch all appointments (both upcoming and completed)
-                const appointmentsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/appointments?limit=200`, {
+                const appointmentsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments?limit=200`, {
                     headers
                 });
 

@@ -111,8 +111,7 @@ export default function Signin() {
 
     // Social login handlers
     const handleSocialLogin = (provider) => {
-        alert(`${provider} login will be implemented soon!`);
-        // For now, just show alert. You'll need to implement actual OAuth flow
+        socialLogin(provider);
     };
 
     return (

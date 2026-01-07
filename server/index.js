@@ -14,7 +14,7 @@ const clientRoutes = require('./routes/client');
 const app = express();
 
 // Prisma 7.x: Use adapter for database connection
-const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const PORT = process.env.PORT || 5000;
