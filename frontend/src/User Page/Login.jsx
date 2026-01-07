@@ -5,7 +5,7 @@ import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, resetPassword } = useAuth();
     const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         email: '',
@@ -18,6 +18,16 @@ export default function Login() {
         email: '',
         password: ''
     });
+    const [showForgotModal, setShowForgotModal] = useState(false);
+    const [forgotFormData, setForgotFormData] = useState({
+        email: '',
+        newPassword: ''
+    });
+    const [forgotErrors, setForgotErrors] = useState({
+        email: '',
+        newPassword: ''
+    });
+    const [isForgotLoading, setIsForgotLoading] = useState(false);
 
     const from = searchParams.get('from');
     const role = searchParams.get('role');
@@ -58,6 +68,42 @@ export default function Login() {
                 }
             } else {
                 // Show error
+                alert(result.message);
+            }
+        }
+    };
+
+    const handleForgotSubmit = async () => {
+        // Clear previous errors
+        setForgotErrors({ email: '', newPassword: '' });
+
+        let hasErrors = false;
+
+        if (!forgotFormData.email) {
+            setForgotErrors(prev => ({ ...prev, email: 'required' }));
+            hasErrors = true;
+        } else if (!forgotFormData.email.includes('@')) {
+            setForgotErrors(prev => ({ ...prev, email: 'Please enter a valid email' }));
+            hasErrors = true;
+        }
+        if (!forgotFormData.newPassword) {
+            setForgotErrors(prev => ({ ...prev, newPassword: 'required' }));
+            hasErrors = true;
+        } else if (forgotFormData.newPassword.length < 6) {
+            setForgotErrors(prev => ({ ...prev, newPassword: 'Password must be at least 6 characters' }));
+            hasErrors = true;
+        }
+
+        if (!hasErrors) {
+            setIsForgotLoading(true);
+            const result = await resetPassword(forgotFormData.email, forgotFormData.newPassword);
+            setIsForgotLoading(false);
+
+            if (result.success) {
+                setShowForgotModal(false);
+                setForgotFormData({ email: '', newPassword: '' });
+                // Navigation will happen automatically in resetPassword via login
+            } else {
                 alert(result.message);
             }
         }
@@ -167,9 +213,12 @@ export default function Login() {
 
                     {/* Additional Links */}
                     <div className="text-center mt-6">
-                        <a href="#" className="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors duration-300 hover:underline">
+                        <button
+                            onClick={() => setShowForgotModal(true)}
+                            className="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors duration-300 hover:underline bg-transparent border-none cursor-pointer"
+                        >
                             Forgot your password?
-                        </a>
+                        </button>
                     </div>
 
                     <div className="text-center mt-4">
@@ -179,6 +228,81 @@ export default function Login() {
                         </a>
                     </div>
                 </div>
+
+                {/* Forgot Password Modal */}
+                {showForgotModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/20 max-w-md w-full mx-4">
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                    Reset Password
+                                </h2>
+                                <p className="text-gray-600">Enter your email and new password</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Email Field */}
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                                    <div className="relative">
+                                        <Mail className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="email"
+                                            value={forgotFormData.email}
+                                            onChange={(e) => setForgotFormData({ ...forgotFormData, email: e.target.value })}
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                                            placeholder="Enter your email"
+                                        />
+                                    </div>
+                                    {forgotErrors.email && <p className="text-red-500 text-sm mt-1">{forgotErrors.email}</p>}
+                                </div>
+
+                                {/* New Password Field */}
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2">New Password</label>
+                                    <div className="relative">
+                                        <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="password"
+                                            value={forgotFormData.newPassword}
+                                            onChange={(e) => setForgotFormData({ ...forgotFormData, newPassword: e.target.value })}
+                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                                            placeholder="Enter new password"
+                                        />
+                                    </div>
+                                    {forgotErrors.newPassword && <p className="text-red-500 text-sm mt-1">{forgotErrors.newPassword}</p>}
+                                </div>
+
+                                {/* Buttons */}
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        onClick={() => setShowForgotModal(false)}
+                                        className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleForgotSubmit}
+                                        disabled={isForgotLoading}
+                                        className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                    >
+                                        {isForgotLoading ? (
+                                            <span className="flex items-center justify-center">
+                                                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Resetting...
+                                            </span>
+                                        ) : (
+                                            'Reset Password'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <p className="text-center text-gray-500 text-sm mt-8">

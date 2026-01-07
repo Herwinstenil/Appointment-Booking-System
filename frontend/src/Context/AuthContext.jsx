@@ -126,6 +126,30 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const resetPassword = async (email, newPassword) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, newPassword }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // After resetting password, auto-login with the new password
+                return await login(email, newPassword);
+            } else {
+                return { success: false, message: data.message };
+            }
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return { success: false, message: 'Network error. Please try again.' };
+        }
+    };
+
     const logout = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -167,6 +191,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        resetPassword,
         logout,
         getAuthHeaders,
         socialLogin,
