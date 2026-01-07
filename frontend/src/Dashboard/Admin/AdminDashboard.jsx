@@ -95,15 +95,15 @@ const AdminDashboard = () => {
                     popularServicesResponse,
                     recentActivitiesResponse
                 ] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/services?limit=100`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/appointments?limit=100`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/popular-services`, { headers }),
-                    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers })
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/services?limit=100`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/appointments?limit=100`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/popular-services`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers })
                 ]);
 
                 // Process responses
