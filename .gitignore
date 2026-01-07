@@ -67,6 +67,7 @@ Thumbs.db
 
 # Prisma
 prisma/migrations/*/migration.sql
+prisma.toml
 
 # Build outputs
 dist/
