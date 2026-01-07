@@ -256,7 +256,7 @@ export default function Login() {
                                     <h2 className="text-2xl font-bold text-green-600 mb-2">
                                         Password Reset Successful!
                                     </h2>
-                                    <p className="text-gray-600">You will be logged in automatically.</p>
+                                    <p className="text-gray-600">You will be taken to login page automatically.</p>
                                 </div>
                             ) : (
                                 <>
