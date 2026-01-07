@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, Home } from 'lucide-react';
 import { useAuth } from '../Context/AuthContext.jsx';
@@ -29,10 +29,22 @@ export default function Login() {
         newPassword: ''
     });
     const [isForgotLoading, setIsForgotLoading] = useState(false);
+    const [resetSuccess, setResetSuccess] = useState(false);
 
     const from = searchParams.get('from');
     const role = searchParams.get('role');
     const showBackToHome = from === 'dashboard' && role === 'USER';
+
+    // Auto-close modal after success
+    useEffect(() => {
+        if (resetSuccess) {
+            const timer = setTimeout(() => {
+                setShowForgotModal(false);
+                setResetSuccess(false);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [resetSuccess]);
 
     const handleSubmit = async () => {
         // Clear previous errors
@@ -101,7 +113,7 @@ export default function Login() {
             setIsForgotLoading(false);
 
             if (result.success) {
-                setShowForgotModal(false);
+                setResetSuccess(true);
                 setForgotFormData({ email: '', newPassword: '' });
                 // Navigation will happen automatically in resetPassword via login
             } else {
@@ -234,80 +246,96 @@ export default function Login() {
                 {showForgotModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/20 max-w-md w-full mx-4">
-                            <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                                    Reset Password
-                                </h2>
-                                <p className="text-gray-600">Enter your email and new password</p>
-                            </div>
-
-                            <div className="space-y-4">
-                                {/* Email Field */}
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Email</label>
-                                    <div className="relative">
-                                        <Mail className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                        <input
-                                            type="email"
-                                            value={forgotFormData.email}
-                                            onChange={(e) => setForgotFormData({ ...forgotFormData, email: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                                            placeholder="Enter your email"
-                                        />
+                            {resetSuccess ? (
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
                                     </div>
-                                    {forgotErrors.email && <p className="text-red-500 text-sm mt-1">{forgotErrors.email}</p>}
+                                    <h2 className="text-2xl font-bold text-green-600 mb-2">
+                                        Password Reset Successful!
+                                    </h2>
+                                    <p className="text-gray-600">You will be logged in automatically.</p>
                                 </div>
-
-                                {/* New Password Field */}
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">New Password</label>
-                                    <div className="relative">
-                                        <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                        <input
-                                            type={showForgotPassword ? 'text' : 'password'}
-                                            value={forgotFormData.newPassword}
-                                            onChange={(e) => setForgotFormData({ ...forgotFormData, newPassword: e.target.value })}
-                                            className="w-full pl-10 pr-12 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
-                                            placeholder="Enter new password"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowForgotPassword(!showForgotPassword)}
-                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors duration-300"
-                                        >
-                                            {showForgotPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                        </button>
+                            ) : (
+                                <>
+                                    <div className="text-center mb-6">
+                                        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                            Reset Password
+                                        </h2>
+                                        <p className="text-gray-600">Enter your email and new password</p>
                                     </div>
-                                    {forgotErrors.newPassword && <p className="text-red-500 text-sm mt-1">{forgotErrors.newPassword}</p>}
-                                </div>
 
-                                {/* Buttons */}
-                                <div className="flex gap-3 mt-6">
-                                    <button
-                                        onClick={() => setShowForgotModal(false)}
-                                        className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-300"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleForgotSubmit}
-                                        disabled={isForgotLoading}
-                                        className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
-                                    >
-                                        {isForgotLoading ? (
-                                            <span className="flex items-center justify-center">
-                                                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Resetting...
-                                            </span>
-                                        ) : (
-                                            'Reset Password'
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
+                                    <div className="space-y-4">
+                                        {/* Email Field */}
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                                            <div className="relative">
+                                                <Mail className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                                <input
+                                                    type="email"
+                                                    value={forgotFormData.email}
+                                                    onChange={(e) => setForgotFormData({ ...forgotFormData, email: e.target.value })}
+                                                    className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                                                    placeholder="Enter your email"
+                                                />
+                                            </div>
+                                            {forgotErrors.email && <p className="text-red-500 text-sm mt-1">{forgotErrors.email}</p>}
+                                        </div>
+
+                                        {/* New Password Field */}
+                                        <div>
+                                            <label className="block text-gray-700 font-semibold mb-2">New Password</label>
+                                            <div className="relative">
+                                                <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                                <input
+                                                    type={showForgotPassword ? 'text' : 'password'}
+                                                    value={forgotFormData.newPassword}
+                                                    onChange={(e) => setForgotFormData({ ...forgotFormData, newPassword: e.target.value })}
+                                                    className="w-full pl-10 pr-12 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
+                                                    placeholder="Enter new password"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowForgotPassword(!showForgotPassword)}
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors duration-300"
+                                                >
+                                                    {showForgotPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                            </div>
+                                            {forgotErrors.newPassword && <p className="text-red-500 text-sm mt-1">{forgotErrors.newPassword}</p>}
+                                        </div>
+
+                                        {/* Buttons */}
+                                        <div className="flex gap-3 mt-6">
+                                            <button
+                                                onClick={() => setShowForgotModal(false)}
+                                                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-300"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleForgotSubmit}
+                                                disabled={isForgotLoading}
+                                                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                            >
+                                                {isForgotLoading ? (
+                                                    <span className="flex items-center justify-center">
+                                                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Resetting...
+                                                    </span>
+                                                ) : (
+                                                    'Reset Password'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
