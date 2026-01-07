@@ -374,6 +374,15 @@ router.post('/forgot-password', [
       });
     }
 
+    // Check if new password is the same as old password
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Your new password cannot be your old password'
+      });
+    }
+
     // Hash new password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
