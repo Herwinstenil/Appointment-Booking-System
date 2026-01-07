@@ -70,6 +70,14 @@ const AdminDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
+    // Icon mapping for activity icons
+    const iconMap = {
+        CheckCircle,
+        Clock,
+        XCircle,
+        AlertCircle
+    };
+
     // Loading and error states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -2135,7 +2143,7 @@ const AdminDashboard = () => {
                         {/* Activities List */}
                         <div className="space-y-4 mb-6">
                             {paginatedActivities.map((activity) => {
-                                const ActivityIcon = activity.icon;
+                                const ActivityIcon = iconMap[activity.icon] || CheckCircle;
                                 return (
                                     <div
                                         key={activity.id}
@@ -3022,7 +3030,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="space-y-4">
                                     {recentActivities.slice(0, 5).map((activity) => {
-                                        const ActivityIcon = activity.icon;
+                                        const ActivityIcon = iconMap[activity.icon] || CheckCircle;
                                         return (
                                             <div
                                                 key={activity.id}
@@ -4099,7 +4107,7 @@ const AdminDashboard = () => {
                                         </h3>
                                         <div className="space-y-4">
                                             {recentActivities.map((activity) => {
-                                                const ActivityIcon = activity.icon;
+                                                const ActivityIcon = iconMap[activity.icon] || CheckCircle;
                                                 return (
                                                     <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 group transform hover:scale-[1.02]">
                                                         <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>

@@ -3,11 +3,9 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
-const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 // Get admin dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
@@ -416,14 +414,16 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
 
     // Add appointment activities
     recentAppointments.forEach(appointment => {
-      activities.push({
-        id: `appointment-${appointment.id}`,
-        action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}`,
-        time: formatTimeAgo(appointment.createdAt),
-        status: appointment.status.toLowerCase(),
-        icon: getActivityIcon(appointment.status),
-        createdAt: appointment.createdAt // Keep raw date for sorting
-      });
+      if (appointment.service) {
+        activities.push({
+          id: `appointment-${appointment.id}`,
+          action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}`,
+          time: formatTimeAgo(appointment.createdAt),
+          status: appointment.status.toLowerCase(),
+          icon: getActivityIcon(appointment.status),
+          createdAt: appointment.createdAt // Keep raw date for sorting
+        });
+      }
     });
 
     // Add user activities
@@ -433,7 +433,7 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
         action: `New ${user.role.toLowerCase()} registered: ${user.firstName} ${user.lastName}`,
         time: formatTimeAgo(user.createdAt),
         status: 'created',
-        icon: CheckCircle,
+        icon: 'CheckCircle',
         createdAt: user.createdAt // Keep raw date for sorting
       });
     });
@@ -474,13 +474,13 @@ function getCategoryColor(category) {
 // Helper function to get activity icon
 function getActivityIcon(status) {
   const icons = {
-    'completed': CheckCircle,
-    'pending': Clock,
-    'cancelled': XCircle,
-    'confirmed': CheckCircle,
-    'created': CheckCircle
+    'completed': 'CheckCircle',
+    'pending': 'Clock',
+    'cancelled': 'XCircle',
+    'confirmed': 'CheckCircle',
+    'created': 'CheckCircle'
   };
-  return icons[status] || CheckCircle;
+  return icons[status] || 'CheckCircle';
 }
 
 // Helper function to format time ago
