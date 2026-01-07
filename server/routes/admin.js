@@ -1,11 +1,13 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const { PrismaPg } = require('@prisma/adapter-pg');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const prisma = new PrismaClient({ adapter });
 
 // Get admin dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
@@ -415,9 +417,12 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
     // Add appointment activities
     recentAppointments.forEach(appointment => {
       if (appointment.service) {
+        const clientName = appointment.client
+          ? `${appointment.client.firstName || 'Unknown'} ${appointment.client.lastName || 'Client'}`
+          : 'Unknown Client';
         activities.push({
           id: `appointment-${appointment.id}`,
-          action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}`,
+          action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}${appointment.client ? ` with ${clientName}` : ''}`,
           time: formatTimeAgo(appointment.createdAt),
           status: appointment.status.toLowerCase(),
           icon: getActivityIcon(appointment.status),
