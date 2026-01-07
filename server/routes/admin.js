@@ -421,7 +421,8 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
         action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}`,
         time: formatTimeAgo(appointment.createdAt),
         status: appointment.status.toLowerCase(),
-        icon: getActivityIcon(appointment.status)
+        icon: getActivityIcon(appointment.status),
+        createdAt: appointment.createdAt // Keep raw date for sorting
       });
     });
 
@@ -432,12 +433,13 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
         action: `New ${user.role.toLowerCase()} registered: ${user.firstName} ${user.lastName}`,
         time: formatTimeAgo(user.createdAt),
         status: 'created',
-        icon: CheckCircle
+        icon: CheckCircle,
+        createdAt: user.createdAt // Keep raw date for sorting
       });
     });
 
-    // Sort by time and limit
-    activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+    // Sort by createdAt date and limit
+    activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const result = activities.slice(0, limit);
 
     res.json({

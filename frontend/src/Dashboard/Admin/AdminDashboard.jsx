@@ -588,7 +588,7 @@ const AdminDashboard = () => {
         const matchesJoinDateTo = userFilters.joinDateTo === '' || userJoinDate <= new Date(userFilters.joinDateTo);
 
         // Revenue range filter
-        const userRevenue = parseFloat(user.revenue.replace(/[$,]/g, ''));
+        const userRevenue = parseFloat(user.revenue && typeof user.revenue === 'string' ? user.revenue.replace(/[$,]/g, '') : '0');
         const matchesRevenueMin = userFilters.revenueMin === '' || userRevenue >= parseFloat(userFilters.revenueMin);
         const matchesRevenueMax = userFilters.revenueMax === '' || userRevenue <= parseFloat(userFilters.revenueMax);
 
@@ -600,7 +600,7 @@ const AdminDashboard = () => {
         const matchesServiceType = bookingFilters.serviceType === '' || service.service === bookingFilters.serviceType;
 
         // Amount range filter
-        const serviceRevenue = parseFloat(service.revenue.toString().replace(/[$,]/g, ''));
+        const serviceRevenue = parseFloat(service.revenue && typeof service.revenue === 'string' ? service.revenue.replace(/[$,]/g, '') : '0');
         const matchesAmountMin = bookingFilters.amountMin === '' || serviceRevenue >= parseFloat(bookingFilters.amountMin);
         const matchesAmountMax = bookingFilters.amountMax === '' || serviceRevenue <= parseFloat(bookingFilters.amountMax);
 
@@ -612,7 +612,7 @@ const AdminDashboard = () => {
         const matchesCategory = revenueFilters.category === '' || category.category === revenueFilters.category;
 
         // Amount range filter
-        const categoryAmount = parseFloat(category.amount.toString().replace(/[$,]/g, ''));
+        const categoryAmount = parseFloat(category.amount && typeof category.amount === 'string' ? category.amount.replace(/[$,]/g, '') : '0');
         const matchesAmountMin = revenueFilters.amountMin === '' || categoryAmount >= parseFloat(revenueFilters.amountMin);
         const matchesAmountMax = revenueFilters.amountMax === '' || categoryAmount <= parseFloat(revenueFilters.amountMax);
 
