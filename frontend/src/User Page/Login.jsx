@@ -269,6 +269,13 @@ export default function Login() {
                                             className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                             placeholder="Enter new password"
                                         />
+                                         <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors duration-300"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                                     </div>
                                     {forgotErrors.newPassword && <p className="text-red-500 text-sm mt-1">{forgotErrors.newPassword}</p>}
                                 </div>
