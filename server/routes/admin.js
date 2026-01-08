@@ -388,6 +388,282 @@ router.get('/dashboard/popular-services', authenticateToken, authorizeRoles('ADM
   }
 });
 
+// Get revenue trend data
+router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const { period = 'monthly' } = req.query;
+    const now = new Date();
+
+    let startDate, endDate, groupBy, dateFormat, labels;
+
+    switch (period) {
+      case 'daily':
+        // Last 7 days
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 6);
+        endDate = new Date(now);
+        groupBy = 'DATE(createdAt)';
+        dateFormat = 'YYYY-MM-DD';
+        labels = [];
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(now.getDate() - i);
+          labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        }
+        break;
+
+      case 'weekly':
+        // Last 4 weeks
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 27);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('week', createdAt)";
+        dateFormat = 'YYYY-MM-DD';
+        labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        break;
+
+      case 'monthly':
+        // Last 12 months
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 11);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('month', createdAt)";
+        dateFormat = 'YYYY-MM';
+        labels = [];
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(now.getMonth() - i);
+          labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+        }
+        break;
+
+      case 'yearly':
+        // Last 5 years
+        startDate = new Date(now);
+        startDate.setFullYear(now.getFullYear() - 4);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('year', createdAt)";
+        dateFormat = 'YYYY';
+        labels = [];
+        for (let i = 4; i >= 0; i--) {
+          labels.push((now.getFullYear() - i).toString());
+        }
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid period. Use: daily, weekly, monthly, or yearly'
+        });
+    }
+
+    // Get revenue data grouped by time period
+    const revenueData = await prisma.$queryRaw`
+      SELECT
+        ${groupBy} as period,
+        SUM(amount) as revenue,
+        COUNT(*) as bookings
+      FROM appointments
+      WHERE status = 'COMPLETED'
+        AND createdAt >= ${startDate}
+        AND createdAt <= ${endDate}
+      GROUP BY ${groupBy}
+      ORDER BY period ASC
+    `;
+
+    // Format the data for frontend
+    const result = labels.map((label, index) => {
+      const periodData = revenueData.find(item => {
+        const itemDate = new Date(item.period);
+        switch (period) {
+          case 'daily':
+            return itemDate.toLocaleDateString('en-US', { weekday: 'short' }) === label;
+          case 'weekly':
+            // Calculate which week this belongs to
+            const weekIndex = Math.floor((now.getTime() - itemDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+            return weekIndex === (3 - index); // Reverse order
+          case 'monthly':
+            return itemDate.toLocaleDateString('en-US', { month: 'short' }) === label;
+          case 'yearly':
+            return itemDate.getFullYear().toString() === label;
+          default:
+            return false;
+        }
+      });
+
+      const revenue = periodData ? Number(periodData.revenue) : 0;
+      const bookings = periodData ? Number(periodData.bookings) : 0;
+
+      return {
+        label,
+        revenue,
+        bookings,
+        growth: 0 // Will be calculated below
+      };
+    });
+
+    // Calculate growth percentages
+    for (let i = 0; i < result.length; i++) {
+      if (i > 0) {
+        const current = result[i].revenue;
+        const previous = result[i - 1].revenue;
+        if (previous > 0) {
+          result[i].growth = Math.round(((current - previous) / previous) * 100 * 10) / 10;
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      data: result,
+      period
+    });
+
+  } catch (error) {
+    console.error('Get revenue trend error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get revenue trend data'
+    });
+  }
+});
+
+// Get booking trend data
+router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const { period = 'monthly' } = req.query;
+    const now = new Date();
+
+    let startDate, endDate, groupBy, dateFormat, labels;
+
+    switch (period) {
+      case 'daily':
+        // Last 7 days
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 6);
+        endDate = new Date(now);
+        groupBy = 'DATE(createdAt)';
+        dateFormat = 'YYYY-MM-DD';
+        labels = [];
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(now.getDate() - i);
+          labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        }
+        break;
+
+      case 'weekly':
+        // Last 4 weeks
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 27);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('week', createdAt)";
+        dateFormat = 'YYYY-MM-DD';
+        labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        break;
+
+      case 'monthly':
+        // Last 12 months
+        startDate = new Date(now);
+        startDate.setMonth(now.getMonth() - 11);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('month', createdAt)";
+        dateFormat = 'YYYY-MM';
+        labels = [];
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(now.getMonth() - i);
+          labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
+        }
+        break;
+
+      case 'yearly':
+        // Last 5 years
+        startDate = new Date(now);
+        startDate.setFullYear(now.getFullYear() - 4);
+        endDate = new Date(now);
+        groupBy = "DATE_TRUNC('year', createdAt)";
+        dateFormat = 'YYYY';
+        labels = [];
+        for (let i = 4; i >= 0; i--) {
+          labels.push((now.getFullYear() - i).toString());
+        }
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid period. Use: daily, weekly, monthly, or yearly'
+        });
+    }
+
+    // Get booking data grouped by time period
+    const bookingData = await prisma.$queryRaw`
+      SELECT
+        ${groupBy} as period,
+        COUNT(*) as bookings
+      FROM appointments
+      WHERE createdAt >= ${startDate}
+        AND createdAt <= ${endDate}
+      GROUP BY ${groupBy}
+      ORDER BY period ASC
+    `;
+
+    // Format the data for frontend
+    const result = labels.map((label, index) => {
+      const periodData = bookingData.find(item => {
+        const itemDate = new Date(item.period);
+        switch (period) {
+          case 'daily':
+            return itemDate.toLocaleDateString('en-US', { weekday: 'short' }) === label;
+          case 'weekly':
+            // Calculate which week this belongs to
+            const weekIndex = Math.floor((now.getTime() - itemDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+            return weekIndex === (3 - index); // Reverse order
+          case 'monthly':
+            return itemDate.toLocaleDateString('en-US', { month: 'short' }) === label;
+          case 'yearly':
+            return itemDate.getFullYear().toString() === label;
+          default:
+            return false;
+        }
+      });
+
+      const bookings = periodData ? Number(periodData.bookings) : 0;
+
+      return {
+        label,
+        bookings,
+        growth: 0 // Will be calculated below
+      };
+    });
+
+    // Calculate growth percentages
+    for (let i = 0; i < result.length; i++) {
+      if (i > 0) {
+        const current = result[i].bookings;
+        const previous = result[i - 1].bookings;
+        if (previous > 0) {
+          result[i].growth = Math.round(((current - previous) / previous) * 100 * 10) / 10;
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      data: result,
+      period
+    });
+
+  } catch (error) {
+    console.error('Get booking trend error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get booking trend data'
+    });
+  }
+});
+
 // Get recent activities
 router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
