@@ -316,7 +316,7 @@ router.post('/login', [
       await prisma.activity.create({
         data: {
           type: 'ADMIN_LOGIN',
-          description: `Admin ${user.firstName} ${user.lastName} logged in`,
+          description: `Admin ${user.firstName || user.username}${user.lastName ? ' ' + user.lastName : ''} logged in`,
           userId: user.id
         }
       });
