@@ -311,6 +311,17 @@ router.post('/login', [
       data: { lastLogin: new Date() }
     });
 
+    // Log admin login activity
+    if (user.role === 'ADMIN') {
+      await prisma.activity.create({
+        data: {
+          type: 'ADMIN_LOGIN',
+          description: `Admin ${user.firstName} ${user.lastName} logged in`,
+          userId: user.id
+        }
+      });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, role: user.role },

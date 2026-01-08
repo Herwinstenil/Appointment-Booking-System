@@ -393,59 +393,31 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
   try {
     const limit = parseInt(req.query.limit) || 10;
 
-    // Get recent appointments
-    const recentAppointments = await prisma.appointment.findMany({
+    // Get recent admin activities
+    const activities = await prisma.activity.findMany({
+      where: {
+        type: {
+          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'REPORT_GENERATED']
+        }
+      },
       include: {
-        service: { select: { name: true } },
-        client: { select: { firstName: true, lastName: true } },
-        user: { select: { firstName: true, lastName: true } }
+        user: {
+          select: { firstName: true, lastName: true }
+        }
       },
       orderBy: { createdAt: 'desc' },
       take: limit
     });
 
-    // Get recent users
-    const recentUsers = await prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: Math.min(limit, 5),
-      select: { id: true, firstName: true, lastName: true, createdAt: true, role: true }
-    });
-
-    // Combine and format activities
-    const activities = [];
-
-    // Add appointment activities
-    recentAppointments.forEach(appointment => {
-      if (appointment.service) {
-        const clientName = appointment.client
-          ? `${appointment.client.firstName || 'Unknown'} ${appointment.client.lastName || 'Client'}`
-          : 'Unknown Client';
-        activities.push({
-          id: `appointment-${appointment.id}`,
-          action: `${appointment.status.toLowerCase()} appointment for ${appointment.service.name}${appointment.client ? ` with ${clientName}` : ''}`,
-          time: formatTimeAgo(appointment.createdAt),
-          status: appointment.status.toLowerCase(),
-          icon: getActivityIcon(appointment.status),
-          createdAt: appointment.createdAt // Keep raw date for sorting
-        });
-      }
-    });
-
-    // Add user activities
-    recentUsers.forEach(user => {
-      activities.push({
-        id: `user-${user.id}`,
-        action: `New ${user.role.toLowerCase()} registered: ${user.firstName} ${user.lastName}`,
-        time: formatTimeAgo(user.createdAt),
-        status: 'created',
-        icon: 'CheckCircle',
-        createdAt: user.createdAt // Keep raw date for sorting
-      });
-    });
-
-    // Sort by createdAt date and limit
-    activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const result = activities.slice(0, limit);
+    // Format activities for frontend
+    const result = activities.map(activity => ({
+      id: `activity-${activity.id}`,
+      action: activity.description,
+      time: formatTimeAgo(activity.createdAt),
+      status: activity.type.toLowerCase().replace('_', '-'),
+      icon: getActivityIcon(activity.type),
+      createdAt: activity.createdAt
+    }));
 
     res.json({
       success: true,
@@ -477,15 +449,19 @@ function getCategoryColor(category) {
 }
 
 // Helper function to get activity icon
-function getActivityIcon(status) {
+function getActivityIcon(type) {
   const icons = {
+    'ADMIN_LOGIN': 'LogIn',
+    'ADMIN_CREATED': 'UserPlus',
+    'CLIENT_CREATED': 'UserPlus',
+    'REPORT_GENERATED': 'FileText',
     'completed': 'CheckCircle',
     'pending': 'Clock',
     'cancelled': 'XCircle',
     'confirmed': 'CheckCircle',
     'created': 'CheckCircle'
   };
-  return icons[status] || 'CheckCircle';
+  return icons[type] || 'CheckCircle';
 }
 
 // Helper function to format time ago
@@ -665,6 +641,20 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
         createdAt: true
       }
     });
+
+    // Log admin activity
+    const adminId = req.user?.userId; // From auth middleware
+    if (adminId) {
+      const activityType = role.toUpperCase() === 'ADMIN' ? 'ADMIN_CREATED' : 'CLIENT_CREATED';
+      await prisma.activity.create({
+        data: {
+          type: activityType,
+          description: `Admin created new ${role.toLowerCase()}: ${firstName} ${lastName}`,
+          userId: adminId,
+          targetId: user.id
+        }
+      });
+    }
 
     res.status(201).json({
       success: true,
