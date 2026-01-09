@@ -569,12 +569,12 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
       SELECT
         DATE_TRUNC(${groupBy === 'month' ? 'month' : 'day'}, a."createdAt") as period,
         COUNT(a.id) as appointments,
-        SUM(a.amount) as revenue
-      FROM appointments a
-      JOIN services s ON a."serviceId" = s.id
+        SUM(a."amount") as revenue
+      FROM "Appointment" a
+      JOIN "Service" s ON a."serviceId" = s.id
       WHERE s."userId" = ${req.user.id}
         AND a."createdAt" >= ${startDate}
-        AND a.status = 'COMPLETED'
+        AND a."status" = 'COMPLETED'
       GROUP BY DATE_TRUNC(${groupBy === 'month' ? 'month' : 'day'}, a."createdAt")
       ORDER BY period DESC
     `;
@@ -582,17 +582,17 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     // Get revenue by service
     const revenueByService = await prisma.$queryRaw`
       SELECT
-        s.name as service_name,
-        s.category,
+        s."name" as service_name,
+        s."category",
         COUNT(a.id) as appointments,
-        SUM(a.amount) as revenue,
-        AVG(a.rating) as avg_rating
-      FROM appointments a
-      JOIN services s ON a."serviceId" = s.id
+        SUM(a."amount") as revenue,
+        AVG(a."rating") as avg_rating
+      FROM "Appointment" a
+      JOIN "Service" s ON a."serviceId" = s.id
       WHERE s."userId" = ${req.user.id}
         AND a."createdAt" >= ${startDate}
-        AND a.status = 'COMPLETED'
-      GROUP BY s.id, s.name, s.category
+        AND a."status" = 'COMPLETED'
+      GROUP BY s.id, s."name", s."category"
       ORDER BY revenue DESC
     `;
 

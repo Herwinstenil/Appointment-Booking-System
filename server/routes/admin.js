@@ -402,7 +402,7 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 6);
         endDate = new Date(now);
-        groupBy = 'DATE(createdAt)';
+        groupBy = 'DATE("createdAt")';
         dateFormat = 'YYYY-MM-DD';
         labels = [];
         for (let i = 6; i >= 0; i--) {
@@ -417,7 +417,7 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 27);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('week', createdAt)";
+        groupBy = "DATE_TRUNC('week', \"createdAt\")";
         dateFormat = 'YYYY-MM-DD';
         labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
         break;
@@ -427,7 +427,7 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setMonth(now.getMonth() - 11);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('month', createdAt)";
+        groupBy = "DATE_TRUNC('month', \"createdAt\")";
         dateFormat = 'YYYY-MM';
         labels = [];
         for (let i = 11; i >= 0; i--) {
@@ -442,7 +442,7 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setFullYear(now.getFullYear() - 4);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('year', createdAt)";
+        groupBy = "DATE_TRUNC('year', \"createdAt\")";
         dateFormat = 'YYYY';
         labels = [];
         for (let i = 4; i >= 0; i--) {
@@ -461,12 +461,12 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
     const revenueData = await prisma.$queryRaw`
       SELECT
         ${groupBy} as period,
-        SUM(amount) as revenue,
+        SUM("amount") as revenue,
         COUNT(*) as bookings
-      FROM appointments
-      WHERE status = 'COMPLETED'
-        AND createdAt >= ${startDate}
-        AND createdAt <= ${endDate}
+      FROM "Appointment"
+      WHERE "status" = 'COMPLETED'
+        AND "createdAt" >= ${startDate}
+        AND "createdAt" <= ${endDate}
       GROUP BY ${groupBy}
       ORDER BY period ASC
     `;
@@ -542,7 +542,7 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 6);
         endDate = new Date(now);
-        groupBy = 'DATE(createdAt)';
+        groupBy = 'DATE("createdAt")';
         dateFormat = 'YYYY-MM-DD';
         labels = [];
         for (let i = 6; i >= 0; i--) {
@@ -557,7 +557,7 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setDate(now.getDate() - 27);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('week', createdAt)";
+        groupBy = "DATE_TRUNC('week', \"createdAt\")";
         dateFormat = 'YYYY-MM-DD';
         labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
         break;
@@ -567,7 +567,7 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setMonth(now.getMonth() - 11);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('month', createdAt)";
+        groupBy = "DATE_TRUNC('month', \"createdAt\")";
         dateFormat = 'YYYY-MM';
         labels = [];
         for (let i = 11; i >= 0; i--) {
@@ -582,7 +582,7 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
         startDate = new Date(now);
         startDate.setFullYear(now.getFullYear() - 4);
         endDate = new Date(now);
-        groupBy = "DATE_TRUNC('year', createdAt)";
+        groupBy = "DATE_TRUNC('year', \"createdAt\")";
         dateFormat = 'YYYY';
         labels = [];
         for (let i = 4; i >= 0; i--) {
@@ -602,9 +602,9 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
       SELECT
         ${groupBy} as period,
         COUNT(*) as bookings
-      FROM appointments
-      WHERE createdAt >= ${startDate}
-        AND createdAt <= ${endDate}
+      FROM "Appointment"
+      WHERE "createdAt" >= ${startDate}
+        AND "createdAt" <= ${endDate}
       GROUP BY ${groupBy}
       ORDER BY period ASC
     `;
