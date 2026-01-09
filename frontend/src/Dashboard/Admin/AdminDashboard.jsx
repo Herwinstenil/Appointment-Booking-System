@@ -65,7 +65,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-    const { getAuthHeaders } = useAuth();
+    const { getAuthHeaders, user: currentUser } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -606,6 +606,12 @@ const AdminDashboard = () => {
     };
 
     const filteredUsers = users.filter(user => {
+        // Client role filter - only show users with client roles
+        const isClientRole = ['Client', 'VIP Client', 'Enterprise', 'Partner'].includes(user.role);
+
+        // Exclude logged-in admin user
+        const isNotCurrentUser = user.id !== currentUser?.id;
+
         // Search term filter
         const matchesSearch = searchTerm === '' ||
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -628,7 +634,7 @@ const AdminDashboard = () => {
         const matchesRevenueMin = userFilters.revenueMin === '' || userRevenue >= parseFloat(userFilters.revenueMin);
         const matchesRevenueMax = userFilters.revenueMax === '' || userRevenue <= parseFloat(userFilters.revenueMax);
 
-        return matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
+        return isClientRole && isNotCurrentUser && matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
     });
 
     const filteredPopularServices = popularServices.filter(service => {
