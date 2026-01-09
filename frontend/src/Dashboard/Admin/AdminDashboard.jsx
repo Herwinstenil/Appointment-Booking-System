@@ -3247,7 +3247,7 @@ const AdminDashboard = () => {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center">
                                                         <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                            {user.name.split(' ').map(n => n[0]).join('')}
+                                                            {user.name ? user.name.split(' ').map(n => n[0]).join('') : (user.email ? user.email[0].toUpperCase() : 'U')}
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="text-sm font-medium text-gray-900">{user.name}</div>
