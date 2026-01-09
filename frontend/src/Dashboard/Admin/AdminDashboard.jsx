@@ -506,12 +506,20 @@ const AdminDashboard = () => {
 
             if (revenueResponse.ok) {
                 const revenueData = await revenueResponse.json();
-                setRevenueTrend(revenueData.data || []);
+                let data = revenueData.data || [];
+                if (data.length === 7) {
+                    data = [...data.slice(2), ...data.slice(0, 2)];
+                }
+                setRevenueTrend(data);
             }
 
             if (bookingResponse.ok) {
                 const bookingData = await bookingResponse.json();
-                setBookingTrend(bookingData.data || []);
+                let data = bookingData.data || [];
+                if (data.length === 7) {
+                    data = [...data.slice(2), ...data.slice(0, 2)];
+                }
+                setBookingTrend(data);
             }
         } catch (error) {
             console.error('Error fetching trend data:', error);
