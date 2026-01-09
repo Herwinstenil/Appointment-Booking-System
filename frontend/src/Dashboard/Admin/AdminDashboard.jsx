@@ -394,8 +394,6 @@ const AdminDashboard = () => {
         return data;
     };
 
-
-
     // Revenue Dashboard Data (dynamic based on time range)
     const getRevenueMetrics = (range) => {
         const baseMetrics = {
