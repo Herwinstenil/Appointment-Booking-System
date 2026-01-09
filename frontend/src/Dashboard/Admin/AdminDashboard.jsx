@@ -2866,11 +2866,12 @@ const AdminDashboard = () => {
                                         <div className="h-full flex items-end justify-between space-x-2">
                                             {(() => {
                                                 const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                const safeMaxRevenue = maxRevenue > 0 ? maxRevenue : 1; // Prevent division by zero
                                                 return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
                                                             className="w-full bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
-                                                            style={{ height: `${Math.max((data.revenue / maxRevenue) * 100, 5)}%` }}
+                                                            style={{ height: `${Math.max((data.revenue / safeMaxRevenue) * 100, 5)}%` }}
                                                         >
                                                             <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
                                                         </div>
@@ -2885,10 +2886,11 @@ const AdminDashboard = () => {
                                         <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
                                             {(() => {
                                                 const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                const safeMaxRevenue = maxRevenue > 0 ? maxRevenue : 1; // Prevent division by zero
                                                 const points = revenueTrend.map((data, index) => {
                                                     const x = (index / (revenueTrend.length - 1)) * 400;
-                                                    const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
-                                                    return `${x},${y}`;
+                                                    const y = 256 - (data.revenue / safeMaxRevenue) * 200; // Leave some margin at top
+                                                    return `${x},${isNaN(y) ? 256 : y}`; // Fallback to bottom if NaN
                                                 }).join(' ');
 
                                                 return (
@@ -2915,12 +2917,12 @@ const AdminDashboard = () => {
                                                         {/* Data points */}
                                                         {revenueTrend.map((data, index) => {
                                                             const x = (index / (revenueTrend.length - 1)) * 400;
-                                                            const y = 256 - (data.revenue / maxRevenue) * 200;
+                                                            const y = 256 - (data.revenue / safeMaxRevenue) * 200;
                                                             return (
                                                                 <circle
                                                                     key={index}
                                                                     cx={x}
-                                                                    cy={y}
+                                                                    cy={isNaN(y) ? 256 : y}
                                                                     r="6"
                                                                     fill="#f02450ff"
                                                                     className="hover:r-8 transition-all cursor-pointer"
