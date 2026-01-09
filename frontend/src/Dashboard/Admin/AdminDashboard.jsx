@@ -394,9 +394,7 @@ const AdminDashboard = () => {
         return data;
     };
 
-    // Dynamic data based on time range - memoized to prevent unnecessary recalculations
-    const revenueTrend = React.useMemo(() => getRevenueTrend(timeRange), [timeRange]);
-    const bookingTrend = React.useMemo(() => getBookingTrend(timeRange), [timeRange]);
+
 
     // Revenue Dashboard Data (dynamic based on time range)
     const getRevenueMetrics = (range) => {
@@ -494,6 +492,38 @@ const AdminDashboard = () => {
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [performanceMetrics, setPerformanceMetrics] = useState([]);
     const [popularServices, setPopularServices] = useState([]);
+
+    // Trend data state
+    const [revenueTrend, setRevenueTrend] = useState([]);
+    const [bookingTrend, setBookingTrend] = useState([]);
+
+    // Function to fetch trend data
+    const fetchTrendData = async (range) => {
+        try {
+            const headers = getAuthHeaders();
+            const [revenueResponse, bookingResponse] = await Promise.all([
+                fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-trend?period=${range}`, { headers }),
+                fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/booking-trend?period=${range}`, { headers })
+            ]);
+
+            if (revenueResponse.ok) {
+                const revenueData = await revenueResponse.json();
+                setRevenueTrend(revenueData.data || []);
+            }
+
+            if (bookingResponse.ok) {
+                const bookingData = await bookingResponse.json();
+                setBookingTrend(bookingData.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching trend data:', error);
+        }
+    };
+
+    // Fetch trend data when timeRange changes
+    useEffect(() => {
+        fetchTrendData(timeRange);
+    }, [timeRange, getAuthHeaders]);
 
     const navigate = useNavigate();
 
