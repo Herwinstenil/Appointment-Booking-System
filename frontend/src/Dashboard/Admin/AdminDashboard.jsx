@@ -3138,6 +3138,11 @@ const AdminDashboard = () => {
                 );
 
             case 'Client Management':
+                // Calculate total client users count
+                const totalClientUsers = users.filter(user =>
+                    ['Client', 'VIP Client', 'Enterprise', 'Partner'].includes(user.role)
+                ).length;
+
                 return (
                     <div className="p-8 animate-fadeIn">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
@@ -3181,7 +3186,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{totalClientUsers}</p>
                                     </div>
                                     <Users className="text-rose-500" size={32} />
                                 </div>
