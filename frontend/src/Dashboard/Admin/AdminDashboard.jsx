@@ -252,6 +252,7 @@ const AdminDashboard = () => {
 
     // Add Client Modal State
     const [showAddClientModal, setShowAddClientModal] = useState(false);
+    const [clientSuccess, setClientSuccess] = useState(false);
     const [newClient, setNewClient] = useState({
         name: '',
         email: '',
@@ -751,7 +752,8 @@ const AdminDashboard = () => {
             user.id === editedUser.id ? editedUser : user
         ));
         handleCloseEditModal();
-        alert(`User "${editedUser.name}" updated successfully!`);
+        setClientSuccess(true);
+        setTimeout(() => setClientSuccess(false), 3000);
     };
 
     // Service Management Handlers
@@ -892,8 +894,9 @@ const AdminDashboard = () => {
             // Close modal and reset form
             handleCloseAddClientModal();
 
-            // Show success message (you can replace this with a toast notification if preferred)
-            alert(`Client "${localClient.name}" added successfully!`);
+            // Show success notification
+            setClientSuccess(true);
+            setTimeout(() => setClientSuccess(false), 3000);
         };
 
         return (
@@ -4347,6 +4350,16 @@ const AdminDashboard = () => {
 
                 {/* Content area */}
                 <main className="flex-1 overflow-y-auto">
+                    {/* Client Success Notification */}
+                    {clientSuccess && (
+                        <div className="fixed top-4 right-4 z-50 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                            <CheckCircle size={24} />
+                            <div>
+                                <p className="font-semibold">Client Added Successfully!</p>
+                                <p className="text-sm opacity-90">The client has been added to the system.</p>
+                            </div>
+                        </div>
+                    )}
                     {renderContent()}
                 </main>
             </div>
