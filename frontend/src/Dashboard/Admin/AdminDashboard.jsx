@@ -253,6 +253,7 @@ const AdminDashboard = () => {
     // Add Client Modal State
     const [showAddClientModal, setShowAddClientModal] = useState(false);
     const [clientSuccess, setClientSuccess] = useState(false);
+    const [editSuccess, setEditSuccess] = useState(false);
     const [newClient, setNewClient] = useState({
         name: '',
         email: '',
@@ -752,8 +753,8 @@ const AdminDashboard = () => {
             user.id === editedUser.id ? editedUser : user
         ));
         handleCloseEditModal();
-        setClientSuccess(true);
-        setTimeout(() => setClientSuccess(false), 3000);
+        setEditSuccess(true);
+        setTimeout(() => setEditSuccess(false), 3000);
     };
 
     // Service Management Handlers
@@ -3148,6 +3149,16 @@ const AdminDashboard = () => {
 
                 return (
                     <div className="p-8 animate-fadeIn">
+                        {/* Client Edit Success Notification */}
+                        {editSuccess && (
+                            <div className="fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                                <CheckCircle size={24} />
+                                <div>
+                                    <p className="font-semibold">Client Information Updated</p>
+                                    <p className="text-sm opacity-90">Your client has been edited and saved successfully.</p>
+                                </div>
+                            </div>
+                        )}
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
                             <div>
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
