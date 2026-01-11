@@ -836,7 +836,7 @@ const AdminDashboard = () => {
             }));
         };
 
-        const handleSave = () => {
+        const handleSave = async () => {
             // Reset errors
             setErrors({});
 
@@ -877,38 +877,70 @@ const AdminDashboard = () => {
                 return;
             }
 
-            // Update parent state
-            Object.keys(localClient).forEach(key => {
-                handleNewClientChange(key, localClient[key]);
-            });
+            try {
+                // Call API to create user
+                const headers = getAuthHeaders();
+                const [firstName, ...lastNameParts] = localClient.name.trim().split(' ');
+                const lastName = lastNameParts.join(' ');
 
-            // Create new client object
-            const clientId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-            const newClientObj = {
-                id: clientId,
-                name: localClient.name,
-                email: localClient.email,
-                role: localClient.role,
-                status: localClient.status,
-                joinDate: new Date().toISOString().split('T')[0],
-                lastLogin: 'Just now',
-                clients: Math.floor(Math.random() * 50) + 1,
-                revenue: `$${Math.floor(Math.random() * 20000) + 1000}`,
-                company: localClient.company,
-                phone: localClient.phone,
-                address: localClient.address,
-                notes: localClient.notes
-            };
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users`, {
+                    method: 'POST',
+                    headers: {
+                        ...headers,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: localClient.email.split('@')[0], // Use email prefix as username
+                        email: localClient.email,
+                        password: 'defaultPassword123', // Default password, should be changed later
+                        firstName: firstName,
+                        lastName: lastName,
+                        role: 'CLIENT',
+                        company: localClient.company,
+                        mobile: localClient.phone.replace('+91 ', ''),
+                        address: localClient.address,
+                        bio: localClient.notes
+                    })
+                });
 
-            // Add to users array
-            setUsers(prev => [newClientObj, ...prev]);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create client');
+                }
 
-            // Close modal and reset form
-            handleCloseAddClientModal();
+                const data = await response.json();
+                const newUser = data.data.user;
 
-            // Show success notification
-            setClientSuccess(true);
-            setTimeout(() => setClientSuccess(false), 3000);
+                // Create client object for frontend display
+                const newClientObj = {
+                    id: newUser.id,
+                    name: `${newUser.firstName} ${newUser.lastName}`,
+                    email: newUser.email,
+                    role: newUser.role,
+                    status: 'Active', // Default status
+                    joinDate: new Date(newUser.createdAt).toISOString().split('T')[0],
+                    lastLogin: 'Just now',
+                    clients: newUser.clientNo || 0,
+                    revenue: `$${newUser.revenue || 0}`,
+                    company: newUser.company,
+                    phone: `+91 ${newUser.mobile}`,
+                    address: newUser.address || '',
+                    notes: newUser.bio || ''
+                };
+
+                // Add to users array
+                setUsers(prev => [newClientObj, ...prev]);
+
+                // Close modal and reset form
+                handleCloseAddClientModal();
+
+                // Show success notification
+                setClientSuccess(true);
+                setTimeout(() => setClientSuccess(false), 3000);
+            } catch (error) {
+                console.error('Error creating client:', error);
+                setErrors({ general: error.message || 'Failed to create client' });
+            }
         };
 
         return (
@@ -1226,7 +1258,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Client No</label>
-                                    <p className="text-gray-900">{selectedUser.clients}</p>
+                                    <p className="text-gray-900">{selectedUser.clientNo}</p>
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Revenue</label>
@@ -1414,8 +1446,8 @@ const AdminDashboard = () => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Client No</label>
                                     <input
                                         type="number"
-                                        value={editedUser.clients || ''}
-                                        onChange={(e) => handleEditChange('clients', parseInt(e.target.value) || 0)}
+                                        value={editedUser.clientNo || ''}
+                                        onChange={(e) => handleEditChange('clientNo', parseInt(e.target.value) || 0)}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
                                         placeholder="Number of clients"
                                         min="0"
@@ -3325,7 +3357,7 @@ const AdminDashboard = () => {
                                                         {user.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.clients}</td>
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.clientNo}</td>
                                                 <td className="px-6 py-4 text-sm font-semibold text-rose-600">{user.revenue}</td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
