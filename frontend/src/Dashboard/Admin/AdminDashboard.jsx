@@ -1225,7 +1225,7 @@ const AdminDashboard = () => {
                                     <p className="text-gray-900">{selectedUser.lastLogin}</p>
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Clients</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Client No</label>
                                     <p className="text-gray-900">{selectedUser.clients}</p>
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
