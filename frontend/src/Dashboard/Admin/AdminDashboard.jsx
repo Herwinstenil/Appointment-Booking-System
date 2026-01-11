@@ -1411,7 +1411,7 @@ const AdminDashboard = () => {
                                 </div>
 
                                 <div className="group">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Clients</label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Client No</label>
                                     <input
                                         type="number"
                                         value={editedUser.clients || ''}
