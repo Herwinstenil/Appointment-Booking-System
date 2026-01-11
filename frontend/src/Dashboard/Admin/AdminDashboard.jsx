@@ -254,6 +254,9 @@ const AdminDashboard = () => {
     const [showAddClientModal, setShowAddClientModal] = useState(false);
     const [clientSuccess, setClientSuccess] = useState(false);
     const [editSuccess, setEditSuccess] = useState(false);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
     const [newClient, setNewClient] = useState({
         name: '',
         email: '',
@@ -716,11 +719,19 @@ const AdminDashboard = () => {
     };
 
     // Delete user handler
-    const handleDeleteUser = (userId) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            setUsers(prev => prev.filter(user => user.id !== userId));
-            setSelectedUsers(prev => prev.filter(id => id !== userId));
-        }
+    const handleDeleteUser = (user) => {
+        setUserToDelete(user);
+        setDeleteConfirm(true);
+    };
+
+    // Handle delete client
+    const handleDeleteClient = () => {
+        setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
+        setSelectedUsers(prev => prev.filter(id => id !== userToDelete.id));
+        setDeleteConfirm(false);
+        setUserToDelete(null);
+        setDeleteSuccess(true);
+        setTimeout(() => setDeleteSuccess(false), 3000);
     };
 
     // View user handler
@@ -3333,7 +3344,7 @@ const AdminDashboard = () => {
                                                             <Edit size={16} />
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDeleteUser(user.id)}
+                                                            onClick={() => handleDeleteUser(user)}
                                                             className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
                                                             title="Delete"
                                                         >
@@ -4379,6 +4390,17 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* Delete Client Success Notification */}
+                    {deleteSuccess && (
+                        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                            <Trash2 size={24} />
+                            <div>
+                                <p className="font-semibold">Client Deleted Successfully!</p>
+                                <p className="text-sm opacity-90">The client has been permanently removed from the system.</p>
+                            </div>
+                        </div>
+                    )}
                     {renderContent()}
                 </main>
             </div>
@@ -4412,6 +4434,41 @@ const AdminDashboard = () => {
 
             {/* Revenue Transactions Modal */}
             {showAllTransactionsModal && <AllTransactionsModal />}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <AlertCircle className="w-6 h-6 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Delete Client</h3>
+                                <p className="text-gray-600 mt-1">Are you sure you want to delete this client? This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setDeleteConfirm(false)}
+                                className="px-5 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    handleDeleteClient();
+                                    setDeleteConfirm(false);
+                                }}
+                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition"
+                            >
+                                Delete Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Overlay for mobile */}
             {sidebarOpen && (
