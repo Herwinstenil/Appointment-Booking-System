@@ -1195,8 +1195,16 @@ const AdminDashboard = () => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                                     <p className="text-gray-900">{selectedUser.status}</p>
                                 </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Company</label>
+                                    <p className="text-gray-900">{selectedUser.company}</p>
+                                </div>
                             </div>
                             <div className="space-y-4">
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                                    <p className="text-gray-900">{selectedUser.phone}</p>
+                                </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Join Date</label>
                                     <p className="text-gray-900">{selectedUser.joinDate}</p>
