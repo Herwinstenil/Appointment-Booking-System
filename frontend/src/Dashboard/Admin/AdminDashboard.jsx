@@ -812,6 +812,7 @@ const AdminDashboard = () => {
     const AddClientModal = () => {
         const [localClient, setLocalClient] = useState(newClient);
         const [errors, setErrors] = useState({});
+        const [showPassword, setShowPassword] = useState(false);
 
         // Sync with parent state when modal opens
         React.useEffect(() => {
@@ -1039,13 +1040,22 @@ const AdminDashboard = () => {
                                         <Key size={16} className="text-rose-500" />
                                         Password *
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={localClient.password}
-                                        onChange={(e) => handleLocalChange('password', e.target.value)}
-                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
-                                        placeholder="Enter password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            value={localClient.password}
+                                            onChange={(e) => handleLocalChange('password', e.target.value)}
+                                            className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                            placeholder="Enter password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                                        >
+                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
                                     {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                                 </div>
                             </div>
@@ -1312,6 +1322,7 @@ const AdminDashboard = () => {
     const EditUserModal = () => {
         const [editedUser, setEditedUser] = useState(selectedUser || {});
         const [errors, setErrors] = useState({});
+        const [showPassword, setShowPassword] = useState(false);
 
         React.useEffect(() => {
             if (selectedUser) {
@@ -1541,13 +1552,22 @@ const AdminDashboard = () => {
                                         <Key size={16} className="text-rose-500" />
                                         Password
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={editedUser.password || ''}
-                                        onChange={(e) => handleEditChange('password', e.target.value)}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                        placeholder="Enter password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            value={editedUser.password || ''}
+                                            onChange={(e) => handleEditChange('password', e.target.value)}
+                                            className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                            placeholder="Enter password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                                        >
+                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="group">
