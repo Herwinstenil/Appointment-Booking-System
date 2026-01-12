@@ -803,6 +803,9 @@ router.get('/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res
           role: true,
           company: true,
           mobile: true,
+          clientNo: true,
+          revenue: true,
+          isActive: true,
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -822,10 +825,16 @@ router.get('/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res
       prisma.user.count({ where })
     ]);
 
+    // Map isActive to status for frontend compatibility
+    const mappedUsers = users.map(user => ({
+      ...user,
+      status: user.isActive ? 'Active' : 'Inactive'
+    }));
+
     res.json({
       success: true,
       data: {
-        users,
+        users: mappedUsers,
         pagination: {
           page: pageNum,
           limit: limitNum,

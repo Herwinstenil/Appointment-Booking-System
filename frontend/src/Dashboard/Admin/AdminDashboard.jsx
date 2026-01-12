@@ -620,8 +620,8 @@ const AdminDashboard = () => {
     };
 
     const filteredUsers = users.filter(user => {
-        // Client role filter - only show users with client roles
-        const isClientRole = ['Client', 'VIP Client', 'Enterprise', 'Partner'].includes(user.role);
+        // Client role filter - only show users with CLIENT role from database
+        const isClientRole = user.role === 'CLIENT';
 
         // Exclude logged-in admin user
         const isNotCurrentUser = user.id !== currentUser?.id;
