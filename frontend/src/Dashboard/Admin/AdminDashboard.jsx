@@ -1225,11 +1225,11 @@ const AdminDashboard = () => {
                         {/* User Profile Header */}
                         <div className="flex items-center space-x-6 mb-8">
                             <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                                {selectedUser.name.split(' ').map(n => n[0]).join('')}
+                                {selectedUser?.name ? selectedUser.name.split(' ').map(n => n[0]).join('') : 'U'}
                             </div>
                             <div>
-                                <h4 className="text-2xl font-bold text-gray-900">{selectedUser.name}</h4>
-                                <p className="text-gray-600">{selectedUser.email}</p>
+                                <h4 className="text-2xl font-bold text-gray-900">{selectedUser?.name || 'Unknown User'}</h4>
+                                <p className="text-gray-600">{selectedUser?.email || 'No email'}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedUser.role === 'Admin'
                                         ? 'bg-purple-100 text-purple-800'
@@ -1344,10 +1344,10 @@ const AdminDashboard = () => {
             const newErrors = {};
 
             // Check required fields
-            if (!editedUser.name.trim()) {
+            if (!editedUser?.name?.trim()) {
                 newErrors.name = 'Full name is required';
             }
-            if (!editedUser.email.trim()) {
+            if (!editedUser?.email?.trim()) {
                 newErrors.email = 'Email address is required';
             } else {
                 // Basic email validation
@@ -1356,10 +1356,10 @@ const AdminDashboard = () => {
                     newErrors.email = 'Please enter a valid email address';
                 }
             }
-            if (!editedUser.role.trim()) {
+            if (!editedUser?.role?.trim()) {
                 newErrors.role = 'Role is required';
             }
-            if (!editedUser.status.trim()) {
+            if (!editedUser?.status?.trim()) {
                 newErrors.status = 'Status is required';
             }
 
