@@ -3435,8 +3435,8 @@ const AdminDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client No</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Client No</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
@@ -3480,8 +3480,8 @@ const AdminDashboard = () => {
                                                         {user.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.clientNo}</td>
-                                                <td className="px-6 py-4 text-sm font-semibold text-rose-600">{user.revenue}</td>
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-900 text-center align-middle">{user.clientNo}</td>
+                                                <td className="px-6 py-4 text-sm font-semibold text-rose-600 text-center align-middle">{user.revenue}</td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
                                                         <button
