@@ -122,7 +122,14 @@ const AdminDashboard = () => {
 
                 if (usersResponse.ok) {
                     const usersData = await usersResponse.json();
-                    setUsers(usersData.data?.users || []);
+                    const formattedUsers = usersData.data?.users.map(user => ({
+                        ...user,
+                        revenue: `$${user.revenue || 0}`,
+                        phone: user.mobile ? `+91 ${user.mobile}` : '',
+                        joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+                        lastLogin: user.updatedAt ? new Date(user.updatedAt).toLocaleString() : 'N/A'
+                    })) || [];
+                    setUsers(formattedUsers);
                 }
 
                 if (servicesResponse.ok) {
