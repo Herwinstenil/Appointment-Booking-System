@@ -926,7 +926,7 @@ const AdminDashboard = () => {
                     status: 'Active', // Default status
                     joinDate: new Date(newUser.createdAt).toISOString().split('T')[0],
                     lastLogin: 'Just now',
-                    clients: newUser.clientNo || 0,
+                    clientNo: newUser.clientNo || 0,
                     revenue: `$${newUser.revenue || 0}`,
                     company: newUser.company,
                     phone: `+91 ${newUser.mobile}`,
@@ -1415,7 +1415,7 @@ const AdminDashboard = () => {
                     status: 'Active', // Default status
                     joinDate: selectedUser.joinDate, // Keep original join date
                     lastLogin: selectedUser.lastLogin, // Keep original last login
-                    clients: selectedUser.clients || 0,
+                    clientNo: selectedUser.clientNo || 0,
                     revenue: selectedUser.revenue,
                     company: updatedUser.company,
                     phone: updatedUser.mobile ? `+91 ${updatedUser.mobile}` : '',

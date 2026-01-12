@@ -828,6 +828,7 @@ router.get('/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res
     // Map isActive to status for frontend compatibility
     const mappedUsers = users.map(user => ({
       ...user,
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Unknown',
       status: user.isActive ? 'Active' : 'Inactive'
     }));
 
