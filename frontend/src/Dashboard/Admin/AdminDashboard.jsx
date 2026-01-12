@@ -265,7 +265,8 @@ const AdminDashboard = () => {
         role: '',
         status: 'Active',
         address: '',
-        notes: ''
+        notes: '',
+        password: ''
     });
 
     // View and Edit User Modal State
@@ -707,7 +708,8 @@ const AdminDashboard = () => {
             role: '',
             status: 'Active',
             address: '',
-            notes: ''
+            notes: '',
+            password: ''
         });
     };
 
@@ -870,6 +872,9 @@ const AdminDashboard = () => {
             if (!localClient.address.trim()) {
                 newErrors.address = 'Address is required';
             }
+            if (!localClient.password.trim()) {
+                newErrors.password = 'Password is required';
+            }
 
             // If there are errors, set them and return
             if (Object.keys(newErrors).length > 0) {
@@ -892,7 +897,7 @@ const AdminDashboard = () => {
                     body: JSON.stringify({
                         username: localClient.email.split('@')[0], // Use email prefix as username
                         email: localClient.email,
-                        password: 'defaultPassword123', // Default password, should be changed later
+                        password: localClient.password,
                         firstName: firstName,
                         lastName: lastName,
                         role: 'CLIENT',
@@ -1027,6 +1032,21 @@ const AdminDashboard = () => {
                                         placeholder="Company name"
                                     />
                                     {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Key size={16} className="text-rose-500" />
+                                        Password *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={localClient.password}
+                                        onChange={(e) => handleLocalChange('password', e.target.value)}
+                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 transition-all duration-300 ${errors.password ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
+                                        placeholder="Enter password"
+                                    />
+                                    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                                 </div>
                             </div>
 
@@ -1264,6 +1284,10 @@ const AdminDashboard = () => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Revenue</label>
                                     <p className="text-rose-600 font-semibold">{selectedUser.revenue}</p>
                                 </div>
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                                    <p className="text-gray-900">••••••••</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1302,7 +1326,7 @@ const AdminDashboard = () => {
             }));
         };
 
-        const handleSave = () => {
+        const handleSave = async () => {
             // Reset errors
             setErrors({});
 
@@ -1334,8 +1358,66 @@ const AdminDashboard = () => {
                 return;
             }
 
-            // Save the edited user
-            handleSaveEditedUser(editedUser);
+            try {
+                // Call API to update user
+                const headers = getAuthHeaders();
+                const [firstName, ...lastNameParts] = editedUser.name.trim().split(' ');
+                const lastName = lastNameParts.join(' ');
+
+                const updateData = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: editedUser.email,
+                    role: editedUser.role.toUpperCase(),
+                    company: editedUser.company || '',
+                    mobile: editedUser.phone ? editedUser.phone.replace('+91 ', '') : ''
+                };
+
+                // Only include password if it's not empty
+                if (editedUser.password && editedUser.password.trim()) {
+                    updateData.password = editedUser.password;
+                }
+
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${selectedUser.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        ...headers,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to update user');
+                }
+
+                const data = await response.json();
+                const updatedUser = data.data.user;
+
+                // Create updated client object for frontend display
+                const updatedClientObj = {
+                    id: updatedUser.id,
+                    name: `${updatedUser.firstName} ${updatedUser.lastName}`,
+                    email: updatedUser.email,
+                    role: updatedUser.role,
+                    status: 'Active', // Default status
+                    joinDate: selectedUser.joinDate, // Keep original join date
+                    lastLogin: selectedUser.lastLogin, // Keep original last login
+                    clients: selectedUser.clients || 0,
+                    revenue: selectedUser.revenue,
+                    company: updatedUser.company,
+                    phone: updatedUser.mobile ? `+91 ${updatedUser.mobile}` : '',
+                    address: selectedUser.address || '',
+                    notes: selectedUser.notes || ''
+                };
+
+                // Save the edited user
+                handleSaveEditedUser(updatedClientObj);
+            } catch (error) {
+                console.error('Error updating user:', error);
+                setErrors({ general: error.message || 'Failed to update user' });
+            }
         };
 
         if (!selectedUser) return null;
@@ -1451,6 +1533,20 @@ const AdminDashboard = () => {
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
                                         placeholder="Number of clients"
                                         min="0"
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <Key size={16} className="text-rose-500" />
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={editedUser.password || ''}
+                                        onChange={(e) => handleEditChange('password', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Enter password"
                                     />
                                 </div>
 
