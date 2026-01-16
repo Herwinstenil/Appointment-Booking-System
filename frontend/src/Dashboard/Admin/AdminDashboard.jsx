@@ -1430,7 +1430,9 @@ const AdminDashboard = () => {
                     email: editedUser.email,
                     role: editedUser.role.toUpperCase(),
                     company: editedUser.company || '',
-                    mobile: editedUser.phone ? editedUser.phone.replace('+91 ', '') : ''
+                    mobile: editedUser.phone ? editedUser.phone.replace('+91 ', '') : '',
+                    clientNo: editedUser.clientNo,
+                    revenue: editedUser.revenue ? parseFloat(editedUser.revenue.replace(/[$,]/g, '')) : undefined
                 };
 
                 // Only include password if it's not empty
@@ -1455,25 +1457,13 @@ const AdminDashboard = () => {
                 const data = await response.json();
                 const updatedUser = data.data.user;
 
-                // Update the user in the local state immediately
-                setUsers(prev => prev.map(user =>
-                    user.id === selectedUser.id
-                        ? {
-                            ...user,
-                            name: `${updatedUser.firstName} ${updatedUser.lastName}`.trim(),
-                            email: updatedUser.email,
-                            role: updatedUser.role,
-                            company: updatedUser.company,
-                            phone: updatedUser.mobile ? `+91 ${updatedUser.mobile}` : '',
-                            lastLogin: new Date(updatedUser.updatedAt).toLocaleString()
-                        }
-                        : user
-                ));
-
                 // Close the modal and show success
                 handleCloseEditModal();
                 setEditSuccess(true);
                 setTimeout(() => setEditSuccess(false), 3000);
+
+                // Refetch users data to ensure changes are reflected
+                await fetchUsersData();
             } catch (error) {
                 console.error('Error updating user:', error);
                 setErrors({ general: error.message || 'Failed to update user' });
@@ -1544,9 +1534,8 @@ const AdminDashboard = () => {
                                     >
                                         <option value="" disabled>Select Role</option>
                                         <option value="Admin">Admin</option>
-                                        <option value="Manager">Manager</option>
-                                        <option value="Support">Support</option>
                                         <option value="Client">Client</option>
+                                        <option value="User">User</option>
                                     </select>
                                     {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
