@@ -1000,7 +1000,8 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
       mobile,
       password,
       clientNo,
-      revenue
+      revenue,
+      isActive
     } = req.body;
 
     // Check if user exists
@@ -1060,7 +1061,8 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
         mobile: mobile?.trim() || undefined,
         password: hashedPassword || undefined,
         clientNo: clientNo !== undefined ? clientNo : undefined,
-        revenue: revenue !== undefined ? revenue : undefined
+        revenue: revenue !== undefined ? revenue : undefined,
+        isActive: isActive !== undefined ? isActive : undefined
       },
       select: {
         id: true,

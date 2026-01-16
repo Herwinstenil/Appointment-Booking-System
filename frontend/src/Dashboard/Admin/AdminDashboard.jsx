@@ -1432,7 +1432,8 @@ const AdminDashboard = () => {
                     company: editedUser.company || '',
                     mobile: editedUser.phone ? editedUser.phone.replace('+91 ', '') : '',
                     clientNo: editedUser.clientNo,
-                    revenue: editedUser.revenue ? parseFloat(editedUser.revenue.replace(/[$,]/g, '')) : undefined
+                    revenue: editedUser.revenue ? parseFloat(editedUser.revenue.replace(/[$,]/g, '')) : undefined,
+                    isActive: editedUser.status === 'Active'
                 };
 
                 // Only include password if it's not empty
