@@ -82,6 +82,28 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Function to fetch users data
+    const fetchUsersData = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const usersResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers });
+
+            if (usersResponse.ok) {
+                const usersData = await usersResponse.json();
+                const formattedUsers = usersData.data?.users.map(user => ({
+                    ...user,
+                    revenue: `$${user.revenue || 0}`,
+                    phone: user.mobile ? `+91 ${user.mobile}` : '',
+                    joinDate: new Date(user.createdAt).toISOString().split('T')[0],
+                    lastLogin: user.updatedAt ? new Date(user.updatedAt).toLocaleString() : 'N/A'
+                })) || [];
+                setUsers(formattedUsers);
+            }
+        } catch (error) {
+            console.error('Error fetching users data:', error);
+        }
+    };
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -734,13 +756,33 @@ const AdminDashboard = () => {
     };
 
     // Handle delete client
-    const handleDeleteClient = () => {
-        setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
-        setSelectedUsers(prev => prev.filter(id => id !== userToDelete.id));
-        setDeleteConfirm(false);
-        setUserToDelete(null);
-        setDeleteSuccess(true);
-        setTimeout(() => setDeleteSuccess(false), 3000);
+    const handleDeleteClient = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${userToDelete.id}`, {
+                method: 'DELETE',
+                headers
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete user');
+            }
+
+            // Remove from local state
+            setUsers(prev => prev.filter(user => user.id !== userToDelete.id));
+            setSelectedUsers(prev => prev.filter(id => id !== userToDelete.id));
+            setDeleteConfirm(false);
+            setUserToDelete(null);
+            setDeleteSuccess(true);
+            setTimeout(() => setDeleteSuccess(false), 3000);
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            // Show error notification
+            setDeleteConfirm(false);
+            setUserToDelete(null);
+            // You might want to add an error state here
+        }
     };
 
     // View user handler
@@ -768,10 +810,9 @@ const AdminDashboard = () => {
     };
 
     // Save edited user
-    const handleSaveEditedUser = (editedUser) => {
-        setUsers(prev => prev.map(user =>
-            user.id === editedUser.id ? editedUser : user
-        ));
+    const handleSaveEditedUser = async () => {
+        // Refetch users data after successful edit
+        await fetchUsersData();
         handleCloseEditModal();
         setEditSuccess(true);
         setTimeout(() => setEditSuccess(false), 3000);
@@ -1383,6 +1424,7 @@ const AdminDashboard = () => {
                 const lastName = lastNameParts.join(' ');
 
                 const updateData = {
+                    username: selectedUser.username, // Include username for validation
                     firstName: firstName,
                     lastName: lastName,
                     email: editedUser.email,
@@ -1413,25 +1455,25 @@ const AdminDashboard = () => {
                 const data = await response.json();
                 const updatedUser = data.data.user;
 
-                // Create updated client object for frontend display
-                const updatedClientObj = {
-                    id: updatedUser.id,
-                    name: `${updatedUser.firstName} ${updatedUser.lastName}`,
-                    email: updatedUser.email,
-                    role: updatedUser.role,
-                    status: 'Active', // Default status
-                    joinDate: selectedUser.joinDate, // Keep original join date
-                    lastLogin: selectedUser.lastLogin, // Keep original last login
-                    clientNo: selectedUser.clientNo || 0,
-                    revenue: selectedUser.revenue,
-                    company: updatedUser.company,
-                    phone: updatedUser.mobile ? `+91 ${updatedUser.mobile}` : '',
-                    address: selectedUser.address || '',
-                    notes: selectedUser.notes || ''
-                };
+                // Update the user in the local state immediately
+                setUsers(prev => prev.map(user =>
+                    user.id === selectedUser.id
+                        ? {
+                            ...user,
+                            name: `${updatedUser.firstName} ${updatedUser.lastName}`.trim(),
+                            email: updatedUser.email,
+                            role: updatedUser.role,
+                            company: updatedUser.company,
+                            phone: updatedUser.mobile ? `+91 ${updatedUser.mobile}` : '',
+                            lastLogin: new Date(updatedUser.updatedAt).toLocaleString()
+                        }
+                        : user
+                ));
 
-                // Save the edited user
-                handleSaveEditedUser(updatedClientObj);
+                // Close the modal and show success
+                handleCloseEditModal();
+                setEditSuccess(true);
+                setTimeout(() => setEditSuccess(false), 3000);
             } catch (error) {
                 console.error('Error updating user:', error);
                 setErrors({ general: error.message || 'Failed to update user' });
