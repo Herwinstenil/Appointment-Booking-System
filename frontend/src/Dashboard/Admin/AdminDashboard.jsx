@@ -660,7 +660,7 @@ const AdminDashboard = () => {
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            booking.service.toLowerCase().includes(bookingSearchTerm.toLowerCase())
+            booking.service.toLowerCase().includes(bookingSearchTerm.toLowerCase());
 
         // Role filter
         const matchesRole = userFilters.role === '' || user.role === userFilters.role;
