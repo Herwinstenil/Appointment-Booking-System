@@ -3375,11 +3375,6 @@ const AdminDashboard = () => {
                 );
 
             case 'Client Management':
-                // Calculate total client users count
-                const totalClientUsers = users.filter(user =>
-                    ['Client', 'VIP Client', 'Enterprise', 'Partner'].includes(user.role)
-                ).length;
-
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Client Edit Success Notification */}
@@ -3433,7 +3428,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{totalClientUsers}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'CLIENT').length}</p>
                                     </div>
                                     <Users className="text-rose-500" size={32} />
                                 </div>
@@ -3442,7 +3437,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Active').length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length}</p>
                                     </div>
                                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                                         <CheckCircle size={16} className="text-white" />
@@ -3453,7 +3448,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Admins</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Admin').length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'ADMIN').length}</p>
                                     </div>
                                     <User className="text-blue-500" size={32} />
                                 </div>
@@ -3462,9 +3457,9 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Managers</p>
-                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'Manager').length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.role === 'MANAGER').length}</p>
                                     </div>
-                                    <Users className="text-purple-500" size={32} />
+                                    <User className="text-purple-500" size={32} />
                                 </div>
                             </div>
                         </div>
