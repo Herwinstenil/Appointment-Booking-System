@@ -659,7 +659,7 @@ const AdminDashboard = () => {
         const matchesSearch = searchTerm === '' ||
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.role.toLowerCase().includes(searchTerm.toLowerCase());
+            user.role.toLowerCase().includes(searchTerm.toLowerCase())
 
         // Role filter
         const matchesRole = userFilters.role === '' || user.role === userFilters.role;
