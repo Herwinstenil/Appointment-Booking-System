@@ -664,6 +664,34 @@ router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'
   }
 });
 
+// Get server uptime
+router.get('/dashboard/server-uptime', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const uptimeSeconds = process.uptime();
+    const days = Math.floor(uptimeSeconds / 86400);
+    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+
+    const uptimeString = `${days}d ${hours}h ${minutes}m`;
+    const uptimePercentage = '99.9%'; // This could be calculated based on some logic
+
+    res.json({
+      success: true,
+      data: {
+        uptime: uptimeString,
+        percentage: uptimePercentage
+      }
+    });
+
+  } catch (error) {
+    console.error('Get server uptime error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get server uptime'
+    });
+  }
+});
+
 // Get recent activities
 router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {

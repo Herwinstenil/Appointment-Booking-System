@@ -126,7 +126,8 @@ const AdminDashboard = () => {
                     recentTransactionsResponse,
                     performanceMetricsResponse,
                     popularServicesResponse,
-                    recentActivitiesResponse
+                    recentActivitiesResponse,
+                    serverUptimeResponse
                 ] = await Promise.all([
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
@@ -136,7 +137,8 @@ const AdminDashboard = () => {
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/popular-services`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers })
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers })
                 ]);
 
                 // Process responses
@@ -190,6 +192,11 @@ const AdminDashboard = () => {
                 if (recentActivitiesResponse.ok) {
                     const activitiesData = await recentActivitiesResponse.json();
                     setRecentActivities(activitiesData.data || []);
+                }
+
+                if (serverUptimeResponse.ok) {
+                    const uptimeData = await serverUptimeResponse.json();
+                    setServerUptimeData(uptimeData.data);
                 }
 
             } catch (err) {
@@ -528,6 +535,7 @@ const AdminDashboard = () => {
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [performanceMetrics, setPerformanceMetrics] = useState([]);
     const [popularServices, setPopularServices] = useState([]);
+    const [serverUptimeData, setServerUptimeData] = useState({ uptime: '0d 0h 0m', percentage: '99.9%' });
 
     // Trend data state
     const [revenueTrend, setRevenueTrend] = useState([]);
@@ -3019,8 +3027,8 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Server Uptime',
-                                    value: systemMetrics.serverUptime,
-                                    change: `+${systemMetrics.serverUptimeGrowth || 0}%`,
+                                    value: serverUptimeData.uptime,
+                                    change: serverUptimeData.percentage,
                                     positive: true,
                                     icon: CheckCircle,
                                     gradient: 'from-amber-500 to-orange-600',
