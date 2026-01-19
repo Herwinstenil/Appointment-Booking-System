@@ -107,6 +107,20 @@ const AdminDashboard = () => {
         }
     };
 
+    // Function to fetch server uptime
+    const fetchServerUptime = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers });
+            if (response.ok) {
+                const uptimeData = await response.json();
+                setServerUptimeData(uptimeData.data);
+            }
+        } catch (error) {
+            console.error('Error fetching server uptime:', error);
+        }
+    };
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -208,6 +222,18 @@ const AdminDashboard = () => {
         };
 
         fetchDashboardData();
+    }, [getAuthHeaders]);
+
+    // Fetch server uptime periodically
+    useEffect(() => {
+        // Fetch immediately
+        fetchServerUptime();
+
+        // Set up interval to fetch every 30 seconds
+        const interval = setInterval(fetchServerUptime, 30000);
+
+        // Cleanup interval on unmount
+        return () => clearInterval(interval);
     }, [getAuthHeaders]);
 
     // Profile state
