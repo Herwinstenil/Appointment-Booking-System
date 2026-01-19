@@ -3002,7 +3002,7 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Active Users',
                                     value: dashboardStats.users?.clients || 0,
-                                    change: '+8.2%',
+                                    change: `+${dashboardStats.users?.growth || 0}%`,
                                     positive: true,
                                     icon: Users,
                                     gradient: 'from-blue-500 to-cyan-600',
@@ -3011,7 +3011,7 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Total Bookings',
                                     value: dashboardStats.appointments?.total || 0,
-                                    change: '+12.7%',
+                                    change: `+${dashboardStats.appointments?.growth || 0}%`,
                                     positive: true,
                                     icon: BookOpen,
                                     gradient: 'from-purple-500 to-violet-600',
@@ -3020,7 +3020,7 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Server Uptime',
                                     value: systemMetrics.serverUptime,
-                                    change: '+0.1%',
+                                    change: `+${systemMetrics.serverUptimeGrowth || 0}%`,
                                     positive: true,
                                     icon: CheckCircle,
                                     gradient: 'from-amber-500 to-orange-600',
