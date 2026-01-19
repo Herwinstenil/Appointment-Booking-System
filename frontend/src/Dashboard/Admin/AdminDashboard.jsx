@@ -567,6 +567,17 @@ const AdminDashboard = () => {
     const [revenueTrend, setRevenueTrend] = useState([]);
     const [bookingTrend, setBookingTrend] = useState([]);
 
+    // Booking Analytics state
+    const [bookingAnalytics, setBookingAnalytics] = useState({
+        totalBookings: 0,
+        completedBookings: 0,
+        pendingBookings: 0,
+        cancelledBookings: 0,
+        bookingRate: 0
+    });
+    const [bookingAnalyticsLoading, setBookingAnalyticsLoading] = useState(false);
+    const [bookingAnalyticsError, setBookingAnalyticsError] = useState(null);
+
     // Function to fetch trend data
     const fetchTrendData = async (range) => {
         try {
@@ -601,6 +612,125 @@ const AdminDashboard = () => {
     // Fetch trend data when timeRange changes
     useEffect(() => {
         fetchTrendData(timeRange);
+    }, [timeRange, getAuthHeaders]);
+
+    // Function to fetch booking analytics from client data
+    const fetchBookingAnalytics = async () => {
+        try {
+            setBookingAnalyticsLoading(true);
+            setBookingAnalyticsError(null);
+
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?role=CLIENT&limit=1000`, { headers });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch client data');
+            }
+
+            const data = await response.json();
+            const clients = data.data?.users || [];
+
+            // Compute booking analytics from client data
+            const totalBookings = clients.length;
+            const completedBookings = clients.filter(client => client.isActive === true).length;
+            const pendingBookings = clients.filter(client => client.isActive === false).length;
+            const cancelledBookings = 0; // No cancelled status in schema, users are deleted
+            const bookingRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+
+            setBookingAnalytics({
+                totalBookings,
+                completedBookings,
+                pendingBookings,
+                cancelledBookings,
+                bookingRate
+            });
+
+            // Compute booking trend data based on client creation dates
+            const bookingTrendData = computeBookingTrend(clients, timeRange);
+            setBookingTrend(bookingTrendData);
+
+        } catch (error) {
+            console.error('Error fetching booking analytics:', error);
+            setBookingAnalyticsError(error.message);
+        } finally {
+            setBookingAnalyticsLoading(false);
+        }
+    };
+
+    // Function to compute booking trend from client data
+    const computeBookingTrend = (clients, range) => {
+        const labels = getDateLabels(range);
+        const data = [];
+
+        for (let i = 0; i < labels.length; i++) {
+            let bookings = 0;
+
+            switch (range) {
+                case 'daily':
+                    // Count clients created on this day of the week
+                    const currentDate = new Date();
+                    const monday = new Date(currentDate);
+                    monday.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+                    const targetDate = new Date(monday);
+                    targetDate.setDate(monday.getDate() + i);
+
+                    bookings = clients.filter(client => {
+                        const clientDate = new Date(client.createdAt);
+                        return clientDate.toDateString() === targetDate.toDateString();
+                    }).length;
+                    break;
+
+                case 'weekly':
+                    // Count clients created in this week of the month
+                    bookings = clients.filter(client => {
+                        const clientDate = new Date(client.createdAt);
+                        const weekOfMonth = Math.ceil(clientDate.getDate() / 7);
+                        return weekOfMonth === (i + 1);
+                    }).length;
+                    break;
+
+                case 'monthly':
+                    // Count clients created in this month
+                    const currentMonth = new Date();
+                    const targetMonth = new Date(currentMonth);
+                    targetMonth.setMonth(currentMonth.getMonth() - (11 - i));
+
+                    bookings = clients.filter(client => {
+                        const clientDate = new Date(client.createdAt);
+                        return clientDate.getMonth() === targetMonth.getMonth() &&
+                            clientDate.getFullYear() === targetMonth.getFullYear();
+                    }).length;
+                    break;
+
+                case 'yearly':
+                    // Count clients created in this year
+                    const targetYear = new Date().getFullYear() - (4 - i);
+                    bookings = clients.filter(client => {
+                        const clientDate = new Date(client.createdAt);
+                        return clientDate.getFullYear() === targetYear;
+                    }).length;
+                    break;
+
+                default:
+                    bookings = 0;
+            }
+
+            const prevBookings = i > 0 ? data[i - 1].bookings : bookings;
+            const growth = prevBookings > 0 ? Math.round(((bookings - prevBookings) / prevBookings) * 100) : 0;
+
+            data.push({
+                label: labels[i],
+                bookings: bookings,
+                growth: growth
+            });
+        }
+
+        return data;
+    };
+
+    // Fetch booking analytics on component mount and when timeRange changes
+    useEffect(() => {
+        fetchBookingAnalytics();
     }, [timeRange, getAuthHeaders]);
 
     const navigate = useNavigate();
@@ -2835,11 +2965,11 @@ const AdminDashboard = () => {
         doc.setFontSize(10);
         doc.setTextColor(55, 65, 81); // Medium gray
         let yPos = 80;
-        doc.text(`Total Bookings: ${bookingData.totalBookings.toLocaleString()}`, 20, yPos);
-        doc.text(`Completed Bookings: ${bookingData.completedBookings.toLocaleString()}`, 20, yPos + 10);
-        doc.text(`Pending Bookings: ${bookingData.pendingBookings}`, 20, yPos + 20);
-        doc.text(`Cancelled Bookings: ${bookingData.cancelledBookings}`, 20, yPos + 30);
-        doc.text(`Completion Rate: ${bookingData.bookingRate}%`, 20, yPos + 40);
+        doc.text(`Total Bookings: ${bookingAnalytics.totalBookings.toLocaleString()}`, 20, yPos);
+        doc.text(`Completed Bookings: ${bookingAnalytics.completedBookings.toLocaleString()}`, 20, yPos + 10);
+        doc.text(`Pending Bookings: ${bookingAnalytics.pendingBookings}`, 20, yPos + 20);
+        doc.text(`Cancelled Bookings: ${bookingAnalytics.cancelledBookings}`, 20, yPos + 30);
+        doc.text(`Completion Rate: ${bookingAnalytics.bookingRate}%`, 20, yPos + 40);
 
         // Popular Services
         yPos += 60;
@@ -3651,48 +3781,79 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Booking Stats */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-rose-100 text-sm font-medium">Total Bookings</p>
-                                        <p className="text-2xl font-bold">{bookingData.totalBookings.toLocaleString()}</p>
-                                        <p className="text-rose-100 text-xs mt-1">All time</p>
+                        {bookingAnalyticsLoading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="bg-gradient-to-br from-gray-500 to-gray-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                        <div className="flex items-center justify-between">
+                                            <div className="animate-pulse">
+                                                <div className="h-4 bg-white/20 rounded mb-2"></div>
+                                                <div className="h-8 bg-white/20 rounded mb-2"></div>
+                                                <div className="h-3 bg-white/20 rounded"></div>
+                                            </div>
+                                            <div className="w-8 h-8 bg-white/20 rounded-full"></div>
+                                        </div>
                                     </div>
-                                    <BarChart3 size={32} className="opacity-80" />
+                                ))}
+                            </div>
+                        ) : bookingAnalyticsError ? (
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-8">
+                                <div className="text-red-600 mb-4">
+                                    <XCircle size={48} className="mx-auto" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Booking Data</h3>
+                                <p className="text-red-600 mb-4">{bookingAnalyticsError}</p>
+                                <button
+                                    onClick={() => fetchBookingAnalytics()}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-rose-100 text-sm font-medium">Total Bookings</p>
+                                            <p className="text-2xl font-bold">{bookingAnalytics.totalBookings.toLocaleString()}</p>
+                                            <p className="text-rose-100 text-xs mt-1">All time</p>
+                                        </div>
+                                        <BarChart3 size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-green-100 text-sm font-medium">Completed</p>
+                                            <p className="text-2xl font-bold">{bookingAnalytics.completedBookings.toLocaleString()}</p>
+                                            <p className="text-green-100 text-xs mt-1">{bookingAnalytics.bookingRate}% rate</p>
+                                        </div>
+                                        <CheckCircle size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-amber-100 text-sm font-medium">Pending</p>
+                                            <p className="text-2xl font-bold">{bookingAnalytics.pendingBookings}</p>
+                                            <p className="text-amber-100 text-xs mt-1">Awaiting confirmation</p>
+                                        </div>
+                                        <AlertCircle size={32} className="opacity-80" />
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-br from-red-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-red-100 text-sm font-medium">Cancelled</p>
+                                            <p className="text-2xl font-bold">{bookingAnalytics.cancelledBookings}</p>
+                                            <p className="text-red-100 text-xs mt-1">No cancelled bookings</p>
+                                        </div>
+                                        <XCircle size={32} className="opacity-80" />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-green-100 text-sm font-medium">Completed</p>
-                                        <p className="text-2xl font-bold">{bookingData.completedBookings.toLocaleString()}</p>
-                                        <p className="text-green-100 text-xs mt-1">{bookingData.bookingRate}% rate</p>
-                                    </div>
-                                    <CheckCircle size={32} className="opacity-80" />
-                                </div>
-                            </div>
-                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-amber-100 text-sm font-medium">Pending</p>
-                                        <p className="text-2xl font-bold">{bookingData.pendingBookings}</p>
-                                        <p className="text-amber-100 text-xs mt-1">Awaiting confirmation</p>
-                                    </div>
-                                    <AlertCircle size={32} className="opacity-80" />
-                                </div>
-                            </div>
-                            <div className="bg-gradient-to-br from-red-500 to-pink-600 p-6 rounded-2xl shadow-lg text-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-red-100 text-sm font-medium">Cancelled</p>
-                                        <p className="text-2xl font-bold">{bookingData.cancelledBookings}</p>
-                                        <p className="text-red-100 text-xs mt-1">6.1% cancellation rate</p>
-                                    </div>
-                                    <XCircle size={32} className="opacity-80" />
-                                </div>
-                            </div>
-                        </div>
+                        )}
 
                         {/* Charts Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
