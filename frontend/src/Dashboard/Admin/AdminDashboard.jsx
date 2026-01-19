@@ -3847,7 +3847,7 @@ const AdminDashboard = () => {
                                         <div>
                                             <p className="text-red-100 text-sm font-medium">Cancelled</p>
                                             <p className="text-2xl font-bold">{bookingAnalytics.cancelledBookings}</p>
-                                            <p className="text-red-100 text-xs mt-1">No cancelled bookings</p>
+                                            <p className="text-red-100 text-xs mt-1">Cancelled bookings</p>
                                         </div>
                                         <XCircle size={32} className="opacity-80" />
                                     </div>
