@@ -16,7 +16,6 @@ model User {
   firstName String?
   lastName  String?
   role      Role     @default(USER)
-  status    UserStatus @default(ACTIVE)
   company   String?
   mobile    String?
   address   String?
@@ -96,12 +95,6 @@ enum Status {
   CONFIRMED
   COMPLETED
   CANCELLED
-}
-
-enum UserStatus {
-  ACTIVE
-  INACTIVE
-  DELETED
 }
 
 enum ActivityType {
