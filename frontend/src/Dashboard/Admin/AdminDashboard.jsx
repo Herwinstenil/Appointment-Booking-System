@@ -663,7 +663,7 @@ const AdminDashboard = () => {
             user.clientNo.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
         // Role filter
-        const matchesRole = userFilters.role === '' || user.role === userFilters.role;
+        const matchesRole = userFilters.role === '' || user.role.toLowerCase() === userFilters.role.toLowerCase();
 
         // Status filter
         const matchesStatus = userFilters.status === '' || user.status === userFilters.status;
