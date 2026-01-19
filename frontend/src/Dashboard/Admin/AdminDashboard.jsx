@@ -82,6 +82,9 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Dashboard stats state
+    const [dashboardStats, setDashboardStats] = useState({});
+
     // Function to fetch users data
     const fetchUsersData = async () => {
         try {
@@ -139,7 +142,7 @@ const AdminDashboard = () => {
                 // Process responses
                 if (statsResponse.ok) {
                     const statsData = await statsResponse.json();
-                    // Stats are already handled in the component
+                    setDashboardStats(statsData.data);
                 }
 
                 if (usersResponse.ok) {
@@ -2989,8 +2992,8 @@ const AdminDashboard = () => {
                             {[
                                 {
                                     title: 'Total Revenue',
-                                    value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
-                                    change: `+${revenueMetrics.growthPercentage}%`,
+                                    value: `$${dashboardStats.revenue?.total || 0}`,
+                                    change: `+${dashboardStats.revenue?.growth || 0}%`,
                                     positive: true,
                                     icon: DollarSign,
                                     gradient: 'from-green-500 to-emerald-600',
@@ -2998,7 +3001,7 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Active Users',
-                                    value: systemMetrics.activeUsers,
+                                    value: dashboardStats.users?.clients || 0,
                                     change: '+8.2%',
                                     positive: true,
                                     icon: Users,
@@ -3007,7 +3010,7 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Total Bookings',
-                                    value: bookingData.totalBookings.toLocaleString(),
+                                    value: dashboardStats.appointments?.total || 0,
                                     change: '+12.7%',
                                     positive: true,
                                     icon: BookOpen,
