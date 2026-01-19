@@ -528,58 +528,6 @@ router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'
   }
 });
 
-// Get booking analytics data based on client statuses
-router.get('/dashboard/booking-analytics', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
-  try {
-    // Count clients by status
-    const [activeClients, inactiveClients, deletedClients] = await Promise.all([
-      prisma.user.count({
-        where: {
-          role: 'CLIENT',
-          status: 'ACTIVE'
-        }
-      }),
-      prisma.user.count({
-        where: {
-          role: 'CLIENT',
-          status: 'INACTIVE'
-        }
-      }),
-      prisma.user.count({
-        where: {
-          role: 'CLIENT',
-          status: 'DELETED'
-        }
-      })
-    ]);
-
-    const totalBookings = activeClients + inactiveClients + deletedClients;
-    const completedBookings = activeClients; // Active clients -> Completed
-    const pendingBookings = inactiveClients; // Inactive clients -> Pending
-    const cancelledBookings = deletedClients; // Deleted clients -> Cancelled
-
-    const bookingRate = totalBookings > 0 ? ((completedBookings / totalBookings) * 100).toFixed(1) : 0;
-
-    res.json({
-      success: true,
-      data: {
-        totalBookings,
-        completedBookings,
-        pendingBookings,
-        cancelledBookings,
-        bookingRate: `${bookingRate}%`
-      }
-    });
-
-  } catch (error) {
-    console.error('Get booking analytics error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get booking analytics data'
-    });
-  }
-});
-
 // Get booking trend data
 router.get('/dashboard/booking-trend', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
@@ -905,11 +853,11 @@ router.get('/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res
       prisma.user.count({ where })
     ]);
 
-    // Map status to frontend compatibility
+    // Map isActive to status for frontend compatibility
     const mappedUsers = users.map(user => ({
       ...user,
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Unknown',
-      status: user.status === 'ACTIVE' ? 'Active' : user.status === 'INACTIVE' ? 'Inactive' : 'Deleted'
+      status: user.isActive ? 'Active' : 'Inactive'
     }));
 
     res.json({
@@ -1004,7 +952,6 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
         firstName: firstName?.trim(),
         lastName: lastName?.trim(),
         role: role.toUpperCase(),
-        status: 'ACTIVE',
         company: company?.trim(),
         mobile: mobile?.trim(),
         clientNo: clientNo,
@@ -1198,10 +1145,9 @@ router.delete('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), asyn
       });
     }
 
-    // Set user status to DELETED instead of hard delete
-    await prisma.user.update({
-      where: { id: userId },
-      data: { status: 'DELETED' }
+    // Delete user (cascade will handle related records)
+    await prisma.user.delete({
+      where: { id: userId }
     });
 
     res.json({
