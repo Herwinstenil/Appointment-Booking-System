@@ -617,7 +617,10 @@ const AdminDashboard = () => {
     // Function to fetch booking analytics from client data
     const fetchBookingAnalytics = async () => {
         try {
-            setBookingAnalyticsLoading(true);
+            // Only show loading on initial load, not on timeRange changes
+            if (!bookingAnalytics.totalBookings) {
+                setBookingAnalyticsLoading(true);
+            }
             setBookingAnalyticsError(null);
 
             const headers = getAuthHeaders();
@@ -637,17 +640,20 @@ const AdminDashboard = () => {
             const cancelledBookings = 0; // No cancelled status in schema, users are deleted
             const bookingRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
 
-            setBookingAnalytics({
-                totalBookings,
-                completedBookings,
-                pendingBookings,
-                cancelledBookings,
-                bookingRate
-            });
+            // Add a small delay for smooth transition
+            setTimeout(() => {
+                setBookingAnalytics({
+                    totalBookings,
+                    completedBookings,
+                    pendingBookings,
+                    cancelledBookings,
+                    bookingRate
+                });
 
-            // Compute booking trend data based on client creation dates
-            const bookingTrendData = computeBookingTrend(clients, timeRange);
-            setBookingTrend(bookingTrendData);
+                // Compute booking trend data based on client creation dates
+                const bookingTrendData = computeBookingTrend(clients, timeRange);
+                setBookingTrend(bookingTrendData);
+            }, 150);
 
         } catch (error) {
             console.error('Error fetching booking analytics:', error);
