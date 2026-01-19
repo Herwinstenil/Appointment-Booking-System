@@ -199,6 +199,9 @@ const AdminDashboard = () => {
                     setServerUptimeData(uptimeData.data);
                 }
 
+                // Fetch booking analytics data
+                await fetchBookingAnalytics();
+
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
                 setError(err.message || 'Failed to load dashboard data');
@@ -499,36 +502,33 @@ const AdminDashboard = () => {
         };
     };
 
-    // Booking Data (dynamic based on time range)
-    const getBookingData = (range) => {
-        const baseData = {
-            totalBookings: 1247,
-            completedBookings: 984,
-            pendingBookings: 187,
-            cancelledBookings: 76,
-            bookingRate: 78.9
-        };
+    // Booking Data state
+    const [bookingData, setBookingData] = useState({
+        totalBookings: 0,
+        completedBookings: 0,
+        pendingBookings: 0,
+        cancelledBookings: 0,
+        bookingRate: '0%'
+    });
 
-        // Adjust metrics based on time range
-        const multiplier = {
-            daily: 0.03, // Daily values are smaller
-            weekly: 0.12,
-            monthly: 1,
-            yearly: 12
-        };
+    // Function to fetch booking analytics data
+    const fetchBookingAnalytics = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/booking-analytics`, { headers });
 
-        return {
-            ...baseData,
-            totalBookings: Math.round(baseData.totalBookings * multiplier[range]),
-            completedBookings: Math.round(baseData.completedBookings * multiplier[range]),
-            pendingBookings: Math.round(baseData.pendingBookings * multiplier[range]),
-            cancelledBookings: Math.round(baseData.cancelledBookings * multiplier[range])
-        };
+            if (response.ok) {
+                const data = await response.json();
+                setBookingData(data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching booking analytics:', error);
+        }
     };
 
     const revenueMetrics = getRevenueMetrics(timeRange);
     const systemMetrics = getSystemMetrics(timeRange);
-    const bookingData = getBookingData(timeRange);
+    const bookingMetrics = getBookingData(timeRange);
 
     // These will be populated from API responses
     const [revenueByCategory, setRevenueByCategory] = useState([]);
@@ -575,6 +575,7 @@ const AdminDashboard = () => {
     // Fetch trend data when timeRange changes
     useEffect(() => {
         fetchTrendData(timeRange);
+        fetchBookingAnalytics();
     }, [timeRange, getAuthHeaders]);
 
     const navigate = useNavigate();
