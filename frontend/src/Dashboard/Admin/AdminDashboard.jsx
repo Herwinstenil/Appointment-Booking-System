@@ -242,16 +242,10 @@ const AdminDashboard = () => {
         }
     };
 
-    // Fetch recent activities periodically for real-time updates
+    // Fetch recent activities on component mount
     useEffect(() => {
         // Fetch immediately
         fetchRecentActivities();
-
-        // Set up interval to fetch every 30 seconds
-        const interval = setInterval(fetchRecentActivities, 30000);
-
-        // Cleanup interval on unmount
-        return () => clearInterval(interval);
     }, [getAuthHeaders]);
 
     // Profile state
@@ -752,16 +746,10 @@ const AdminDashboard = () => {
         return data;
     };
 
-    // Fetch booking analytics periodically for real-time updates
+    // Fetch booking analytics on timeRange change
     useEffect(() => {
         // Fetch immediately
         fetchBookingAnalytics();
-
-        // Set up interval to fetch every 30 seconds
-        const interval = setInterval(fetchBookingAnalytics, 30000);
-
-        // Cleanup interval on unmount
-        return () => clearInterval(interval);
     }, [timeRange, getAuthHeaders]);
 
     const navigate = useNavigate();
