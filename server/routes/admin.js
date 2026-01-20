@@ -976,7 +976,7 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
     });
 
     // Log admin activity
-    const adminId = req.user?.userId; // From auth middleware
+    const adminId = req.user?.id; // From auth middleware
     if (adminId) {
       const activityType = role.toUpperCase() === 'ADMIN' ? 'ADMIN_CREATED' : 'CLIENT_CREATED';
       await prisma.activity.create({
@@ -1109,7 +1109,7 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
     });
 
     // Log admin activity for client editing
-    const adminId = req.user?.userId; // From auth middleware
+    const adminId = req.user?.id; // From auth middleware
     if (adminId && existingUser.role === 'CLIENT') {
       await prisma.activity.create({
         data: {
@@ -1759,7 +1759,7 @@ router.post('/activities/report-downloaded', authenticateToken, authorizeRoles('
     }
 
     const { reportType } = req.body;
-    const adminId = req.user?.userId;
+    const adminId = req.user?.id;
 
     if (!adminId) {
       return res.status(401).json({
