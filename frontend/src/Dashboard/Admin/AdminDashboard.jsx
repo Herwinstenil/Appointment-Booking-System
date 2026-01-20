@@ -228,6 +228,20 @@ const AdminDashboard = () => {
         fetchDashboardData();
     }, [getAuthHeaders]);
 
+    // Function to fetch recent activities
+    const fetchRecentActivities = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                setRecentActivities(data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching recent activities:', error);
+        }
+    };
+
     // Fetch server uptime periodically
     useEffect(() => {
         // Fetch immediately
@@ -235,6 +249,18 @@ const AdminDashboard = () => {
 
         // Set up interval to fetch every 30 seconds
         const interval = setInterval(fetchServerUptime, 30000);
+
+        // Cleanup interval on unmount
+        return () => clearInterval(interval);
+    }, [getAuthHeaders]);
+
+    // Fetch recent activities periodically for real-time updates
+    useEffect(() => {
+        // Fetch immediately
+        fetchRecentActivities();
+
+        // Set up interval to fetch every 30 seconds
+        const interval = setInterval(fetchRecentActivities, 30000);
 
         // Cleanup interval on unmount
         return () => clearInterval(interval);
@@ -738,9 +764,16 @@ const AdminDashboard = () => {
         return data;
     };
 
-    // Fetch booking analytics on component mount and when timeRange changes
+    // Fetch booking analytics periodically for real-time updates
     useEffect(() => {
+        // Fetch immediately
         fetchBookingAnalytics();
+
+        // Set up interval to fetch every 30 seconds
+        const interval = setInterval(fetchBookingAnalytics, 30000);
+
+        // Cleanup interval on unmount
+        return () => clearInterval(interval);
     }, [timeRange, getAuthHeaders]);
 
     const navigate = useNavigate();
