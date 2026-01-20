@@ -3180,7 +3180,7 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Total Bookings',
-                                    value: dashboardStats.appointments?.total || 0,
+                                    value: bookingAnalytics.totalBookings || 0,
                                     change: `+${dashboardStats.appointments?.growth || 0}%`,
                                     positive: true,
                                     icon: BookOpen,
