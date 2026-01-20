@@ -701,7 +701,7 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
     const activities = await prisma.activity.findMany({
       where: {
         type: {
-          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'REPORT_GENERATED']
+          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED']
         }
       },
       include: {
@@ -758,7 +758,10 @@ function getActivityIcon(type) {
     'ADMIN_LOGIN': 'LogIn',
     'ADMIN_CREATED': 'UserPlus',
     'CLIENT_CREATED': 'UserPlus',
+    'CLIENT_DELETED': 'UserMinus',
+    'CLIENT_EDITED': 'Edit',
     'REPORT_GENERATED': 'FileText',
+    'REPORT_DOWNLOADED': 'Download',
     'completed': 'CheckCircle',
     'pending': 'Clock',
     'cancelled': 'XCircle',
@@ -1105,6 +1108,19 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
       }
     });
 
+    // Log admin activity for client editing
+    const adminId = req.user?.userId; // From auth middleware
+    if (adminId && existingUser.role === 'CLIENT') {
+      await prisma.activity.create({
+        data: {
+          type: 'CLIENT_EDITED',
+          description: `Admin edited client: ${updatedUser.firstName} ${updatedUser.lastName}`,
+          userId: adminId,
+          targetId: userId
+        }
+      });
+    }
+
     res.json({
       success: true,
       message: 'User updated successfully',
@@ -1142,6 +1158,19 @@ router.delete('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), asyn
       return res.status(400).json({
         success: false,
         message: 'Cannot delete admin users'
+      });
+    }
+
+    // Log admin activity before deletion
+    const adminId = req.user?.userId; // From auth middleware
+    if (adminId && user.role === 'CLIENT') {
+      await prisma.activity.create({
+        data: {
+          type: 'CLIENT_DELETED',
+          description: `Admin deleted client: ${user.firstName} ${user.lastName}`,
+          userId: adminId,
+          targetId: userId
+        }
       });
     }
 
@@ -1711,6 +1740,53 @@ router.delete('/appointments/:appointmentId', authenticateToken, authorizeRoles(
     res.status(500).json({
       success: false,
       message: 'Failed to delete appointment'
+    });
+  }
+});
+
+// Log report download activity
+router.post('/activities/report-downloaded', authenticateToken, authorizeRoles('ADMIN'), [
+  body('reportType').isLength({ min: 1 }).withMessage('Report type is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { reportType } = req.body;
+    const adminId = req.user?.userId;
+
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    // Log the activity
+    await prisma.activity.create({
+      data: {
+        type: 'REPORT_DOWNLOADED',
+        description: `Admin downloaded ${reportType} report`,
+        userId: adminId
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Report download activity logged successfully'
+    });
+
+  } catch (error) {
+    console.error('Log report download error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to log report download activity'
     });
   }
 });

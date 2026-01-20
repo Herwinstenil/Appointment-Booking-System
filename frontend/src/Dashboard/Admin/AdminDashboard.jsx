@@ -61,7 +61,8 @@ import {
     TrendingDown as ArrowTrendingDown,
     Users as UsersIcon,
     Settings as SettingsIcon,
-    Download as DownloadIcon
+    Download as DownloadIcon,
+    UserMinus
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -75,7 +76,10 @@ const AdminDashboard = () => {
         CheckCircle,
         Clock,
         XCircle,
-        AlertCircle
+        AlertCircle,
+        UserMinus,
+        Edit,
+        Download
     };
 
     // Loading and error states
@@ -2950,130 +2954,164 @@ const AdminDashboard = () => {
     };
 
     // PDF Export Functions
-    const exportBookingAnalyticsToPDF = () => {
-        const doc = new jsPDF();
+    const exportBookingAnalyticsToPDF = async () => {
+        try {
+            const doc = new jsPDF();
 
-        // Title
-        doc.setFontSize(20);
-        doc.setTextColor(219, 39, 119); // Rose color
-        doc.text('Booking Analytics Report', 20, 30);
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(219, 39, 119); // Rose color
+            doc.text('Booking Analytics Report', 20, 30);
 
-        // Generated date
-        doc.setFontSize(10);
-        doc.setTextColor(107, 114, 128); // Gray
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+            // Generated date
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128); // Gray
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
 
-        // Key Metrics
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39); // Dark gray
-        doc.text('Key Metrics', 20, 65);
+            // Key Metrics
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39); // Dark gray
+            doc.text('Key Metrics', 20, 65);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81); // Medium gray
-        let yPos = 80;
-        doc.text(`Total Bookings: ${bookingAnalytics.totalBookings.toLocaleString()}`, 20, yPos);
-        doc.text(`Completed Bookings: ${bookingAnalytics.completedBookings.toLocaleString()}`, 20, yPos + 10);
-        doc.text(`Pending Bookings: ${bookingAnalytics.pendingBookings}`, 20, yPos + 20);
-        doc.text(`Cancelled Bookings: ${bookingAnalytics.cancelledBookings}`, 20, yPos + 30);
-        doc.text(`Completion Rate: ${bookingAnalytics.bookingRate}%`, 20, yPos + 40);
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81); // Medium gray
+            let yPos = 80;
+            doc.text(`Total Bookings: ${bookingAnalytics.totalBookings.toLocaleString()}`, 20, yPos);
+            doc.text(`Completed Bookings: ${bookingAnalytics.completedBookings.toLocaleString()}`, 20, yPos + 10);
+            doc.text(`Pending Bookings: ${bookingAnalytics.pendingBookings}`, 20, yPos + 20);
+            doc.text(`Cancelled Bookings: ${bookingAnalytics.cancelledBookings}`, 20, yPos + 30);
+            doc.text(`Completion Rate: ${bookingAnalytics.bookingRate}%`, 20, yPos + 40);
 
-        // Popular Services
-        yPos += 60;
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39);
-        doc.text('Popular Services', 20, yPos);
+            // Popular Services
+            yPos += 60;
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Popular Services', 20, yPos);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81);
-        yPos += 15;
-        filteredPopularServices.forEach((service, index) => {
-            doc.text(`${index + 1}. ${service.service}: ${service.bookings} bookings - $${service.revenue.toLocaleString()}`, 20, yPos);
-            yPos += 10;
-        });
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            yPos += 15;
+            filteredPopularServices.forEach((service, index) => {
+                doc.text(`${index + 1}. ${service.service}: ${service.bookings} bookings - $${service.revenue.toLocaleString()}`, 20, yPos);
+                yPos += 10;
+            });
 
-        // Performance Metrics
-        yPos += 20;
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39);
-        doc.text('Performance Metrics', 20, yPos);
+            // Performance Metrics
+            yPos += 20;
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Performance Metrics', 20, yPos);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81);
-        yPos += 15;
-        const metrics = [
-            { label: 'Conversion Rate', value: '8.5%', change: '+1.2%' },
-            { label: 'Avg Booking Value', value: '$156', change: '+$12' },
-            { label: 'Repeat Bookings', value: '42%', change: '+3.5%' },
-            { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' }
-        ];
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            yPos += 15;
+            const metrics = [
+                { label: 'Conversion Rate', value: '8.5%', change: '+1.2%' },
+                { label: 'Avg Booking Value', value: '$156', change: '+$12' },
+                { label: 'Repeat Bookings', value: '42%', change: '+3.5%' },
+                { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' }
+            ];
 
-        metrics.forEach((metric) => {
-            doc.text(`${metric.label}: ${metric.value} (${metric.change})`, 20, yPos);
-            yPos += 10;
-        });
+            metrics.forEach((metric) => {
+                doc.text(`${metric.label}: ${metric.value} (${metric.change})`, 20, yPos);
+                yPos += 10;
+            });
 
-        // Save the PDF
-        doc.save('booking-analytics-report.pdf');
+            // Save the PDF
+            doc.save('booking-analytics-report.pdf');
+
+            // Log the activity
+            const headers = getAuthHeaders();
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+                method: 'POST',
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportType: 'Booking Analytics'
+                })
+            });
+        } catch (error) {
+            console.error('Error exporting PDF or logging activity:', error);
+        }
     };
 
-    const exportRevenueDashboardToPDF = () => {
-        const doc = new jsPDF();
+    const exportRevenueDashboardToPDF = async () => {
+        try {
+            const doc = new jsPDF();
 
-        // Title
-        doc.setFontSize(20);
-        doc.setTextColor(219, 39, 119); // Rose color
-        doc.text('Revenue Dashboard Report', 20, 30);
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(219, 39, 119); // Rose color
+            doc.text('Revenue Dashboard Report', 20, 30);
 
-        // Generated date
-        doc.setFontSize(10);
-        doc.setTextColor(107, 114, 128); // Gray
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+            // Generated date
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128); // Gray
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
 
-        // Key Metrics
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39); // Dark gray
-        doc.text('Key Metrics', 20, 65);
+            // Key Metrics
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39); // Dark gray
+            doc.text('Key Metrics', 20, 65);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81); // Medium gray
-        let yPos = 80;
-        doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
-        doc.text(`Monthly Revenue: $${revenueMetrics.monthlyRevenue.toLocaleString()}`, 20, yPos + 10);
-        doc.text(`Growth: +${revenueMetrics.growthPercentage}%`, 20, yPos + 20);
-        doc.text(`Active Subscriptions: ${revenueMetrics.activeSubscriptions.toLocaleString()}`, 20, yPos + 30);
-        doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 40);
-        doc.text(`New Customers: ${revenueMetrics.newCustomers}`, 20, yPos + 50);
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81); // Medium gray
+            let yPos = 80;
+            doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
+            doc.text(`Monthly Revenue: $${revenueMetrics.monthlyRevenue.toLocaleString()}`, 20, yPos + 10);
+            doc.text(`Growth: +${revenueMetrics.growthPercentage}%`, 20, yPos + 20);
+            doc.text(`Active Subscriptions: ${revenueMetrics.activeSubscriptions.toLocaleString()}`, 20, yPos + 30);
+            doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 40);
+            doc.text(`New Customers: ${revenueMetrics.newCustomers}`, 20, yPos + 50);
 
-        // Revenue by Category
-        yPos += 70;
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39);
-        doc.text('Revenue by Category', 20, yPos);
+            // Revenue by Category
+            yPos += 70;
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Revenue by Category', 20, yPos);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81);
-        yPos += 15;
-        filteredRevenueByCategory.forEach((category) => {
-            doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage}%) - Growth: ${category.growth}%`, 20, yPos);
-            yPos += 10;
-        });
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            yPos += 15;
+            filteredRevenueByCategory.forEach((category) => {
+                doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage}%) - Growth: ${category.growth}%`, 20, yPos);
+                yPos += 10;
+            });
 
-        // Recent Transactions
-        yPos += 20;
-        doc.setFontSize(14);
-        doc.setTextColor(17, 24, 39);
-        doc.text('Recent Transactions', 20, yPos);
+            // Recent Transactions
+            yPos += 20;
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Recent Transactions', 20, yPos);
 
-        doc.setFontSize(10);
-        doc.setTextColor(55, 65, 81);
-        yPos += 15;
-        filteredRecentTransactions.slice(0, 10).forEach((transaction) => {
-            doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount} (${transaction.date})`, 20, yPos);
-            yPos += 10;
-        });
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            yPos += 15;
+            filteredRecentTransactions.slice(0, 10).forEach((transaction) => {
+                doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount} (${transaction.date})`, 20, yPos);
+                yPos += 10;
+            });
 
-        // Save the PDF
-        doc.save('revenue-dashboard-report.pdf');
+            // Save the PDF
+            doc.save('revenue-dashboard-report.pdf');
+
+            // Log the activity
+            const headers = getAuthHeaders();
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+                method: 'POST',
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportType: 'Revenue Dashboard'
+                })
+            });
+        } catch (error) {
+            console.error('Error exporting PDF or logging activity:', error);
+        }
     };
 
     // Building icon component
