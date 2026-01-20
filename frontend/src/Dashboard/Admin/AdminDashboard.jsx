@@ -3438,7 +3438,7 @@ const AdminDashboard = () => {
                                 <div className="space-y-4">
                                     {[
                                         { label: 'Total Users', value: dashboardStats.users?.clients || 0, icon: UsersIcon, color: 'bg-blue-500' },
-                                        { label: 'Active Services', value: dashboardStats.services?.active || 0, icon: FolderOpen, color: 'bg-green-500' },
+                                        { label: 'Active Services', value: dashboardStats.users?.clients || 0, icon: FolderOpen, color: 'bg-green-500' },
                                         { label: 'Total Bookings', value: dashboardStats.appointments?.total || 0, icon: Calendar, color: 'bg-purple-500' },
                                         { label: 'Total Revenue', value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-rose-500' }
                                     ].map((item, index) => {
