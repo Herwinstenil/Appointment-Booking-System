@@ -3395,7 +3395,7 @@ const AdminDashboard = () => {
                                 <div className="space-y-4">
                                     {[
                                         { name: 'Response Time', value: systemMetrics.responseTime, change: '-15ms', positive: true },
-                                        { name: 'Active Services', value: systemMetrics.activeServices, change: '+2', positive: true },
+                                        { name: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0, change: '+2', positive: true },
                                         { name: 'Storage Used', value: systemMetrics.storageUsed, change: '+0.3GB', positive: false },
                                         { name: 'New Users', value: systemMetrics.newUsers, change: '+12', positive: true }
                                     ].map((metric, index) => (
