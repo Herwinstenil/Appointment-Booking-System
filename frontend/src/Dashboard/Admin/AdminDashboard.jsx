@@ -242,18 +242,6 @@ const AdminDashboard = () => {
         }
     };
 
-    // Fetch server uptime periodically
-    useEffect(() => {
-        // Fetch immediately
-        fetchServerUptime();
-
-        // Set up interval to fetch every 30 seconds
-        const interval = setInterval(fetchServerUptime, 30000);
-
-        // Cleanup interval on unmount
-        return () => clearInterval(interval);
-    }, [getAuthHeaders]);
-
     // Fetch recent activities periodically for real-time updates
     useEffect(() => {
         // Fetch immediately
