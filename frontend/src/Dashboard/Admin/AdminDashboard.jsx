@@ -942,9 +942,11 @@ const AdminDashboard = () => {
         setDeleteConfirm(true);
     };
 
+    const [isRefreshing, setIsRefreshing] = useState(false);
     // Handle delete client
     const handleDeleteClient = async () => {
         try {
+             setIsRefreshing(true);
             const headers = getAuthHeaders();
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${userToDelete.id}`, {
                 method: 'DELETE',
@@ -963,6 +965,10 @@ const AdminDashboard = () => {
             setUserToDelete(null);
             setDeleteSuccess(true);
             setTimeout(() => setDeleteSuccess(false), 3000);
+
+            // Refetch recent activities and booking analytics
+            await fetchRecentActivities();
+        await fetchBookingAnalytics();
         } catch (error) {
             console.error('Error deleting user:', error);
             // Show error notification
@@ -970,6 +976,9 @@ const AdminDashboard = () => {
             setUserToDelete(null);
             // You might want to add an error state here
         }
+           finally {
+        setIsRefreshing(false);
+    }
     };
 
     // View user handler
@@ -1003,6 +1012,10 @@ const AdminDashboard = () => {
         handleCloseEditModal();
         setEditSuccess(true);
         setTimeout(() => setEditSuccess(false), 3000);
+
+        // Refetch recent activities and booking analytics
+        fetchRecentActivities();
+        fetchBookingAnalytics();
     };
 
     // Service Management Handlers
@@ -1178,6 +1191,10 @@ const AdminDashboard = () => {
                 // Show success notification
                 setClientSuccess(true);
                 setTimeout(() => setClientSuccess(false), 3000);
+
+                // Refetch recent activities and booking analytics
+                fetchRecentActivities();
+                fetchBookingAnalytics();
             } catch (error) {
                 console.error('Error creating client:', error);
                 setErrors({ general: error.message || 'Failed to create client' });
