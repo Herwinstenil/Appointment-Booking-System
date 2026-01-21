@@ -946,7 +946,7 @@ const AdminDashboard = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const handleDeleteClient = async () => {
         try {
-             setIsRefreshing(true);
+            setIsRefreshing(true);
             const headers = getAuthHeaders();
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${userToDelete.id}`, {
                 method: 'DELETE',
@@ -965,8 +965,8 @@ const AdminDashboard = () => {
             setUserToDelete(null);
             setDeleteSuccess(true);
             setTimeout(() => setDeleteSuccess(false), 3000);
-             await fetchRecentActivities();
-        await fetchBookingAnalytics();
+            await fetchRecentActivities();
+            await fetchBookingAnalytics();
         } catch (error) {
             console.error('Error deleting user:', error);
             // Show error notification
@@ -975,8 +975,8 @@ const AdminDashboard = () => {
             // You might want to add an error state here
         }
         finally {
-        setIsRefreshing(false);
-    }
+            setIsRefreshing(false);
+        }
     };
 
     // View user handler
