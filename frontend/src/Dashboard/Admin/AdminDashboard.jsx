@@ -2603,7 +2603,6 @@ const AdminDashboard = () => {
                                     <option value="success">Created</option>
                                     <option value="modified">Edited</option>
                                     <option value="created">Deleted</option>
-                                    <option value="alert">Alerts</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-2 flex-1">
