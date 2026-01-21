@@ -847,7 +847,8 @@ const AdminDashboard = () => {
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.clientNo.toString().toLowerCase().includes(searchTerm.toLowerCase());
+            user.clientNo.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.revenue.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
         // Role filter
         const matchesRole = userFilters.role === '' || user.role.toLowerCase() === userFilters.role.toLowerCase();
