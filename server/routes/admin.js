@@ -1162,7 +1162,7 @@ router.delete('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), asyn
     }
 
     // Log admin activity before deletion
-    const adminId = req.user?.userId; // From auth middleware
+    const adminId = req.user?.id;  // From auth middleware
     if (adminId && user.role === 'CLIENT') {
       await prisma.activity.create({
         data: {
