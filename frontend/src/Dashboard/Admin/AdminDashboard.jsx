@@ -2715,6 +2715,7 @@ const AdminDashboard = () => {
                                     Close
                                 </button>
                                 <button
+                                    onClick={exportActivitiesToPDF}
                                     className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Download size={18} className="inline mr-2" />
@@ -3135,6 +3136,127 @@ const AdminDashboard = () => {
             });
         } catch (error) {
             console.error('Error exporting PDF or logging activity:', error);
+        }
+    };
+
+    const exportActivitiesToPDF = async () => {
+        try {
+            // Fetch all activities data
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/export-activities`, { headers });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch activities data');
+            }
+
+            const data = await response.json();
+            const activities = data.data || [];
+
+            const doc = new jsPDF();
+
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(219, 39, 119); // Rose color
+            doc.text('Activity Log Report', 20, 30);
+
+            // Generated date
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128); // Gray
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+            // Summary
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39); // Dark gray
+            doc.text('Summary', 20, 65);
+
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81); // Medium gray
+            let yPos = 80;
+            doc.text(`Total Activities: ${activities.length}`, 20, yPos);
+
+            // Activity Types Count
+            const typeCounts = activities.reduce((acc, activity) => {
+                acc[activity.type] = (acc[activity.type] || 0) + 1;
+                return acc;
+            }, {});
+
+            yPos += 15;
+            doc.text('Activity Types:', 20, yPos);
+            yPos += 10;
+            Object.entries(typeCounts).forEach(([type, count]) => {
+                doc.text(`${type}: ${count}`, 30, yPos);
+                yPos += 8;
+            });
+
+            // Activities Table Header
+            yPos += 20;
+            doc.setFontSize(12);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Activity Details', 20, yPos);
+
+            yPos += 15;
+            doc.setFontSize(8);
+            doc.setTextColor(107, 114, 128);
+            doc.text('Date', 20, yPos);
+            doc.text('Time', 50, yPos);
+            doc.text('Type', 80, yPos);
+            doc.text('Admin', 110, yPos);
+            doc.text('Description', 150, yPos);
+
+            // Draw header line
+            doc.setDrawColor(200);
+            doc.line(20, yPos + 2, 190, yPos + 2);
+
+            yPos += 10;
+            doc.setFontSize(7);
+            doc.setTextColor(55, 65, 81);
+
+            // Activities data (limit to fit on page)
+            const maxActivities = 25; // Limit for one page
+            activities.slice(0, maxActivities).forEach((activity) => {
+                if (yPos > 270) { // Check if near page bottom
+                    doc.addPage();
+                    yPos = 30;
+                }
+
+                // Truncate long descriptions
+                const description = activity.description.length > 30 ?
+                    activity.description.substring(0, 30) + '...' :
+                    activity.description;
+
+                doc.text(activity.date, 20, yPos);
+                doc.text(activity.time, 50, yPos);
+                doc.text(activity.type.replace('_', ' '), 80, yPos);
+                doc.text(activity.admin.length > 15 ? activity.admin.substring(0, 15) + '...' : activity.admin, 110, yPos);
+                doc.text(description, 150, yPos);
+
+                yPos += 8;
+            });
+
+            // If there are more activities
+            if (activities.length > maxActivities) {
+                yPos += 10;
+                doc.setFontSize(8);
+                doc.setTextColor(107, 114, 128);
+                doc.text(`... and ${activities.length - maxActivities} more activities`, 20, yPos);
+            }
+
+            // Save the PDF
+            doc.save('activity-log-report.pdf');
+
+            // Log the activity
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+                method: 'POST',
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportType: 'Activity Log'
+                })
+            });
+        } catch (error) {
+            console.error('Error exporting activities PDF:', error);
         }
     };
 

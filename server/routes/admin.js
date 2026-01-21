@@ -1744,6 +1744,50 @@ router.delete('/appointments/:appointmentId', authenticateToken, authorizeRoles(
   }
 });
 
+// Get all activities for export
+router.get('/dashboard/export-activities', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    // Get all activities (not just recent ones)
+    const activities = await prisma.activity.findMany({
+      where: {
+        type: {
+          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED']
+        }
+      },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Format activities for export
+    const result = activities.map(activity => ({
+      id: activity.id,
+      type: activity.type,
+      description: activity.description,
+      admin: `${activity.user?.firstName || ''} ${activity.user?.lastName || ''}`.trim() || 'Unknown',
+      adminEmail: activity.user?.email || 'N/A',
+      date: activity.createdAt.toISOString().split('T')[0],
+      time: activity.createdAt.toISOString().split('T')[1].split('.')[0],
+      timestamp: activity.createdAt.toISOString()
+    }));
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Get export activities error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get activities for export'
+    });
+  }
+});
+
 // Log report download activity
 router.post('/activities/report-downloaded', authenticateToken, authorizeRoles('ADMIN'), [
   body('reportType').isLength({ min: 1 }).withMessage('Report type is required')
