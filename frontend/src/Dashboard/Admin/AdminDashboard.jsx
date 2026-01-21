@@ -1678,7 +1678,7 @@ const AdminDashboard = () => {
                 // Refetch users data to ensure changes are reflected
                 await fetchUsersData();
                 // Fetch updated booking analytics
-                 await fetchRecentActivities();
+                await fetchRecentActivities();
                 await fetchBookingAnalytics();
             } catch (error) {
                 console.error('Error updating user:', error);
