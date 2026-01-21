@@ -2555,7 +2555,7 @@ const AdminDashboard = () => {
 
         // Filter activities based on status and search term
         const filteredActivities = recentActivities.filter(activity => {
-            const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
+            const matchesStatus = filterStatus === 'all' || activity.status.includes(filterStatus);
             const matchesSearch = activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 activity.time.toLowerCase().includes(searchTerm.toLowerCase());
             return matchesStatus && matchesSearch;
