@@ -846,7 +846,7 @@ const AdminDashboard = () => {
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.clientNo.toString().toLowerCase().includes(searchTerm.toLowerCase());
 
         // Role filter
