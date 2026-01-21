@@ -973,8 +973,7 @@ const AdminDashboard = () => {
             setDeleteConfirm(false);
             setUserToDelete(null);
             // You might want to add an error state here
-        }
-        finally {
+        }finally {
             setIsRefreshing(false);
         }
     };
