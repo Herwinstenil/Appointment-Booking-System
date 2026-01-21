@@ -2600,9 +2600,9 @@ const AdminDashboard = () => {
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
                                 >
                                     <option value="all">All Activities</option>
-                                    <option value="success">Created</option>
-                                    <option value="modified">Edited</option>
-                                    <option value="created">Deleted</option>
+                                    <option value="edited">Edited</option>
+                                    <option value="deleted">Deleted</option>
+                                    <option value="created">Created</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-2 flex-1">
