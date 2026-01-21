@@ -943,8 +943,10 @@ const AdminDashboard = () => {
     };
 
     // Handle delete client
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const handleDeleteClient = async () => {
         try {
+             setIsRefreshing(true);
             const headers = getAuthHeaders();
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${userToDelete.id}`, {
                 method: 'DELETE',
@@ -963,6 +965,8 @@ const AdminDashboard = () => {
             setUserToDelete(null);
             setDeleteSuccess(true);
             setTimeout(() => setDeleteSuccess(false), 3000);
+             await fetchRecentActivities();
+        await fetchBookingAnalytics();
         } catch (error) {
             console.error('Error deleting user:', error);
             // Show error notification
@@ -970,6 +974,9 @@ const AdminDashboard = () => {
             setUserToDelete(null);
             // You might want to add an error state here
         }
+        finally {
+        setIsRefreshing(false);
+    }
     };
 
     // View user handler
@@ -1003,6 +1010,8 @@ const AdminDashboard = () => {
         handleCloseEditModal();
         setEditSuccess(true);
         setTimeout(() => setEditSuccess(false), 3000);
+        await fetchRecentActivities();
+        await fetchBookingAnalytics();
     };
 
     // Service Management Handlers
