@@ -943,7 +943,6 @@ const AdminDashboard = () => {
     };
 
     // Handle delete client
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const handleDeleteClient = async () => {
         try {
             setIsRefreshing(true);
@@ -1039,6 +1038,7 @@ const AdminDashboard = () => {
 
     // These will be populated from API responses
     const [recentActivities, setRecentActivities] = useState([]);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -1179,6 +1179,9 @@ const AdminDashboard = () => {
 
                 // Add to users array
                 setUsers(prev => [newClientObj, ...prev]);
+
+                  // Fetch updated booking analytics
+        await fetchBookingAnalytics();
 
                 // Close modal and reset form
                 handleCloseAddClientModal();
@@ -1673,6 +1676,8 @@ const AdminDashboard = () => {
 
                 // Refetch users data to ensure changes are reflected
                 await fetchUsersData();
+                 // Fetch updated booking analytics
+        await fetchBookingAnalytics();
             } catch (error) {
                 console.error('Error updating user:', error);
                 setErrors({ general: error.message || 'Failed to update user' });
