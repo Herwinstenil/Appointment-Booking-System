@@ -1181,6 +1181,7 @@ const AdminDashboard = () => {
                 setUsers(prev => [newClientObj, ...prev]);
 
                 // Fetch updated booking analytics
+                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
 
                 // Close modal and reset form
