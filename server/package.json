@@ -29,5 +29,8 @@
     "passport-instagram": "^1.0.0",
     "passport-twitter": "^0.1.5",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "prisma": "^7.2.0"
   }
 }
