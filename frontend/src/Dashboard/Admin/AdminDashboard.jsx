@@ -143,7 +143,7 @@ const AdminDashboard = () => {
                     revenueByCategoryResponse,
                     recentTransactionsResponse,
                     performanceMetricsResponse,
-                    popularServicesResponse,
+                    topClientsResponse,
                     recentActivitiesResponse,
                     serverUptimeResponse
                 ] = await Promise.all([
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/popular-services`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/top-clients`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers })
                 ]);
@@ -202,9 +202,9 @@ const AdminDashboard = () => {
                     setPerformanceMetrics(metricsData.data || []);
                 }
 
-                if (popularServicesResponse.ok) {
-                    const popularData = await popularServicesResponse.json();
-                    setPopularServices(popularData.data || []);
+                if (topClientsResponse.ok) {
+                    const popularData = await topClientsResponse.json();
+                    setTopClients(popularData.data || []);
                 }
 
                 if (recentActivitiesResponse.ok) {
@@ -572,7 +572,7 @@ const AdminDashboard = () => {
     const [revenueByCategory, setRevenueByCategory] = useState([]);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [performanceMetrics, setPerformanceMetrics] = useState([]);
-    const [popularServices, setPopularServices] = useState([]);
+    const [topClients , setTopClients ] = useState([]);
     const [serverUptimeData, setServerUptimeData] = useState({ uptime: '0d 0h 0m', percentage: '99.9%' });
 
     // Trend data state
@@ -869,16 +869,16 @@ const AdminDashboard = () => {
         return isClientRole && isNotCurrentUser && matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
     });
 
-    const filteredPopularServices = popularServices.filter(service => {
-        // Service type filter
-        const matchesServiceType = bookingFilters.serviceType === '' || service.service === bookingFilters.serviceType;
+    const filteredTopClients = topClients.filter(client => {
+        // Company filter
+        const matchesCompany = bookingFilters.serviceType === '' || client.company === bookingFilters.serviceType;
 
-        // Amount range filter
-        const serviceRevenue = parseFloat(service.revenue && typeof service.revenue === 'string' ? service.revenue.replace(/[$,]/g, '') : '0');
-        const matchesAmountMin = bookingFilters.amountMin === '' || serviceRevenue >= parseFloat(bookingFilters.amountMin);
-        const matchesAmountMax = bookingFilters.amountMax === '' || serviceRevenue <= parseFloat(bookingFilters.amountMax);
+        // Revenue range filter
+        const clientRevenue = parseFloat(client.revenue && typeof client.revenue === 'string' ? client.revenue.replace(/[$,]/g, '') : '0');
+        const matchesAmountMin = bookingFilters.amountMin === '' || clientRevenue >= parseFloat(bookingFilters.amountMin);
+        const matchesAmountMax = bookingFilters.amountMax === '' || clientRevenue <= parseFloat(bookingFilters.amountMax);
 
-        return matchesServiceType && matchesAmountMin && matchesAmountMax;
+        return matchesCompany && matchesAmountMin && matchesAmountMax;
     });
 
     const filteredRevenueByCategory = revenueByCategory.filter(category => {
@@ -3009,17 +3009,17 @@ const AdminDashboard = () => {
             doc.text(`Cancelled Bookings: ${bookingAnalytics.cancelledBookings}`, 20, yPos + 30);
             doc.text(`Completion Rate: ${bookingAnalytics.bookingRate}%`, 20, yPos + 40);
 
-            // Popular Services
+            // Top Clients
             yPos += 60;
             doc.setFontSize(14);
             doc.setTextColor(17, 24, 39);
-            doc.text('Popular Services', 20, yPos);
+            doc.text('Top Clients', 20, yPos);
 
             doc.setFontSize(10);
             doc.setTextColor(55, 65, 81);
             yPos += 15;
-            filteredPopularServices.forEach((service, index) => {
-                doc.text(`${index + 1}. ${service.service}: ${service.bookings} bookings - $${service.revenue.toLocaleString()}`, 20, yPos);
+            filteredTopClients.forEach((client, index) => {
+                doc.text(`${index + 1}. ${client.name} (${client.company || 'N/A'}): $${client.revenue.toLocaleString()}`, 20, yPos);
                 yPos += 10;
             });
 
@@ -3134,6 +3134,65 @@ const AdminDashboard = () => {
                 },
                 body: JSON.stringify({
                     reportType: 'Revenue Dashboard'
+                })
+            });
+        } catch (error) {
+            console.error('Error exporting PDF or logging activity:', error);
+        }
+    };
+
+    const exportTopClientsToPDF = async () => {
+        try {
+            const doc = new jsPDF();
+
+            // Title
+            doc.setFontSize(20);
+            doc.setTextColor(219, 39, 119); // Rose color
+            doc.text('Top Clients Report', 20, 30);
+
+            // Generated date
+            doc.setFontSize(10);
+            doc.setTextColor(107, 114, 128); // Gray
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+            // Key Metrics
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39); // Dark gray
+            doc.text('Key Metrics', 20, 65);
+
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81); // Medium gray
+            let yPos = 80;
+            doc.text(`Total Clients: ${filteredTopClients.length}`, 20, yPos);
+            doc.text(`Total Revenue: $${filteredTopClients.reduce((sum, client) => sum + parseFloat(client.revenue.replace(/[$,]/g, '')), 0).toLocaleString()}`, 20, yPos + 10);
+
+            // Top Clients
+            yPos += 30;
+            doc.setFontSize(14);
+            doc.setTextColor(17, 24, 39);
+            doc.text('Top Clients', 20, yPos);
+
+            doc.setFontSize(10);
+            doc.setTextColor(55, 65, 81);
+            yPos += 15;
+            filteredTopClients.forEach((client, index) => {
+                doc.text(`${index + 1}. ${client.name} - ${client.company || 'N/A'} - $${client.revenue.toLocaleString()}`, 20, yPos);
+                yPos += 10;
+            });
+
+            // Save the PDF
+            doc.save('top-clients-report.pdf');
+
+            // Log the activity
+            const headers = getAuthHeaders();
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+                method: 'POST',
+                headers: {
+                    ...headers,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    reportType: 'Top Clients'
                 })
             });
         } catch (error) {
@@ -4213,23 +4272,38 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
-                            {/* Popular Services */}
+                            {/* Top Clients */}
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <h3 className="text-xl font-bold text-gray-800 mb-6">Popular Services</h3>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800">Top Clients</h3>
+                                    <div className="flex items-center gap-3">
+                                        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
+                                            <Eye size={16} />
+                                            View All
+                                        </button>
+                                        <button
+                                            onClick={exportTopClientsToPDF}
+                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
+                                        >
+                                            <Download size={16} />
+                                            Export Report
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="space-y-4">
-                                    {filteredPopularServices.map((service, index) => (
+                                    {filteredTopClients.map((client, index) => (
                                         <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                                     {index + 1}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800">{service.service}</p>
-                                                    <p className="text-sm text-gray-600">{service.bookings} bookings</p>
+                                                    <p className="font-medium text-gray-800">{client.name}</p>
+                                                    <p className="text-sm text-gray-600">{client.company || 'N/A'}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-lg font-bold text-rose-600">${service.revenue.toLocaleString()}</p>
+                                                <p className="text-lg font-bold text-rose-600">${client.revenue.toLocaleString()}</p>
                                                 <p className="text-sm text-gray-500">revenue</p>
                                             </div>
                                         </div>

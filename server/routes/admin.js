@@ -334,56 +334,61 @@ router.get('/dashboard/performance-metrics', authenticateToken, authorizeRoles('
   }
 });
 
-// Get popular services
-router.get('/dashboard/popular-services', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+// Get top clients
+router.get('/dashboard/top-clients', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 4;
 
-    const popularServices = await prisma.appointment.groupBy({
-      by: ['serviceId'],
+    const topClients = await prisma.appointment.groupBy({
+      by: ['clientId'],
       where: {
         status: 'COMPLETED'
       },
       _sum: {
         amount: true
       },
-      _count: {
-        id: true
-      },
       orderBy: {
-        _count: {
-          id: 'desc'
+        _sum: {
+          amount: 'desc'
         }
       },
       take: limit
     });
 
-    // Get service details
+    // Get client details
     const result = await Promise.all(
-      popularServices.map(async (item) => {
-        const service = await prisma.service.findUnique({
-          where: { id: item.serviceId },
-          select: { name: true, category: true }
+      topClients.map(async (item) => {
+        const client = await prisma.user.findUnique({
+          where: { id: item.clientId },
+          select: { firstName: true, lastName: true, company: true, isActive: true }
         });
 
+        // Only include active clients
+        if (!client || !client.isActive) {
+          return null;
+        }
+
         return {
-          service: service?.name || 'Unknown Service',
-          bookings: item._count.id,
+          name: `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown Client',
+          company: client.company || 'N/A',
           revenue: item._sum.amount || 0
         };
       })
     );
 
+    // Filter out null values (inactive clients)
+    const filteredResult = result.filter(item => item !== null);
+
     res.json({
       success: true,
-      data: result
+      data: filteredResult
     });
 
   } catch (error) {
-    console.error('Get popular services error:', error);
+    console.error('Get top clients error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get popular services'
+      message: 'Failed to get top clients'
     });
   }
 });
