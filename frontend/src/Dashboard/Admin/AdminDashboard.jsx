@@ -572,7 +572,7 @@ const AdminDashboard = () => {
     const [revenueByCategory, setRevenueByCategory] = useState([]);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [performanceMetrics, setPerformanceMetrics] = useState([]);
-    const [topClients , setTopClients ] = useState([]);
+    const [topClients, setTopClients] = useState([]);
     const [serverUptimeData, setServerUptimeData] = useState({ uptime: '0d 0h 0m', percentage: '99.9%' });
 
     // Trend data state
@@ -869,18 +869,7 @@ const AdminDashboard = () => {
         return isClientRole && isNotCurrentUser && matchesSearch && matchesRole && matchesStatus && matchesJoinDateFrom && matchesJoinDateTo && matchesRevenueMin && matchesRevenueMax;
     });
 
-    const filteredTopClients = topClients.filter(client => {
-        // Company filter
-        const matchesCompany = bookingFilters.serviceType === '' || client.company === bookingFilters.serviceType;
-
-        // Revenue range filter
-        const clientRevenue = parseFloat(client.revenue && typeof client.revenue === 'string' ? client.revenue.replace(/[$,]/g, '') : '0');
-        const matchesAmountMin = bookingFilters.amountMin === '' || clientRevenue >= parseFloat(bookingFilters.amountMin);
-        const matchesAmountMax = bookingFilters.amountMax === '' || clientRevenue <= parseFloat(bookingFilters.amountMax);
-
-        return matchesCompany && matchesAmountMin && matchesAmountMax;
-    });
-
+    const filteredTopClients = topClients;
     const filteredRevenueByCategory = revenueByCategory.filter(category => {
         // Category filter
         const matchesCategory = revenueFilters.category === '' || category.category === revenueFilters.category;
