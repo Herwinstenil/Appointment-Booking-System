@@ -4383,7 +4383,7 @@ const AdminDashboard = () => {
                             {[
                                 {
                                     title: 'Total Revenue',
-                                    value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
+                                    value: `$${totalClientRevenue.toLocaleString()}`,
                                     change: `+${revenueMetrics.growthPercentage}%`,
                                     positive: true,
                                     icon: DollarSign,
