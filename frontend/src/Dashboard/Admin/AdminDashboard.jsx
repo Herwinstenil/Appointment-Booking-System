@@ -4394,7 +4394,7 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Active Subscriptions',
-                                    value: revenueMetrics.activeSubscriptions.toLocaleString(),
+                                    value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0,
                                     change: '+5.2%',
                                     positive: true,
                                     icon: Users,
