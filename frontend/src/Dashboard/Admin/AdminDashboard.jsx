@@ -752,6 +752,13 @@ const AdminDashboard = () => {
         fetchBookingAnalytics();
     }, [timeRange, getAuthHeaders]);
 
+    // Calculate total client revenue
+    const totalClientRevenue = useMemo(() => {
+        return users
+            .filter(user => user.role === 'CLIENT')
+            .reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0);
+    }, [users]);
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -3396,7 +3403,7 @@ const AdminDashboard = () => {
                             {[
                                 {
                                     title: 'Total Revenue',
-                                    value: `$${dashboardStats.revenue?.total || 0}`,
+                                    value: `$${totalClientRevenue.toLocaleString()}`,
                                     change: `+${dashboardStats.revenue?.growth || 0}%`,
                                     positive: true,
                                     icon: DollarSign,
