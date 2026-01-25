@@ -3681,7 +3681,7 @@ const AdminDashboard = () => {
                                         { label: 'Total Users', value: users.filter(u => u.role === 'CLIENT').length || 0, icon: UsersIcon, color: 'bg-blue-500' },
                                         { label: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0, icon: FolderOpen, color: 'bg-green-500' },
                                         { label: 'Total Bookings', value: bookingAnalytics.totalBookings || 0, icon: Calendar, color: 'bg-purple-500' },
-                                        { label: 'Total Revenue', value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-rose-500' }
+                                        { label: 'Total Revenue', value: `$${totalClientRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-rose-500' }
                                     ].map((item, index) => {
                                         const Icon = item.icon;
                                         return (
