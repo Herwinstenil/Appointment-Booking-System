@@ -3510,7 +3510,7 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-64 relative">
+                                <div className="h-95 relative">
                                     {/* Grid Lines */}
                                     <div className="absolute inset-0 flex flex-col justify-between">
                                         {[0, 1, 2, 3, 4].map((i) => (
