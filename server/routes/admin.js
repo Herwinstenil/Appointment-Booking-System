@@ -334,6 +334,50 @@ router.get('/dashboard/performance-metrics', authenticateToken, authorizeRoles('
   }
 });
 
+// Get top clients
+router.get('/dashboard/top-clients', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 4;
+
+    // Get active clients with their revenue
+    const activeClients = await prisma.user.findMany({
+      where: {
+        role: 'CLIENT',
+        isActive: true
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        company: true,
+        revenue: true
+      },
+      orderBy: {
+        revenue: 'desc'
+      },
+      take: limit
+    });
+
+    // Format client data
+    const clientsWithRevenue = activeClients.map(client => ({
+      clientName: `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown Client',
+      companyName: client.company || 'N/A',
+      totalRevenue: client.revenue || 0
+    }));
+
+    res.json({
+      success: true,
+      data: clientsWithRevenue
+    });
+
+  } catch (error) {
+    console.error('Get top clients error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get top clients'
+    });
+  }
+});
+
 // Get revenue trend data
 router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {

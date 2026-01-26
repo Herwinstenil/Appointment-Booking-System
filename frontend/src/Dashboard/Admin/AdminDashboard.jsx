@@ -3015,7 +3015,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             filteredTopClients.forEach((client, index) => {
-                doc.text(`${index + 1}. ${client.name} (${client.company || 'N/A'}): $${client.revenue.toLocaleString()}`, 20, yPos);
+                doc.text(`${index + 1}. ${client.clientName} (${client.companyName || 'N/A'}): $${client.totalRevenue.toLocaleString()}`, 20, yPos);
                 yPos += 10;
             });
 
@@ -3160,7 +3160,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81); // Medium gray
             let yPos = 80;
             doc.text(`Total Clients: ${filteredTopClients.length}`, 20, yPos);
-            doc.text(`Total Revenue: $${filteredTopClients.reduce((sum, client) => sum + parseFloat(client.revenue.replace(/[$,]/g, '')), 0).toLocaleString()}`, 20, yPos + 10);
+            doc.text(`Total Revenue: $${filteredTopClients.reduce((sum, client) => sum + client.totalRevenue, 0).toLocaleString()}`, 20, yPos + 10);
 
             // Top Clients
             yPos += 30;
@@ -3172,7 +3172,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             filteredTopClients.forEach((client, index) => {
-                doc.text(`${index + 1}. ${client.name} - ${client.company || 'N/A'} - $${client.revenue.toLocaleString()}`, 20, yPos);
+                doc.text(`${index + 1}. ${client.clientName} - ${client.companyName || 'N/A'} - $${client.totalRevenue.toLocaleString()}`, 20, yPos);
                 yPos += 10;
             });
 
@@ -4293,12 +4293,12 @@ const AdminDashboard = () => {
                                                     {index + 1}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800">{client.name}</p>
-                                                    <p className="text-sm text-gray-600">{client.company || 'N/A'}</p>
+                                                    <p className="font-medium text-gray-800">{client.clientName}</p>
+                                                    <p className="text-sm text-gray-600">{client.companyName || 'N/A'}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-lg font-bold text-rose-600">${client.revenue.toLocaleString()}</p>
+                                                <p className="text-lg font-bold text-rose-600">${client.totalRevenue.toLocaleString()}</p>
                                                 <p className="text-sm text-gray-500">revenue</p>
                                             </div>
                                         </div>
