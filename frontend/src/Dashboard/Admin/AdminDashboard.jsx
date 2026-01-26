@@ -228,6 +228,20 @@ const AdminDashboard = () => {
         fetchDashboardData();
     }, [getAuthHeaders]);
 
+    // Function to fetch top clients
+    const fetchTopClients = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/top-clients`, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                setTopClients(data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching top clients:', error);
+        }
+    };
+
     // Function to fetch recent activities
     const fetchRecentActivities = async () => {
         try {
@@ -1008,6 +1022,7 @@ const AdminDashboard = () => {
         setTimeout(() => setEditSuccess(false), 3000);
         await fetchRecentActivities();
         await fetchBookingAnalytics();
+        await fetchTopClients();
     };
 
     // Service Management Handlers
@@ -1678,6 +1693,7 @@ const AdminDashboard = () => {
                 // Fetch updated booking analytics
                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
+                await fetchTopClients();
             } catch (error) {
                 console.error('Error updating user:', error);
                 setErrors({ general: error.message || 'Failed to update user' });
