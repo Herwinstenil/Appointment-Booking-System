@@ -5165,7 +5165,8 @@ const AdminDashboard = () => {
                 // Filter clients based on search term and revenue filter
                 const filteredTopClientsData = topClients.filter(client => {
                     const matchesSearch = client.clientName.toLowerCase().includes(topClientsFilterSearch.toLowerCase()) ||
-                        client.companyName.toLowerCase().includes(topClientsFilterSearch.toLowerCase());
+                        client.companyName.toLowerCase().includes(topClientsFilterSearch.toLowerCase()) ||
+                        client.totalRevenue.toString().includes(topClientsFilterSearch);
 
                     let matchesFilter = true;
                     if (topClientsFilterType === 'highRevenue') {
@@ -5229,7 +5230,7 @@ const AdminDashboard = () => {
                                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                                             <input
                                                 type="text"
-                                                placeholder="Search by name or company..."
+                                                placeholder="Search by name, company, or revenue..."
                                                 value={topClientsFilterSearch}
                                                 onChange={(e) => {
                                                     setTopClientsFilterSearch(e.target.value);
