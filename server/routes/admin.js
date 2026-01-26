@@ -334,65 +334,6 @@ router.get('/dashboard/performance-metrics', authenticateToken, authorizeRoles('
   }
 });
 
-// Get top clients
-router.get('/dashboard/top-clients', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 4;
-
-    const topClients = await prisma.appointment.groupBy({
-      by: ['clientId'],
-      where: {
-        status: 'COMPLETED'
-      },
-      _sum: {
-        amount: true
-      },
-      orderBy: {
-        _sum: {
-          amount: 'desc'
-        }
-      },
-      take: limit
-    });
-
-    // Get client details
-    const result = await Promise.all(
-      topClients.map(async (item) => {
-        const client = await prisma.user.findUnique({
-          where: { id: item.clientId },
-          select: { firstName: true, lastName: true, company: true, isActive: true }
-        });
-
-        // Only include active clients
-        if (!client || !client.isActive) {
-          return null;
-        }
-
-        return {
-          name: `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown Client',
-          company: client.company || 'N/A',
-          revenue: item._sum.amount || 0
-        };
-      })
-    );
-
-    // Filter out null values (inactive clients)
-    const filteredResult = result.filter(item => item !== null);
-
-    res.json({
-      success: true,
-      data: filteredResult
-    });
-
-  } catch (error) {
-    console.error('Get top clients error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get top clients'
-    });
-  }
-});
-
 // Get revenue trend data
 router.get('/dashboard/revenue-trend', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
