@@ -4274,7 +4274,6 @@ const AdminDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800">Top Clients</h3>
                                     <div className="flex items-center gap-3">
                                         <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
-                                            <Eye size={16} />
                                             View All
                                         </button>
                                         <button
