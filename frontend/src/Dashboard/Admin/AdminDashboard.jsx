@@ -4273,7 +4273,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Top Clients</h3>
                                     <div className="flex items-center gap-3">
-                                        <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer">
+                                        <button   className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
                                             View All
                                         </button>
                                         <button
