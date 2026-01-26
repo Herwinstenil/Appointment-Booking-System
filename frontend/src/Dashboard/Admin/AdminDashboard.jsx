@@ -4289,7 +4289,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-xl font-bold text-gray-800">Top Clients</h3>
                                     <div className="flex items-center gap-3">
-                                        <button   className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
+                                        <button className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer">
                                             View All
                                         </button>
                                         <button
