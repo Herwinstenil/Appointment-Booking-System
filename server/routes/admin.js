@@ -234,7 +234,7 @@ router.get('/dashboard/recent-transactions', authenticateToken, authorizeRoles('
       service: client.company || 'N/A',
       amount: client.revenue || 0,
       date: client.createdAt.toISOString().split('T')[0],
-      status: 'created',
+      status: 'completed',
       avatar: `${(client.firstName?.[0] || '')}${(client.lastName?.[0] || '')}`.toUpperCase() || 'CL'
     }));
 
