@@ -4552,11 +4552,11 @@ const AdminDashboard = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="flex flex-col items-center min-w-[80px]">
                                                 <p className="text-lg font-bold text-gray-900 group-hover:text-rose-600">
                                                     ${transaction.amount}
                                                 </p>
-                                                <div className="flex items-center gap-2 mt-1">
+                                                <div className="flex flex-col items-center min-w-[80px]">
                                                     <span className="text-xs text-gray-500">{transaction.date}</span>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
                                                         ? 'bg-green-100 text-green-700'
