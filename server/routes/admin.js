@@ -158,16 +158,21 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
     const revenueByCompany = clients.reduce((acc, client) => {
       const companyName = client.company || 'Unassigned';
       const existing = acc.find(item => item.company === companyName);
+      const clientFullName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown';
 
       if (existing) {
         existing.amount += client.revenue || 0;
         existing.clients += 1;
+        if (!existing.clientNames.includes(clientFullName)) {
+          existing.clientNames.push(clientFullName);
+        }
       } else {
         acc.push({
           company: companyName,
           amount: client.revenue || 0,
           clients: 1,
-          clientId: client.id
+          clientId: client.id,
+          clientNames: [clientFullName]
         });
       }
       return acc;
@@ -181,7 +186,8 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
     const result = revenueByCompany.map((item, index) => ({
       category: item.company,
       amount: item.amount,
-      color: getCompanyColor(index)
+      color: getCompanyColor(index),
+      topClient: item.clientNames[0] || 'N/A'
     }));
 
     res.json({

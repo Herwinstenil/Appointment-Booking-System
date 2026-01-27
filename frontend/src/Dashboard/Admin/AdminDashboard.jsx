@@ -4492,6 +4492,9 @@ const AdminDashboard = () => {
                                                     </p>
                                                 </div>
                                             </div>
+                                            <div className="text-right">
+                                                <p className="text-sm text-gray-700 font-medium">{category.topClient}</p>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
