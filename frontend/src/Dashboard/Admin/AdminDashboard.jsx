@@ -4483,7 +4483,7 @@ const AdminDashboard = () => {
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 ${category.color} rounded-xl flex items-center justify-center text-white font-bold text-sm`}>
-                                                    {category.percentage}%
+                                                    {index + 1}
                                                 </div>
                                                 <div>
                                                     <p className="font-medium text-gray-800 group-hover:text-rose-700">{category.category}</p>
@@ -4491,14 +4491,6 @@ const AdminDashboard = () => {
                                                         ${category.amount.toLocaleString()}
                                                     </p>
                                                 </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className={`flex items-center gap-1 text-sm font-medium ${category.growth >= 0 ? 'text-green-600' : 'text-red-600'
-                                                    }`}>
-                                                    {category.growth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                    {category.growth}%
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-1">Growth</p>
                                             </div>
                                         </div>
                                     ))}

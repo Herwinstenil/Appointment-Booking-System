@@ -126,7 +126,7 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async
   }
 });
 
-// Get revenue by category
+// Get revenue by category (grouped by company)
 router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
     const { period = '30' } = req.query;
@@ -134,63 +134,54 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - periodDays);
 
-    // Get revenue grouped by service category
-    const revenueByCategory = await prisma.appointment.groupBy({
-      by: ['serviceId'],
+    // Get all active clients created within the period, grouped by company
+    const clients = await prisma.user.findMany({
       where: {
-        status: 'COMPLETED',
+        role: 'CLIENT',
+        isActive: true,
         createdAt: { gte: startDate }
       },
-      _sum: {
-        amount: true
+      select: {
+        id: true,
+        company: true,
+        firstName: true,
+        lastName: true,
+        revenue: true,
+        createdAt: true
       },
-      _count: {
-        id: true
+      orderBy: {
+        revenue: 'desc'
       }
     });
 
-    // Get service details for each category
-    const categoryData = await Promise.all(
-      revenueByCategory.map(async (item) => {
-        const service = await prisma.service.findUnique({
-          where: { id: item.serviceId },
-          select: { category: true, name: true }
-        });
+    // Group revenue by company
+    const revenueByCompany = clients.reduce((acc, client) => {
+      const companyName = client.company || 'Unassigned';
+      const existing = acc.find(item => item.company === companyName);
 
-        return {
-          category: service?.category || 'Other',
-          amount: item._sum.amount || 0,
-          bookings: item._count.id,
-          serviceName: service?.name || 'Unknown'
-        };
-      })
-    );
-
-    // Group by category
-    const groupedByCategory = categoryData.reduce((acc, item) => {
-      const existing = acc.find(cat => cat.category === item.category);
       if (existing) {
-        existing.amount += item.amount;
-        existing.bookings += item.bookings;
+        existing.amount += client.revenue || 0;
+        existing.clients += 1;
       } else {
         acc.push({
-          category: item.category,
-          amount: item.amount,
-          bookings: item.bookings
+          company: companyName,
+          amount: client.revenue || 0,
+          clients: 1,
+          clientId: client.id
         });
       }
       return acc;
     }, []);
 
+    // Sort by revenue descending
+    revenueByCompany.sort((a, b) => b.amount - a.amount);
+
     // Calculate percentages and growth
-    const totalRevenue = groupedByCategory.reduce((sum, cat) => sum + cat.amount, 0);
-    const result = groupedByCategory.map(cat => ({
-      category: cat.category,
-      amount: cat.amount,
-      percentage: totalRevenue > 0 ? ((cat.amount / totalRevenue) * 100).toFixed(1) : 0,
-      growth: Math.floor(Math.random() * 30) - 10, // Mock growth for now
-      color: getCategoryColor(cat.category),
-      bookings: cat.bookings
+    const totalRevenue = revenueByCompany.reduce((sum, item) => sum + item.amount, 0);
+    const result = revenueByCompany.map((item, index) => ({
+      category: item.company,
+      amount: item.amount,
+      color: getCompanyColor(index)
     }));
 
     res.json({
@@ -740,6 +731,23 @@ function getCategoryColor(category) {
     'Digital Marketing': 'bg-yellow-500'
   };
   return colors[category] || 'bg-gray-500';
+}
+
+// Helper function to get company color based on index
+function getCompanyColor(index) {
+  const colors = [
+    'bg-rose-500',
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-purple-500',
+    'bg-indigo-500',
+    'bg-cyan-500',
+    'bg-pink-500',
+    'bg-yellow-500',
+    'bg-orange-500',
+    'bg-teal-500'
+  ];
+  return colors[index % colors.length];
 }
 
 // Helper function to get activity icon
