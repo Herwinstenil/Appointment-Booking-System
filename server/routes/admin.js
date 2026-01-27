@@ -209,32 +209,33 @@ router.get('/dashboard/recent-transactions', authenticateToken, authorizeRoles('
   try {
     const limit = parseInt(req.query.limit) || 5;
 
-    const transactions = await prisma.appointment.findMany({
+    // Fetch recent clients created by the admin (role = 'CLIENT')
+    const clients = await prisma.user.findMany({
       where: {
-        status: 'COMPLETED'
-      },
-      include: {
-        service: {
-          select: { name: true, category: true }
-        },
-        client: {
-          select: { firstName: true, lastName: true, company: true }
-        }
+        role: 'CLIENT',
       },
       orderBy: {
         createdAt: 'desc'
       },
-      take: limit
+      take: limit,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        company: true,
+        createdAt: true,
+        revenue: true
+      }
     });
 
-    const result = transactions.map(transaction => ({
-      id: transaction.id,
-      client: `${transaction.client.firstName} ${transaction.client.lastName}`,
-      service: transaction.service.name,
-      amount: transaction.amount,
-      date: transaction.createdAt.toISOString().split('T')[0],
-      status: 'completed',
-      avatar: `${transaction.client.firstName[0]}${transaction.client.lastName[0]}`.toUpperCase()
+    const result = clients.map(client => ({
+      id: client.id,
+      client: `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Unknown',
+      service: client.company || 'N/A',
+      amount: client.revenue || 0,
+      date: client.createdAt.toISOString().split('T')[0],
+      status: 'created',
+      avatar: `${(client.firstName?.[0] || '')}${(client.lastName?.[0] || '')}`.toUpperCase() || 'CL'
     }));
 
     res.json({

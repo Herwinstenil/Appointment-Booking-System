@@ -1708,6 +1708,17 @@ const AdminDashboard = () => {
                     console.error('Error fetching updated revenue by category:', err);
                 }
 
+                // Fetch updated recent transactions immediately after revenue update
+                try {
+                    const recentTransactionsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers });
+                    if (recentTransactionsResponse.ok) {
+                        const transactionsData = await recentTransactionsResponse.json();
+                        setRecentTransactions(transactionsData.data || []);
+                    }
+                } catch (err) {
+                    console.error('Error fetching updated recent transactions:', err);
+                }
+
                 // Fetch updated booking analytics
                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
@@ -4535,6 +4546,10 @@ const AdminDashboard = () => {
                                                 <div>
                                                     <p className="font-medium text-gray-800 group-hover:text-rose-700">{transaction.client}</p>
                                                     <p className="text-sm text-gray-600">{transaction.service}</p>
+                                                    {/* Sentence with client name and revenue */}
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {`Client ${transaction.client} made a transaction of $${transaction.amount}`}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
