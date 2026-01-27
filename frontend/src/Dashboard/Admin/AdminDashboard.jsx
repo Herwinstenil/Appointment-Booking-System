@@ -1697,6 +1697,17 @@ const AdminDashboard = () => {
                 // Refetch users data to ensure changes are reflected
                 await fetchUsersData();
 
+                // Fetch updated revenue by category immediately after revenue update
+                try {
+                    const revenueByCategoryResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers });
+                    if (revenueByCategoryResponse.ok) {
+                        const revenueData = await revenueByCategoryResponse.json();
+                        setRevenueByCategory(revenueData.data || []);
+                    }
+                } catch (err) {
+                    console.error('Error fetching updated revenue by category:', err);
+                }
+
                 // Fetch updated booking analytics
                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
