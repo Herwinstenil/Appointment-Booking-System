@@ -2843,7 +2843,7 @@ const AdminDashboard = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <p className="text-sm text-gray-600">Total Revenue</p>
-                                    <p className="text-2xl font-bold text-rose-600">${revenueMetrics.totalRevenue.toLocaleString()}</p>
+                                    <p className="text-2xl font-bold text-rose-600">${totalClientRevenue.toLocaleString()}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-600">Growth Rate</p>
