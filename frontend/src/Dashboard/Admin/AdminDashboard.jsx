@@ -2606,170 +2606,174 @@ const AdminDashboard = () => {
         const startIndex = (currentPage - 1) * activitiesPerPage;
         const paginatedActivities = filteredActivities.slice(startIndex, startIndex + activitiesPerPage);
 
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                    {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">All Activities</h3>
-                                <p className="text-gray-600 mt-1">Complete activity log and system events</p>
-                            </div>
-                            <button
-                                onClick={() => setShowAllActivitiesModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
+       return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-modalSlideIn">
+            {/* Modal Header */}
+            <div className="bg-white border-b border-gray-200 p-6 rounded-t-2xl shrink-0">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-2xl font-bold text-gray-900">All Activities</h3>
+                        <p className="text-gray-600 mt-1">Complete activity log and system events</p>
                     </div>
+                    <button
+                        onClick={() => setShowAllActivitiesModal(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+            </div>
 
-                    {/* Modal Body */}
-                    <div className="p-6">
-                        {/* Filters and Search */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-700">Filter by:</span>
-                                <select
-                                    value={filterStatus}
+            {/* Entire scrollable content area - INCLUDING filters */}
+            <div className="flex-1 overflow-y-auto">
+                {/* Filters and Search */}
+                <div className="p-6 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">Filter by:</span>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => {
+                                    setFilterStatus(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
+                            >
+                                <option value="all">All Activities</option>
+                                <option value="edited">Edited</option>
+                                <option value="deleted">Deleted</option>
+                                <option value="created">Created</option>
+                                <option value="downloaded">Downloaded</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-medium text-gray-700">Search:</span>
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Search activities..."
+                                    value={searchTerm}
                                     onChange={(e) => {
-                                        setFilterStatus(e.target.value);
+                                        setSearchTerm(e.target.value);
                                         setCurrentPage(1);
                                     }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
-                                >
-                                    <option value="all">All Activities</option>
-                                    <option value="edited">Edited</option>
-                                    <option value="deleted">Deleted</option>
-                                    <option value="created">Created</option>
-                                    <option value="downloaded">Downloaded</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center gap-2 flex-1">
-                                <span className="text-sm font-medium text-gray-700">Search:</span>
-                                <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                                    <input
-                                        type="text"
-                                        placeholder="Search activities..."
-                                        value={searchTerm}
-                                        onChange={(e) => {
-                                            setSearchTerm(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Activities List */}
-                        <div className="space-y-4 mb-6">
-                            {paginatedActivities.map((activity) => {
-                                const ActivityIcon = iconMap[activity.icon] || CheckCircle;
-                                return (
-                                    <div
-                                        key={activity.id}
-                                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
-                                                <ActivityIcon size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-gray-800 group-hover:text-rose-700">{activity.action}</p>
-                                                <p className="text-sm text-gray-600">{activity.time}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-xs text-gray-500">ID: #{activity.id}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
-                                                {activity.status}
-                                            </span>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedActivity(activity);
-                                                    setShowActivityDetailModal(true);
-                                                }}
-                                                className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
-                                            >
-                                                View Details
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 0 && (
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-600">
-                                    Showing {startIndex + 1} to {Math.min(startIndex + activitiesPerPage, filteredActivities.length)} of {filteredActivities.length} activities
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Previous
-                                    </button>
-                                    <span className="px-3 py-2 text-sm text-gray-700">
-                                        Page {currentPage} of {totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* No Results Message */}
-                        {filteredActivities.length === 0 && (
-                            <div className="text-center py-12">
-                                <div className="text-gray-400 mb-4">
-                                    <Search size={48} className="mx-auto" />
-                                </div>
-                                <p className="text-gray-500 text-lg font-medium">No activities found</p>
-                                <p className="text-gray-400 mt-2">Try changing your search or filter criteria</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
-                                Total activities: {recentActivities.length}
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <button
-                                    onClick={() => setShowAllActivitiesModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    onClick={exportActivitiesToPDF}
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    <Download size={18} className="inline mr-2" />
-                                    Export Log
-                                </button>
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Activities List */}
+                <div className="p-6">
+                    <div className="space-y-4 mb-6">
+                        {paginatedActivities.map((activity) => {
+                            const ActivityIcon = iconMap[activity.icon] || CheckCircle;
+                            return (
+                                <div
+                                    key={activity.id}
+                                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-3 rounded-lg ${getStatusColor(activity.status)}`}>
+                                            <ActivityIcon size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-800 group-hover:text-rose-700">{activity.action}</p>
+                                            <p className="text-sm text-gray-600">{activity.time}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-xs text-gray-500">ID: #{activity.id}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
+                                            {activity.status}
+                                        </span>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedActivity(activity);
+                                                setShowActivityDetailModal(true);
+                                            }}
+                                            className="text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors cursor-pointer"
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 0 && (
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                Showing {startIndex + 1} to {Math.min(startIndex + activitiesPerPage, filteredActivities.length)} of {filteredActivities.length} activities
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-3 py-2 text-sm text-gray-700">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* No Results Message */}
+                    {filteredActivities.length === 0 && (
+                        <div className="text-center py-12">
+                            <div className="text-gray-400 mb-4">
+                                <Search size={48} className="mx-auto" />
+                            </div>
+                            <p className="text-gray-500 text-lg font-medium">No activities found</p>
+                            <p className="text-gray-400 mt-2">Try changing your search or filter criteria</p>
+                        </div>
+                    )}
+                </div>
             </div>
-        );
+
+            {/* Modal Footer - Fixed at bottom */}
+            <div className="bg-white border-t border-gray-200 p-6 rounded-b-2xl shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                        Total activities: {recentActivities.length}
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={() => setShowAllActivitiesModal(false)}
+                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                        >
+                            Close
+                        </button>
+                        <button
+                            onClick={exportActivitiesToPDF}
+                            className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                        >
+                            <Download size={18} className="inline mr-2" />
+                            Export Log
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
     };
 
     // Revenue Details Modal Component
