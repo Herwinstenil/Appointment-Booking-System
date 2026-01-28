@@ -2875,6 +2875,27 @@ const AdminDashboard = () => {
 
     // All Transactions Modal Component
     const AllTransactionsModal = () => {
+        const [statusFilter, setStatusFilter] = useState('all');
+        const [dateFrom, setDateFrom] = useState('');
+        const [dateTo, setDateTo] = useState('');
+
+        // Filter logic
+        const filteredTransactions = useMemo(() => {
+            return recentTransactions.filter((transaction) => {
+                // Status filter
+                const statusMatch = statusFilter === 'all' || transaction.status === statusFilter;
+                // Date filter
+                let dateMatch = true;
+                if (dateFrom) {
+                    dateMatch = dateMatch && new Date(transaction.date) >= new Date(dateFrom);
+                }
+                if (dateTo) {
+                    dateMatch = dateMatch && new Date(transaction.date) <= new Date(dateTo);
+                }
+                return statusMatch && dateMatch;
+            });
+        }, [recentTransactions, statusFilter, dateFrom, dateTo]);
+
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
@@ -2900,7 +2921,11 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-4 mb-6">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
-                                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
+                                <select
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
+                                    value={statusFilter}
+                                    onChange={e => setStatusFilter(e.target.value)}
+                                >
                                     <option value="all">All Transactions</option>
                                     <option value="completed">Completed</option>
                                     <option value="pending">Pending</option>
@@ -2912,11 +2937,15 @@ const AdminDashboard = () => {
                                 <input
                                     type="date"
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                    value={dateFrom}
+                                    onChange={e => setDateFrom(e.target.value)}
                                 />
                                 <span className="text-gray-500">to</span>
                                 <input
                                     type="date"
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                    value={dateTo}
+                                    onChange={e => setDateTo(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -2926,7 +2955,7 @@ const AdminDashboard = () => {
                             <div className="px-6 py-4 border-b border-gray-200">
                                 <div className="flex items-center justify-between">
                                     <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
-                                    <span className="text-sm text-gray-600">{filteredRecentTransactions.length} transactions found</span>
+                                    <span className="text-sm text-gray-600">{filteredTransactions.length} transactions found</span>
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
@@ -2942,7 +2971,7 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                        {filteredRecentTransactions.map((transaction) => (
+                                        {filteredTransactions.map((transaction) => (
                                             <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center">
@@ -2982,7 +3011,7 @@ const AdminDashboard = () => {
                         {/* Pagination */}
                         <div className="flex items-center justify-between mt-6">
                             <div className="text-sm text-gray-600">
-                                Showing 1 to {filteredRecentTransactions.length} of {filteredRecentTransactions.length} transactions
+                                Showing 1 to {filteredTransactions.length} of {filteredTransactions.length} transactions
                             </div>
                             <div className="flex items-center space-x-2">
                                 <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
@@ -3002,7 +3031,7 @@ const AdminDashboard = () => {
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-gray-500">
-                                Total: ${filteredRecentTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                                Total: ${filteredTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button
