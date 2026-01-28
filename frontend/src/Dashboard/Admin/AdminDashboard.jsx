@@ -3074,51 +3074,96 @@ const AdminDashboard = () => {
                                                 </td>
                                             </tr>
                                         ))}
-                                        {/* Transaction Details Modal */}
+                                        {/* Transaction Details Modal - Styled like View User modal */}
                                         {selectedTransaction && (
-                                            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-60 p-4 animate-fadeIn">
-                                                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-modalSlideIn">
-                                                    <button
-                                                        onClick={() => setSelectedTransaction(null)}
-                                                        className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                                                    >
-                                                        <X size={22} />
-                                                    </button>
-                                                    <h3 className="text-xl font-bold text-gray-900 mb-4">Transaction Details</h3>
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4 animate-fadeIn">
+                                                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                                                    {/* Modal Header */}
+                                                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <h3 className="text-2xl font-bold text-gray-900">Transaction Details</h3>
+                                                                <p className="text-gray-600 mt-1">View complete information about this transaction</p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => setSelectedTransaction(null)}
+                                                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                                                            >
+                                                                <X size={24} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Modal Body */}
+                                                    <div className="p-6">
+                                                        {/* Profile Header */}
+                                                        <div className="flex items-center space-x-6 mb-8">
+                                                            <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
                                                                 {selectedTransaction.avatar}
                                                             </div>
                                                             <div>
-                                                                <div className="text-base font-semibold text-gray-900">{selectedTransaction.client}</div>
-                                                                <div className="text-xs text-gray-500">Client</div>
+                                                                <h4 className="text-2xl font-bold text-gray-900">{selectedTransaction.client}</h4>
+                                                                <p className="text-gray-600">{selectedTransaction.service}</p>
+                                                                <div className="flex items-center gap-2 mt-2">
+                                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedTransaction.status === 'completed'
+                                                                        ? 'bg-green-100 text-green-800'
+                                                                        : selectedTransaction.status === 'pending'
+                                                                            ? 'bg-amber-100 text-amber-800'
+                                                                            : 'bg-red-100 text-red-800'
+                                                                        }`}>
+                                                                        {selectedTransaction.status}
+                                                                    </span>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div>
-                                                            <div className="text-xs text-gray-500">Company Name</div>
-                                                            <div className="text-base text-gray-900">{selectedTransaction.service}</div>
+
+                                                        {/* Information Grid */}
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            <div className="space-y-4">
+                                                                <div className="bg-gray-50 p-4 rounded-xl">
+                                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Client Name</label>
+                                                                    <p className="text-gray-900">{selectedTransaction.client}</p>
+                                                                </div>
+                                                                <div className="bg-gray-50 p-4 rounded-xl">
+                                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name</label>
+                                                                    <p className="text-gray-900">{selectedTransaction.service}</p>
+                                                                </div>
+                                                                <div className="bg-gray-50 p-4 rounded-xl">
+                                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+                                                                    <p className="text-rose-600 font-semibold">${selectedTransaction.amount}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-4">
+                                                                <div className="bg-gray-50 p-4 rounded-xl">
+                                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                                                                    <p className="text-gray-900">{selectedTransaction.date}</p>
+                                                                </div>
+                                                                <div className="bg-gray-50 p-4 rounded-xl">
+                                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedTransaction.status === 'completed'
+                                                                        ? 'bg-green-100 text-green-800'
+                                                                        : selectedTransaction.status === 'pending'
+                                                                            ? 'bg-amber-100 text-amber-800'
+                                                                            : 'bg-red-100 text-red-800'
+                                                                        }`}>
+                                                                        {selectedTransaction.status}
+                                                                    </span>
+                                                                </div>
+                                                                {/* Add more fields here if needed */}
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <div className="text-xs text-gray-500">Amount</div>
-                                                            <div className="text-base text-rose-600 font-bold">${selectedTransaction.amount}</div>
+                                                    </div>
+
+                                                    {/* Modal Footer */}
+                                                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                                                        <div className="flex items-center justify-end space-x-3">
+                                                            <button
+                                                                onClick={() => setSelectedTransaction(null)}
+                                                                className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                            >
+                                                                Close
+                                                            </button>
                                                         </div>
-                                                        <div>
-                                                            <div className="text-xs text-gray-500">Date</div>
-                                                            <div className="text-base text-gray-900">{selectedTransaction.date}</div>
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-xs text-gray-500">Status</div>
-                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedTransaction.status === 'completed'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : selectedTransaction.status === 'pending'
-                                                                    ? 'bg-amber-100 text-amber-800'
-                                                                    : 'bg-red-100 text-red-800'
-                                                                }`}>
-                                                                {selectedTransaction.status}
-                                                            </span>
-                                                        </div>
-                                                        {/* Add more fields here if needed */}
                                                     </div>
                                                 </div>
                                             </div>
