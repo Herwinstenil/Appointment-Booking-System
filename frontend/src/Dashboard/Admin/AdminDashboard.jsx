@@ -2934,7 +2934,7 @@ const AdminDashboard = () => {
                                     <thead>
                                         <tr className="bg-gray-50 border-b border-gray-200">
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Company Name</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -2954,7 +2954,7 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-900 text-center">{transaction.service}</td>
                                                 <td className="px-6 py-4 text-center text-sm font-semibold text-rose-600">${transaction.amount}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-900 text-center">{transaction.date}</td>
                                                 <td className="px-6 py-4 text-center">
