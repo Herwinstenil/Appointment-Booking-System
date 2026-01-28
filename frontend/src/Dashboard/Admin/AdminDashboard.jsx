@@ -4706,7 +4706,7 @@ const AdminDashboard = () => {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm text-gray-700 font-medium">{category.topClient}</p>
+                                                <p className="text-xs text-gray-500 font-medium">{category.clientName ? `Client: ${category.clientName}` : ''}</p>
                                             </div>
                                         </div>
                                     ))}
