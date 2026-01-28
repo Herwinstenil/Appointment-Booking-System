@@ -2896,6 +2896,76 @@ const AdminDashboard = () => {
             });
         }, [recentTransactions, statusFilter, dateFrom, dateTo]);
 
+        // PDF Export for Transactions
+        const exportTransactionsToPDF = async () => {
+            try {
+                const doc = new jsPDF();
+                // Title
+                doc.setFontSize(20);
+                doc.setTextColor(219, 39, 119);
+                doc.text('Transactions Report', 20, 30);
+
+                // Generated date
+                doc.setFontSize(10);
+                doc.setTextColor(107, 114, 128);
+                doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+                // Table headers with colored background (simulate gradient with solid color)
+                doc.setFontSize(12);
+                let yPos = 60;
+                // Draw rectangle for header background (use Tailwind's pink-600: #ec4899)
+                doc.setFillColor(236, 72, 153); // #ec4899
+                doc.rect(15, yPos - 6, 180, 10, 'F');
+                // Set white text for header
+                doc.setTextColor(255, 255, 255);
+                doc.text('Client', 20, yPos);
+                doc.text('Company', 60, yPos);
+                doc.text('Amount', 110, yPos);
+                doc.text('Date', 140, yPos);
+                doc.text('Status', 170, yPos);
+
+                // Table rows
+                doc.setFontSize(10);
+                doc.setTextColor(55, 65, 81);
+                yPos += 8;
+                filteredTransactions.forEach((t, idx) => {
+                    if (yPos > 280) { // Add new page if needed
+                        doc.addPage();
+                        yPos = 20;
+                        // Redraw header on new page
+                        doc.setFillColor(236, 72, 153); // #ec4899
+                        doc.rect(15, yPos - 6, 180, 10, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(12);
+                        doc.text('Client', 20, yPos);
+                        doc.text('Company', 60, yPos);
+                        doc.text('Amount', 110, yPos);
+                        doc.text('Date', 140, yPos);
+                        doc.text('Status', 170, yPos);
+                        doc.setFontSize(10);
+                        doc.setTextColor(55, 65, 81);
+                        yPos += 8;
+                    }
+                    doc.text(String(t.client), 20, yPos);
+                    doc.text(String(t.service || ''), 60, yPos);
+                    doc.text(`$${t.amount}`, 110, yPos);
+                    doc.text(String(t.date), 140, yPos);
+                    doc.text(String(t.status), 170, yPos);
+                    yPos += 7;
+                });
+
+                // Total
+                yPos += 10;
+                doc.setFontSize(12);
+                doc.setTextColor(17, 24, 39);
+                doc.text(`Total: $${filteredTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}`, 20, yPos);
+
+                doc.save('transactions-report.pdf');
+            } catch (error) {
+                console.error('Error exporting transactions PDF:', error);
+            }
+        };
+
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
@@ -3042,6 +3112,7 @@ const AdminDashboard = () => {
                                 </button>
                                 <button
                                     className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    onClick={exportTransactionsToPDF}
                                 >
                                     <Download size={18} className="inline mr-2" />
                                     Export Transactions
