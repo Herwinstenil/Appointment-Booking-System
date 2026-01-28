@@ -5206,152 +5206,158 @@ const AdminDashboard = () => {
                 const startIndex = (topClientsCurrentPage - 1) * clientsPerPage;
                 const paginatedClients = filteredTopClientsData.slice(startIndex, startIndex + clientsPerPage);
 
-                return (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                            {/* Modal Header */}
-                            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-gray-900">Top Clients</h3>
-                                        <p className="text-gray-600 mt-1">All active clients ranked by revenue</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setShowTopClientsModal(false)}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                                    >
-                                        <X size={24} />
-                                    </button>
-                                </div>
-                            </div>
+              return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-modalSlideIn">
+            {/* Modal Header */}
+            <div className="bg-white border-b border-gray-200 p-6 rounded-t-2xl shrink-0">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-2xl font-bold text-gray-900">Top Clients</h3>
+                        <p className="text-gray-600 mt-1">All active clients ranked by revenue</p>
+                    </div>
+                    <button
+                        onClick={() => setShowTopClientsModal(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                    >
+                        <X size={24} />
+                    </button>
+                </div>
+            </div>
 
-                            {/* Modal Body */}
-                            <div className="p-6">
-                                {/* Filters and Search */}
-                                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium text-gray-700">Filter by:</span>
-                                        <select
-                                            value={topClientsFilterType}
-                                            onChange={(e) => {
-                                                setTopClientsFilterType(e.target.value);
-                                                setTopClientsCurrentPage(1);
-                                            }}
-                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
-                                        >
-                                            <option value="all">All Clients</option>
-                                            <option value="highRevenue">High Revenue ($5000+)</option>
-                                            <option value="mediumRevenue">Medium Revenue ($1000-$5000)</option>
-                                            <option value="lowRevenue">Low Revenue (Under $1000)</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-1">
-                                        <span className="text-sm font-medium text-gray-700">Search:</span>
-                                        <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                                            <input
-                                                type="text"
-                                                placeholder="Search by name, company, or revenue..."
-                                                value={topClientsFilterSearch}
-                                                onChange={(e) => {
-                                                    setTopClientsFilterSearch(e.target.value);
-                                                    setTopClientsCurrentPage(1);
-                                                }}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Clients List */}
-                                <div className="space-y-4 mb-6">
-                                    {paginatedClients.map((client, index) => (
-                                        <div
-                                            key={startIndex + index}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] group border border-gray-200"
-                                        >
-                                            <div className="flex items-center gap-4 flex-1">
-                                                <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                                                    {startIndex + index + 1}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-semibold text-gray-800 group-hover:text-rose-700">{client.clientName}</p>
-                                                    <p className="text-sm text-gray-600 mt-1">{client.companyName || 'N/A'}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-lg font-bold text-rose-600">${client.totalRevenue.toLocaleString()}</p>
-                                                <p className="text-xs text-gray-500 mt-1">Total Revenue</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Pagination */}
-                                {totalPages > 1 && (
-                                    <div className="flex items-center justify-between">
-                                        <div className="text-sm text-gray-600">
-                                            Showing {startIndex + 1} to {Math.min(startIndex + clientsPerPage, filteredTopClientsData.length)} of {filteredTopClientsData.length} clients
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <button
-                                                onClick={() => setTopClientsCurrentPage(prev => Math.max(prev - 1, 1))}
-                                                disabled={topClientsCurrentPage === 1}
-                                                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                Previous
-                                            </button>
-                                            <span className="px-3 py-2 text-sm text-gray-700">
-                                                Page {topClientsCurrentPage} of {totalPages}
-                                            </span>
-                                            <button
-                                                onClick={() => setTopClientsCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                                disabled={topClientsCurrentPage === totalPages}
-                                                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                Next
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* No Results Message */}
-                                {filteredTopClientsData.length === 0 && (
-                                    <div className="text-center py-12">
-                                        <div className="text-gray-400 mb-4">
-                                            <Search size={48} className="mx-auto" />
-                                        </div>
-                                        <p className="text-gray-500 text-lg font-medium">No clients found</p>
-                                        <p className="text-gray-400 mt-2">Try adjusting your search criteria</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Modal Footer */}
-                            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                                <div className="flex items-center justify-between">
-                                    <div className="text-sm text-gray-500">
-                                        Total clients: {topClients.length}
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <button
-                                            onClick={() => setShowTopClientsModal(false)}
-                                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                        >
-                                            Close
-                                        </button>
-                                        <button
-                                            onClick={exportTopClientsToPDF}
-                                            className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                        >
-                                            <Download size={18} className="inline mr-2" />
-                                            Export Report
-                                        </button>
-                                    </div>
-                                </div>
+            {/* Entire scrollable content area - INCLUDING filters */}
+            <div className="flex-1 overflow-y-auto">
+                {/* Filters and Search */}
+                <div className="p-6 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">Filter by:</span>
+                            <select
+                                value={topClientsFilterType}
+                                onChange={(e) => {
+                                    setTopClientsFilterType(e.target.value);
+                                    setTopClientsCurrentPage(1);
+                                }}
+                                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
+                            >
+                                <option value="all">All Clients</option>
+                                <option value="highRevenue">High Revenue ($5000+)</option>
+                                <option value="mediumRevenue">Medium Revenue ($1000-$5000)</option>
+                                <option value="lowRevenue">Low Revenue (Under $1000)</option>
+                            </select>
+                        </div>
+                        <div className="flex items-center gap-2 flex-1">
+                            <span className="text-sm font-medium text-gray-700">Search:</span>
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by name, company, or revenue..."
+                                    value={topClientsFilterSearch}
+                                    onChange={(e) => {
+                                        setTopClientsFilterSearch(e.target.value);
+                                        setTopClientsCurrentPage(1);
+                                    }}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                />
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Clients List and other content */}
+                <div className="p-6">
+                    {/* Clients List */}
+                    <div className="space-y-4 mb-6">
+                        {paginatedClients.map((client, index) => (
+                            <div
+                                key={startIndex + index}
+                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-rose-50 transition-all duration-300 transform hover:scale-[1.02] group border border-gray-200"
+                            >
+                                <div className="flex items-center gap-4 flex-1">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                                        {startIndex + index + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-gray-800 group-hover:text-rose-700">{client.clientName}</p>
+                                        <p className="text-sm text-gray-600 mt-1">{client.companyName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-lg font-bold text-rose-600">${client.totalRevenue.toLocaleString()}</p>
+                                    <p className="text-xs text-gray-500 mt-1">Total Revenue</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                Showing {startIndex + 1} to {Math.min(startIndex + clientsPerPage, filteredTopClientsData.length)} of {filteredTopClientsData.length} clients
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setTopClientsCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={topClientsCurrentPage === 1}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-3 py-2 text-sm text-gray-700">
+                                    Page {topClientsCurrentPage} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setTopClientsCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={topClientsCurrentPage === totalPages}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* No Results Message */}
+                    {filteredTopClientsData.length === 0 && (
+                        <div className="text-center py-12">
+                            <div className="text-gray-400 mb-4">
+                                <Search size={48} className="mx-auto" />
+                            </div>
+                            <p className="text-gray-500 text-lg font-medium">No clients found</p>
+                            <p className="text-gray-400 mt-2">Try adjusting your search criteria</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Modal Footer - Fixed at bottom */}
+            <div className="bg-white border-t border-gray-200 p-6 rounded-b-2xl shrink-0">
+                <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                        Total clients: {topClients.length}
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={() => setShowTopClientsModal(false)}
+                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                        >
+                            Close
+                        </button>
+                        <button
+                            onClick={exportTopClientsToPDF}
+                            className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                        >
+                            <Download size={18} className="inline mr-2" />
+                            Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
                 );
             })()}
 
