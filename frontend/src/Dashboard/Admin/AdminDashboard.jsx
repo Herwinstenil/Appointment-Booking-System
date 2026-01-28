@@ -2825,16 +2825,16 @@ const AdminDashboard = () => {
                                     {/* Detailed Metrics */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="bg-white p-4 rounded-xl">
-                                            <p className="text-sm text-gray-600">Monthly Average</p>
-                                            <p className="text-lg font-bold text-gray-900">${Math.round(category.amount / 12).toLocaleString()}</p>
+                                            <p className="text-sm text-gray-600">Client Name</p>
+                                            <p className="text-lg font-bold text-gray-900">{category.clientName || '-'}</p>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl">
-                                            <p className="text-sm text-gray-600">Top Service</p>
-                                            <p className="text-lg font-bold text-gray-900">Premium Support</p>
+                                            <p className="text-sm text-gray-600">Client Gmail</p>
+                                            <p className="text-lg font-bold text-gray-900">{category.clientGmail || '-'}</p>
                                         </div>
                                         <div className="bg-white p-4 rounded-xl">
-                                            <p className="text-sm text-gray-600">Client Count</p>
-                                            <p className="text-lg font-bold text-gray-900">{Math.round(category.amount / 1000)}</p>
+                                            <p className="text-sm text-gray-600">Client No</p>
+                                            <p className="text-lg font-bold text-gray-900">{category.clientNo || '-'}</p>
                                         </div>
                                     </div>
                                 </div>
