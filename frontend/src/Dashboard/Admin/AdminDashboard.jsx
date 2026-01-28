@@ -2935,7 +2935,7 @@ const AdminDashboard = () => {
                                         <tr className="bg-gray-50 border-b border-gray-200">
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -2955,7 +2955,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
-                                                <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
+                                                <td className="px-6 py-4 text-center text-sm font-semibold text-rose-600">${transaction.amount}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-900 text-center">{transaction.date}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
