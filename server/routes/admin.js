@@ -146,6 +146,7 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
         company: true,
         firstName: true,
         lastName: true,
+        email: true, // Added email
         revenue: true,
         createdAt: true
       },
@@ -154,7 +155,7 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
       }
     });
 
-    // Group revenue by company
+    // Group revenue by company and track top client object
     const revenueByCompany = clients.reduce((acc, client) => {
       const companyName = client.company || 'Unassigned';
       const existing = acc.find(item => item.company === companyName);
@@ -166,13 +167,18 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
         if (!existing.clientNames.includes(clientFullName)) {
           existing.clientNames.push(clientFullName);
         }
+        // Update top client if this client has higher revenue
+        if ((client.revenue || 0) > (existing.topClient?.revenue || 0)) {
+          existing.topClient = client;
+        }
       } else {
         acc.push({
           company: companyName,
           amount: client.revenue || 0,
           clients: 1,
           clientId: client.id,
-          clientNames: [clientFullName]
+          clientNames: [clientFullName],
+          topClient: client
         });
       }
       return acc;
@@ -187,7 +193,9 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
       category: item.company,
       amount: item.amount,
       color: getCompanyColor(index),
-      topClient: item.clientNames[0] || 'N/A'
+      clientName: `${item.topClient.firstName || ''} ${item.topClient.lastName || ''}`.trim() || 'Unknown',
+      clientGmail: item.topClient.email || 'N/A',
+      clientNo: item.topClient.id || 'N/A'
     }));
 
     res.json({
