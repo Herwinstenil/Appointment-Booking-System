@@ -2956,7 +2956,7 @@ const AdminDashboard = () => {
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-900">{transaction.service}</td>
                                                 <td className="px-6 py-4 text-sm font-semibold text-rose-600">${transaction.amount}</td>
-                                                <td className="px-6 py-4 text-sm text-gray-900">{transaction.date}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-900 text-center">{transaction.date}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'completed'
                                                         ? 'bg-green-100 text-green-800'
