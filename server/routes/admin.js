@@ -146,9 +146,10 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
         company: true,
         firstName: true,
         lastName: true,
-        email: true, // Added email
+        email: true,
         revenue: true,
-        createdAt: true
+        createdAt: true,
+        clientNo: true // Select clientNo
       },
       orderBy: {
         revenue: 'desc'
@@ -195,7 +196,7 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
       color: getCompanyColor(index),
       clientName: `${item.topClient.firstName || ''} ${item.topClient.lastName || ''}`.trim() || 'Unknown',
       clientGmail: item.topClient.email || 'N/A',
-      clientNo: item.topClient.id || 'N/A'
+      clientNo: item.topClient.clientNo || 'N/A'
     }));
 
     res.json({
