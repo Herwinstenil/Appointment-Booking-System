@@ -3980,7 +3980,7 @@ const AdminDashboard = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-center">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'Admin'
                                                         ? 'bg-purple-100 text-purple-800'
                                                         : user.role === 'Manager'
