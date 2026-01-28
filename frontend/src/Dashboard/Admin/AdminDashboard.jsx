@@ -2878,6 +2878,7 @@ const AdminDashboard = () => {
         const [statusFilter, setStatusFilter] = useState('all');
         const [dateFrom, setDateFrom] = useState('');
         const [dateTo, setDateTo] = useState('');
+        const [selectedTransaction, setSelectedTransaction] = useState(null);
 
         // Filter logic
         const filteredTransactions = useMemo(() => {
@@ -3067,12 +3068,61 @@ const AdminDashboard = () => {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                                                    <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer" onClick={() => setSelectedTransaction(transaction)}>
                                                         <ViewIcon size={16} />
                                                     </button>
                                                 </td>
                                             </tr>
                                         ))}
+                                        {/* Transaction Details Modal */}
+                                        {selectedTransaction && (
+                                            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-60 p-4 animate-fadeIn">
+                                                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative animate-modalSlideIn">
+                                                    <button
+                                                        onClick={() => setSelectedTransaction(null)}
+                                                        className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                                                    >
+                                                        <X size={22} />
+                                                    </button>
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-4">Transaction Details</h3>
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                                                {selectedTransaction.avatar}
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-base font-semibold text-gray-900">{selectedTransaction.client}</div>
+                                                                <div className="text-xs text-gray-500">Client</div>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs text-gray-500">Company Name</div>
+                                                            <div className="text-base text-gray-900">{selectedTransaction.service}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs text-gray-500">Amount</div>
+                                                            <div className="text-base text-rose-600 font-bold">${selectedTransaction.amount}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs text-gray-500">Date</div>
+                                                            <div className="text-base text-gray-900">{selectedTransaction.date}</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs text-gray-500">Status</div>
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedTransaction.status === 'completed'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : selectedTransaction.status === 'pending'
+                                                                    ? 'bg-amber-100 text-amber-800'
+                                                                    : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                {selectedTransaction.status}
+                                                            </span>
+                                                        </div>
+                                                        {/* Add more fields here if needed */}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
