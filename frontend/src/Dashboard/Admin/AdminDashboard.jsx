@@ -3105,14 +3105,6 @@ const AdminDashboard = () => {
                                                                 <h4 className="text-2xl font-bold text-gray-900">{selectedTransaction.client}</h4>
                                                                 <p className="text-gray-600">{selectedTransaction.service}</p>
                                                                 <div className="flex items-center gap-2 mt-2">
-                                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedTransaction.status === 'completed'
-                                                                        ? 'bg-green-100 text-green-800'
-                                                                        : selectedTransaction.status === 'pending'
-                                                                            ? 'bg-amber-100 text-amber-800'
-                                                                            : 'bg-red-100 text-red-800'
-                                                                        }`}>
-                                                                        {selectedTransaction.status}
-                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
