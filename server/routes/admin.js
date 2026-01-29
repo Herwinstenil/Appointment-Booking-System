@@ -848,6 +848,7 @@ router.get('/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res
           role: true,
           company: true,
           mobile: true,
+          address: true,
           clientNo: true,
           revenue: true,
           isActive: true,
@@ -924,7 +925,8 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
       lastName,
       role,
       company,
-      mobile
+      mobile,
+      address
     } = req.body;
 
     // Check if user already exists
@@ -971,6 +973,7 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
         role: role.toUpperCase(),
         company: company?.trim(),
         mobile: mobile?.trim(),
+        address: address?.trim(),
         clientNo: clientNo,
         revenue: revenue
       },
@@ -1043,6 +1046,7 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
       role,
       company,
       mobile,
+      address,
       password,
       clientNo,
       revenue,
@@ -1118,6 +1122,7 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
         role: true,
         company: true,
         mobile: true,
+        address: true,
         updatedAt: true
       }
     });
