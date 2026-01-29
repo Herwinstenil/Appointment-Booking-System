@@ -499,35 +499,41 @@ const AdminDashboard = () => {
     };
 
     // Revenue Dashboard Data (dynamic based on time range)
-    const getRevenueMetrics = (range) => {
-        const baseMetrics = {
-            totalRevenue: 1254300,
-            monthlyRevenue: 98750, // Always the same, not affected by timeRange
-            growthPercentage: 12.5,
-            activeSubscriptions: 2847,
-            averageOrderValue: 156,
-            topCategory: 'Premium Services',
-            newCustomers: 342,
-            churnRate: 2.3,
-            customerLifetimeValue: 2450
-        };
-
-        // Adjust metrics based on time range (except monthlyRevenue)
-        const multiplier = {
-            daily: 0.03, // Daily values are smaller
-            weekly: 0.12,
-            monthly: 1,
-            yearly: 12
-        };
-
-        return {
-            ...baseMetrics,
-            totalRevenue: Math.round(baseMetrics.totalRevenue * multiplier[range]),
-            // monthlyRevenue is always the same
-            newCustomers: Math.round(baseMetrics.newCustomers * multiplier[range]),
-            activeSubscriptions: Math.round(baseMetrics.activeSubscriptions * multiplier[range])
-        };
+    // Calculate monthly revenue for each month of the year from CLIENT users
+    const getMonthlyRevenueByMonth = () => {
+        // users state is already available
+        const months = Array.from({ length: 12 }, (_, i) => ({
+            month: i, // 0 = Jan, 11 = Dec
+            revenue: 0
+        }));
+        users.forEach(user => {
+            if (user.role === 'CLIENT' && user.createdAt && user.revenue) {
+                const date = new Date(user.createdAt);
+                const month = date.getMonth();
+                // Parse revenue as number (strip $ and commas)
+                let revenue = user.revenue;
+                if (typeof revenue === 'string') {
+                    revenue = parseFloat(revenue.replace(/[$,]/g, ''));
+                }
+                if (!isNaN(month) && !isNaN(revenue)) {
+                    months[month].revenue += revenue;
+                }
+            }
+        });
+        return months;
     };
+
+    // Returns the revenue for the selected month (0 = Jan, 11 = Dec)
+    const getMonthlyRevenue = (monthIndex) => {
+        const monthlyData = getMonthlyRevenueByMonth();
+        return monthlyData[monthIndex]?.revenue || 0;
+    };
+
+    // Example: get current month revenue
+    const currentMonthRevenue = getMonthlyRevenue(new Date().getMonth());
+
+    // Optionally, you can expose all months' revenue for a chart or table
+    const allMonthsRevenue = getMonthlyRevenueByMonth();
 
     // System Metrics Data (dynamic based on time range)
     const getSystemMetrics = (range) => {
@@ -585,7 +591,19 @@ const AdminDashboard = () => {
         };
     };
 
-    const revenueMetrics = getRevenueMetrics(timeRange);
+    // Compose revenueMetrics using the new monthly revenue calculation
+    const monthIndex = new Date().getMonth();
+    const revenueMetrics = {
+        totalRevenue: allMonthsRevenue.reduce((sum, m) => sum + m.revenue, 0),
+        monthlyRevenue: allMonthsRevenue[monthIndex]?.revenue || 0,
+        growthPercentage: 12.5, // Placeholder, you can calculate real growth if needed
+        activeSubscriptions: 2847, // Placeholder
+        averageOrderValue: 156, // Placeholder
+        topCategory: 'Premium Services', // Placeholder
+        newCustomers: 342, // Placeholder
+        churnRate: 2.3, // Placeholder
+        customerLifetimeValue: 2450 // Placeholder
+    };
     const systemMetrics = getSystemMetrics(timeRange);
     const bookingData = getBookingData(timeRange);
 
