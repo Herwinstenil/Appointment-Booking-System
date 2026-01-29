@@ -1557,6 +1557,11 @@ const AdminDashboard = () => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Company</label>
                                     <p className="text-gray-900">{selectedUser.company}</p>
                                 </div>
+                                {/* Address Field */}
+                                <div className="bg-gray-50 p-4 rounded-xl">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                                    <p className="text-gray-900">{selectedUser.address}</p>
+                                </div>
                             </div>
                             <div className="space-y-4">
                                 <div className="bg-gray-50 p-4 rounded-xl">
