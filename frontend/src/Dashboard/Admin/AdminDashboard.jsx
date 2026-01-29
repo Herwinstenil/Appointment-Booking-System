@@ -339,7 +339,7 @@ const AdminDashboard = () => {
     const [showUserFilterModal, setShowUserFilterModal] = useState(false);
     const [showServiceFilterModal, setShowServiceFilterModal] = useState(false);
     const [showBookingFilterModal, setShowBookingFilterModal] = useState(false);
-    const [showRevenueFilterModal, setShowRevenueFilterModal] = useState(false);
+    // const [showRevenueFilterModal, setShowRevenueFilterModal] = useState(false); // Removed filter modal state
 
     // Add Client Modal State
     const [showAddClientModal, setShowAddClientModal] = useState(false);
@@ -2306,166 +2306,7 @@ const AdminDashboard = () => {
     };
 
     // Revenue Filter Modal Component
-    const RevenueFilterModal = () => {
-        const [localFilters, setLocalFilters] = useState(revenueFilters);
-
-        const handleLocalFilterChange = (field, value) => {
-            setLocalFilters(prev => ({
-                ...prev,
-                [field]: value
-            }));
-        };
-
-        const handleApplyFilters = () => {
-            setRevenueFilters(localFilters);
-            setShowRevenueFilterModal(false);
-        };
-
-        const handleClearFilters = () => {
-            const clearedFilters = {
-                dateFrom: '',
-                dateTo: '',
-                category: '',
-                amountMin: '',
-                amountMax: ''
-            };
-            setLocalFilters(clearedFilters);
-            setRevenueFilters(clearedFilters);
-            setShowRevenueFilterModal(false);
-        };
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                    {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">Filter Revenue</h3>
-                                <p className="text-gray-600 mt-1">Apply filters to narrow down the revenue data</p>
-                            </div>
-                            <button
-                                onClick={() => setShowRevenueFilterModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Modal Body */}
-                    <div className="p-6">
-                        <div className="space-y-6">
-                            {/* Date Range Filter */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <Calendar size={16} className="text-rose-500" />
-                                    Transaction Date Range
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">From</label>
-                                        <input
-                                            type="date"
-                                            value={localFilters.dateFrom}
-                                            onChange={(e) => handleLocalFilterChange('dateFrom', e.target.value)}
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">To</label>
-                                        <input
-                                            type="date"
-                                            value={localFilters.dateTo}
-                                            onChange={(e) => handleLocalFilterChange('dateTo', e.target.value)}
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Category Filter */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <BarChart3 size={16} className="text-rose-500" />
-                                    Revenue Category
-                                </label>
-                                <select
-                                    value={localFilters.category}
-                                    onChange={(e) => handleLocalFilterChange('category', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
-                                >
-                                    <option value="">All Categories</option>
-                                    <option value="Premium Services">Premium Services</option>
-                                    <option value="Consultation">Consultation</option>
-                                    <option value="Basic Services">Basic Services</option>
-                                    <option value="Add-ons">Add-ons</option>
-                                </select>
-                            </div>
-
-                            {/* Amount Range */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <DollarSign size={16} className="text-rose-500" />
-                                    Amount Range
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Min ($)</label>
-                                        <input
-                                            type="number"
-                                            value={localFilters.amountMin}
-                                            onChange={(e) => handleLocalFilterChange('amountMin', e.target.value)}
-                                            placeholder="0"
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                            min="0"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Max ($)</label>
-                                        <input
-                                            type="number"
-                                            value={localFilters.amountMax}
-                                            onChange={(e) => handleLocalFilterChange('amountMax', e.target.value)}
-                                            placeholder="No limit"
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                            min="0"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                        <div className="flex items-center justify-between">
-                            <button
-                                onClick={handleClearFilters}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                            >
-                                Clear All
-                            </button>
-                            <div className="flex items-center space-x-3">
-                                <button
-                                    onClick={() => setShowRevenueFilterModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleApplyFilters}
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Apply Filters
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
+    // RevenueFilterModal removed
 
     // System Details Modal Component
     const SystemDetailsModal = () => {
@@ -4591,12 +4432,7 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
                                 <button
-                                    onClick={() => setShowRevenueFilterModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 border border-gray-200 text-white rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    <Filter size={16} />
-                                    Filter
-                                </button>
+                                    // Filter button removed
                                 <button
                                     onClick={exportRevenueDashboardToPDF}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer"
@@ -5319,7 +5155,7 @@ const AdminDashboard = () => {
             {showBookingFilterModal && <BookingFilterModal />}
 
             {/* Revenue Filter Modal */}
-            {showRevenueFilterModal && <RevenueFilterModal />}
+            {/* RevenueFilterModal removed */}
 
             {/* System Details Modal */}
             {showSystemDetailsModal && <SystemDetailsModal />}
