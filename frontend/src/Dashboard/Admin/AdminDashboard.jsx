@@ -502,7 +502,7 @@ const AdminDashboard = () => {
     const getRevenueMetrics = (range) => {
         const baseMetrics = {
             totalRevenue: 1254300,
-            monthlyRevenue: 98750,
+            monthlyRevenue: 98750, // Always the same, not affected by timeRange
             growthPercentage: 12.5,
             activeSubscriptions: 2847,
             averageOrderValue: 156,
@@ -512,7 +512,7 @@ const AdminDashboard = () => {
             customerLifetimeValue: 2450
         };
 
-        // Adjust metrics based on time range
+        // Adjust metrics based on time range (except monthlyRevenue)
         const multiplier = {
             daily: 0.03, // Daily values are smaller
             weekly: 0.12,
@@ -523,7 +523,7 @@ const AdminDashboard = () => {
         return {
             ...baseMetrics,
             totalRevenue: Math.round(baseMetrics.totalRevenue * multiplier[range]),
-            monthlyRevenue: Math.round(baseMetrics.monthlyRevenue * multiplier[range]),
+            // monthlyRevenue is always the same
             newCustomers: Math.round(baseMetrics.newCustomers * multiplier[range]),
             activeSubscriptions: Math.round(baseMetrics.activeSubscriptions * multiplier[range])
         };
