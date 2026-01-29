@@ -971,6 +971,7 @@ router.post('/users', authenticateToken, authorizeRoles('ADMIN'), [
         role: role.toUpperCase(),
         company: company?.trim(),
         mobile: mobile?.trim(),
+        address: req.body.address ? req.body.address.trim() : null,
         clientNo: clientNo,
         revenue: revenue
       },

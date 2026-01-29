@@ -219,7 +219,8 @@ router.post('/register', [
         lastName,
         role: role.toUpperCase(),
         company,
-        mobile
+        mobile,
+        address: req.body.address ? req.body.address.trim() : null
       },
       select: {
         id: true,

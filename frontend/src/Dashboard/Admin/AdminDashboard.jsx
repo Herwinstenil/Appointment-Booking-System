@@ -1687,7 +1687,9 @@ const AdminDashboard = () => {
                     mobile: editedUser.phone ? editedUser.phone.replace('+91 ', '') : '',
                     clientNo: editedUser.clientNo,
                     revenue: editedUser.revenue ? parseFloat(editedUser.revenue.replace(/[$,]/g, '')) : undefined,
-                    isActive: editedUser.status === 'Active'
+                    isActive: editedUser.status === 'Active',
+                    address: editedUser.address || '',
+                    notes: editedUser.notes || ''
                 };
 
                 // Only include password if it's not empty
@@ -1914,6 +1916,17 @@ const AdminDashboard = () => {
                                         placeholder="$0"
                                     />
                                 </div>
+                            {/* Notes Field */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                <textarea
+                                    value={editedUser.notes || ''}
+                                    onChange={(e) => handleEditChange('notes', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Additional notes about the client..."
+                                    rows={3}
+                                />
+                            </div>
                             </div>
                         </div>
                     </div>
