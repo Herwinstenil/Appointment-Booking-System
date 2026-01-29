@@ -1831,9 +1831,9 @@ const AdminDashboard = () => {
                                         className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-rose-200 cursor-pointer transition-all duration-300 ${errors.role ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-rose-500'}`}
                                     >
                                         <option value="" disabled>Select Role</option>
-                                        <option value="Admin">Admin</option>
-                                        <option value="Client">Client</option>
-                                        <option value="User">User</option>
+                                        <option value="ADMIN">Admin</option>
+                                        <option value="CLIENT">Client</option>
+                                        <option value="USER">User</option>
                                     </select>
                                     {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
