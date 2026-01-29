@@ -4572,22 +4572,6 @@ const AdminDashboard = () => {
                                 <p className="text-gray-600 text-lg">Monitor revenue and financial metrics in real-time</p>
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-                                {/* Time Range Filter */}
-                                <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-xl p-1">
-                                    {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
-                                        <button
-                                            key={range}
-                                            onClick={() => setTimeRange(range)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 transform hover:scale-105 ${timeRange === range
-                                                ? 'bg-rose-500 text-white shadow-lg'
-                                                : 'text-gray-600 hover:text-rose-600'
-                                                }`}
-                                        >
-                                            {range.charAt(0).toUpperCase() + range.slice(1)}
-                                        </button>
-                                    ))}
-                                </div>
-
                                 <button
                                     onClick={() => setShowRevenueFilterModal(true)}
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 border border-gray-200 text-white rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
