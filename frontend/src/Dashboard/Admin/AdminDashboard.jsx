@@ -2706,8 +2706,12 @@ const AdminDashboard = () => {
                                     <p className="text-2xl font-bold text-rose-600">${totalClientRevenue.toLocaleString()}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-600">Growth Rate</p>
-                                    <p className="text-2xl font-bold text-green-600">+{revenueMetrics.growthPercentage}%</p>
+                                    <p className="text-sm text-gray-600">Total Bookings</p>
+                                    <p className="text-2xl font-bold text-blue-600">{bookingData.totalBookings.toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Avg Order Value</p>
+                                    <p className="text-2xl font-bold text-emerald-600">${revenueMetrics.averageOrderValue}</p>
                                 </div>
                             </div>
                         </div>
