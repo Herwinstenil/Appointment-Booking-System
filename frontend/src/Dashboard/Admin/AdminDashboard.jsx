@@ -2700,7 +2700,7 @@ const AdminDashboard = () => {
                         {/* Summary */}
                         <div className="mt-8 bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-2xl border border-rose-100">
                             <h4 className="text-lg font-bold text-gray-800 mb-4">Revenue Summary</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <p className="text-sm text-gray-600">Total Revenue</p>
                                     <p className="text-2xl font-bold text-rose-600">${totalClientRevenue.toLocaleString()}</p>
