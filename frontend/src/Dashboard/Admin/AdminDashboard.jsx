@@ -1837,6 +1837,17 @@ const AdminDashboard = () => {
                                     </select>
                                     {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
+                                  {/* Address Field */}
+                            <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                                <input
+                                    type="text"
+                                    value={editedUser.address || ''}
+                                    onChange={(e) => handleEditChange('address', e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                    placeholder="Enter client address"
+                                />
+                            </div>
                             </div>
 
                             <div className="space-y-4">
@@ -1916,17 +1927,17 @@ const AdminDashboard = () => {
                                         placeholder="$0"
                                     />
                                 </div>
-                            {/* Notes Field */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-                                <textarea
-                                    value={editedUser.notes || ''}
-                                    onChange={(e) => handleEditChange('notes', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Additional notes about the client..."
-                                    rows={3}
-                                />
-                            </div>
+                                {/* Notes Field */}
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                    <textarea
+                                        value={editedUser.notes || ''}
+                                        onChange={(e) => handleEditChange('notes', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Additional notes about the client..."
+                                        rows={3}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
