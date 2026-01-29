@@ -799,9 +799,6 @@ const AdminDashboard = () => {
         fetchBookingAnalytics();
     }, [timeRange, getAuthHeaders]);
 
-    // Calculate total client revenue
-    // (moved above)
-
     const navigate = useNavigate();
 
     const handleLogout = () => {
