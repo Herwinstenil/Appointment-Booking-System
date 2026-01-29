@@ -593,12 +593,20 @@ const AdminDashboard = () => {
 
     // Compose revenueMetrics using the new monthly revenue calculation
     const monthIndex = new Date().getMonth();
+    // Calculate total client revenue and average order value before using in revenueMetrics
+    const totalClientRevenue = useMemo(() => {
+        return users
+            .filter(user => user.role === 'CLIENT')
+            .reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0);
+    }, [users]);
+    const clientCount = users.filter(user => user.role === 'CLIENT').length;
+    const averageOrderValue = clientCount > 0 ? Math.round(totalClientRevenue / clientCount) : 0;
     const revenueMetrics = {
         totalRevenue: allMonthsRevenue.reduce((sum, m) => sum + m.revenue, 0),
         monthlyRevenue: allMonthsRevenue[monthIndex]?.revenue || 0,
         growthPercentage: 12.5, // Placeholder, you can calculate real growth if needed
         activeSubscriptions: 2847, // Placeholder
-        averageOrderValue: 156, // Placeholder
+        averageOrderValue,
         topCategory: 'Premium Services', // Placeholder
         newCustomers: 342, // Placeholder
         churnRate: 2.3, // Placeholder
@@ -792,11 +800,7 @@ const AdminDashboard = () => {
     }, [timeRange, getAuthHeaders]);
 
     // Calculate total client revenue
-    const totalClientRevenue = useMemo(() => {
-        return users
-            .filter(user => user.role === 'CLIENT')
-            .reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0);
-    }, [users]);
+    // (moved above)
 
     const navigate = useNavigate();
 
