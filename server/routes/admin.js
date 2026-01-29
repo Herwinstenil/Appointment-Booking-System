@@ -1108,6 +1108,7 @@ router.put('/users/:userId', authenticateToken, authorizeRoles('ADMIN'), [
         role: role ? role.toUpperCase() : undefined,
         company: company?.trim() || undefined,
         mobile: mobile?.trim() || undefined,
+        address: address?.trim() || undefined,
         password: hashedPassword || undefined,
         clientNo: clientNo !== undefined ? clientNo : undefined,
         revenue: revenue !== undefined ? revenue : undefined,
