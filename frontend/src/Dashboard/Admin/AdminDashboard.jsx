@@ -1837,17 +1837,17 @@ const AdminDashboard = () => {
                                     </select>
                                     {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
                                 </div>
-                                  {/* Address Field */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
-                                <input
-                                    type="text"
-                                    value={editedUser.address || ''}
-                                    onChange={(e) => handleEditChange('address', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Enter client address"
-                                />
-                            </div>
+                                {/* Address Field */}
+                                <div className="group">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                                    <input
+                                        type="text"
+                                        value={editedUser.address || ''}
+                                        onChange={(e) => handleEditChange('address', e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Enter client address"
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-4">
