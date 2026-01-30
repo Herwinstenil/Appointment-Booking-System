@@ -4480,8 +4480,19 @@ const AdminDashboard = () => {
                                     {
                                         label: 'Avg Booking Value',
                                         value: `$${revenueMetrics.averageOrderValue}`,
-                                        change: '+$12', // TODO: Replace with real change if available
-                                        positive: true
+                                        change: (() => {
+                                            const current = revenueMetrics.averageOrderValue;
+                                            const prev = revenueMetrics.previousAverageOrderValue;
+                                            if (typeof prev !== 'number' || prev === 0) return '+0';
+                                            const diff = current - prev;
+                                            const sign = diff >= 0 ? '+' : '';
+                                            return `${sign}$${Math.abs(diff)}`;
+                                        })(),
+                                        positive: (() => {
+                                            const current = revenueMetrics.averageOrderValue;
+                                            const prev = revenueMetrics.previousAverageOrderValue;
+                                            return typeof prev === 'number' ? current >= prev : true;
+                                        })()
                                     },
                                     {
                                         label: 'New Bookings',
