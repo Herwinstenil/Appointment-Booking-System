@@ -626,12 +626,22 @@ const AdminDashboard = () => {
         return Math.round(prevClients.reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0) / prevClients.length);
     })();
     const avgOrderValueGrowth = avgOrderValuePrev > 0 ? ((averageOrderValue - avgOrderValuePrev) / avgOrderValuePrev) * 100 : 0;
+    // Calculate active subscriptions (active client users)
+    const activeSubscriptions = users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length;
+    // Calculate previous month active subscriptions
+    const prevActiveSubscriptions = users.filter(u => {
+        if (u.role !== 'CLIENT' || u.status !== 'Active') return false;
+        const date = new Date(u.createdAt);
+        return date.getMonth() === prevMonthIndex;
+    }).length;
+    const activeSubscriptionsGrowth = prevActiveSubscriptions > 0 ? ((activeSubscriptions - prevActiveSubscriptions) / prevActiveSubscriptions) * 100 : 0;
     const revenueMetrics = {
         totalRevenue,
         monthlyRevenue: thisMonthRevenue,
         growthPercentage: totalGrowth,
         monthlyGrowthPercentage: monthlyGrowth,
-        activeSubscriptions: 2847, // Placeholder
+        activeSubscriptions,
+        activeSubscriptionsGrowth,
         averageOrderValue,
         averageOrderValueGrowth: avgOrderValueGrowth,
         topCategory: 'Premium Services', // Placeholder
@@ -4528,9 +4538,9 @@ const AdminDashboard = () => {
                                 },
                                 {
                                     title: 'Active Subscriptions',
-                                    value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0,
-                                    change: '+0.0%', // Placeholder, add logic if you have real data
-                                    positive: true,
+                                    value: revenueMetrics.activeSubscriptions,
+                                    change: `${revenueMetrics.activeSubscriptionsGrowth >= 0 ? '+' : ''}${revenueMetrics.activeSubscriptionsGrowth.toFixed(1)}%`,
+                                    positive: revenueMetrics.activeSubscriptionsGrowth >= 0,
                                     icon: Users,
                                     gradient: 'from-purple-500 to-violet-600',
                                     delay: 200
