@@ -606,12 +606,34 @@ const AdminDashboard = () => {
     const averageOrderValue = clientCountWithRevenue > 0
         ? Math.round(clientsWithRevenue.reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0) / clientCountWithRevenue)
         : 0;
+    // Calculate real growth percentages for dashboard cards
+    const prevMonthIndex = monthIndex === 0 ? 11 : monthIndex - 1;
+    const prevYear = monthIndex === 0 ? new Date().getFullYear() - 1 : new Date().getFullYear();
+    const prevMonthRevenue = allMonthsRevenue[prevMonthIndex]?.revenue || 0;
+    const thisMonthRevenue = allMonthsRevenue[monthIndex]?.revenue || 0;
+    const totalRevenue = allMonthsRevenue.reduce((sum, m) => sum + m.revenue, 0);
+    const prevTotalRevenue = allMonthsRevenue.slice(0, 12).reduce((sum, m, i) => i !== monthIndex ? sum + m.revenue : sum, 0);
+    const monthlyGrowth = prevMonthRevenue > 0 ? ((thisMonthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : 0;
+    const totalGrowth = prevTotalRevenue > 0 ? ((totalRevenue - prevTotalRevenue) / prevTotalRevenue) * 100 : 0;
+    // For mock, keep activeSubscriptions and newCustomers static, but you can add logic if you have real data
+    const avgOrderValuePrev = (() => {
+        // Calculate previous month average order value
+        const prevClients = users.filter(user => {
+            const date = new Date(user.createdAt);
+            return date.getMonth() === prevMonthIndex && user.role === 'CLIENT' && parseFloat(user.revenue.replace(/[$,]/g, '') || 0) > 0;
+        });
+        if (prevClients.length === 0) return 0;
+        return Math.round(prevClients.reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0) / prevClients.length);
+    })();
+    const avgOrderValueGrowth = avgOrderValuePrev > 0 ? ((averageOrderValue - avgOrderValuePrev) / avgOrderValuePrev) * 100 : 0;
     const revenueMetrics = {
-        totalRevenue: allMonthsRevenue.reduce((sum, m) => sum + m.revenue, 0),
-        monthlyRevenue: allMonthsRevenue[monthIndex]?.revenue || 0,
-        growthPercentage: 12.5, // Placeholder, you can calculate real growth if needed
+        totalRevenue,
+        monthlyRevenue: thisMonthRevenue,
+        growthPercentage: totalGrowth,
+        monthlyGrowthPercentage: monthlyGrowth,
         activeSubscriptions: 2847, // Placeholder
         averageOrderValue,
+        averageOrderValueGrowth: avgOrderValueGrowth,
         topCategory: 'Premium Services', // Placeholder
         newCustomers: 342, // Placeholder
         churnRate: 2.3, // Placeholder
@@ -4489,8 +4511,8 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Total Revenue',
                                     value: `$${totalClientRevenue.toLocaleString()}`,
-                                    change: `+${revenueMetrics.growthPercentage}%`,
-                                    positive: true,
+                                    change: `${revenueMetrics.growthPercentage >= 0 ? '+' : ''}${revenueMetrics.growthPercentage.toFixed(1)}%`,
+                                    positive: revenueMetrics.growthPercentage >= 0,
                                     icon: DollarSign,
                                     gradient: 'from-green-500 to-emerald-600',
                                     delay: 0
@@ -4498,8 +4520,8 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Monthly Revenue',
                                     value: `$${revenueMetrics.monthlyRevenue.toLocaleString()}`,
-                                    change: '+8.2%',
-                                    positive: true,
+                                    change: `${revenueMetrics.monthlyGrowthPercentage >= 0 ? '+' : ''}${revenueMetrics.monthlyGrowthPercentage.toFixed(1)}%`,
+                                    positive: revenueMetrics.monthlyGrowthPercentage >= 0,
                                     icon: BarChart3,
                                     gradient: 'from-blue-500 to-cyan-600',
                                     delay: 100
@@ -4507,7 +4529,7 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Active Subscriptions',
                                     value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0,
-                                    change: '+5.2%',
+                                    change: '+0.0%', // Placeholder, add logic if you have real data
                                     positive: true,
                                     icon: Users,
                                     gradient: 'from-purple-500 to-violet-600',
@@ -4516,8 +4538,8 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Avg Order Value',
                                     value: `$${revenueMetrics.averageOrderValue}`,
-                                    change: '+3.1%',
-                                    positive: true,
+                                    change: `${revenueMetrics.averageOrderValueGrowth >= 0 ? '+' : ''}${revenueMetrics.averageOrderValueGrowth.toFixed(1)}%`,
+                                    positive: revenueMetrics.averageOrderValueGrowth >= 0,
                                     icon: CreditCard,
                                     gradient: 'from-amber-500 to-orange-600',
                                     delay: 300
