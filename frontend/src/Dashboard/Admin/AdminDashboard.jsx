@@ -3262,7 +3262,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             filteredRevenueByCategory.forEach((category) => {
-                doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage})`, 20, yPos);
+                doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.clientName})`, 20, yPos);
                 yPos += 10;
             });
 
@@ -3276,7 +3276,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             filteredRecentTransactions.slice(0, 10).forEach((transaction) => {
-                doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount} (${transaction.date})`, 20, yPos);
+                doc.text(`${transaction.client} - ${transaction.service}: $${transaction.amount} ${transaction.status} (${transaction.date})`, 20, yPos);
                 yPos += 10;
             });
 
