@@ -4442,7 +4442,7 @@ const AdminDashboard = () => {
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {[
                                     { label: 'Conversion Rate', value: '8.5%', change: '+1.2%', positive: true },
-                                    { label: 'Avg Booking Value', value: '$156', change: '+$12', positive: true },
+                                    { label: 'Avg Booking Value',   value: `$${revenueMetrics.averageOrderValue}`, change: '+$12', positive: true },
                                     { label: 'Repeat Bookings', value: '42%', change: '+3.5%', positive: true },
                                     { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%', positive: true }
                                 ].map((metric, index) => (
