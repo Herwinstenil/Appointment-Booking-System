@@ -3262,7 +3262,7 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             filteredRevenueByCategory.forEach((category) => {
-                doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage}%) - Growth: ${category.growth}%`, 20, yPos);
+                doc.text(`${category.category}: $${category.amount.toLocaleString()} (${category.percentage})`, 20, yPos);
                 yPos += 10;
             });
 
