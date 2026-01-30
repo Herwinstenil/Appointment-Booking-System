@@ -223,6 +223,7 @@ router.get('/dashboard/recent-transactions', authenticateToken, authorizeRoles('
     const clients = await prisma.user.findMany({
       where: {
         role: 'CLIENT',
+        revenue: { gt: 0 }
       },
       orderBy: {
         createdAt: 'desc'
