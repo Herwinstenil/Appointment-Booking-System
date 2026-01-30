@@ -4485,21 +4485,9 @@ const AdminDashboard = () => {
                                     },
                                     {
                                         label: 'New Bookings',
-                                        value: dashboardStats?.users?.recent || '--',
-                                        change: (() => {
-                                            const current = dashboardStats?.users?.recent || 0;
-                                            const prev = dashboardStats?.users?.previous || 0;
-                                            if (prev === 0 && current === 0) return '0%';
-                                            if (prev === 0) return '+100%';
-                                            const diff = current - prev;
-                                            const percent = ((diff / prev) * 100).toFixed(1);
-                                            return `${diff >= 0 ? '+' : ''}${percent}%`;
-                                        })(),
-                                        positive: (() => {
-                                            const current = dashboardStats?.users?.recent || 0;
-                                            const prev = dashboardStats?.users?.previous || 0;
-                                            return current >= prev;
-                                        })()
+                                        value: dashboardStats?.appointments?.recent || '--',
+                                        change: '', // TODO: Add real change if available
+                                        positive: true
                                     },
                                     {
                                         label: 'Cancellation Rate',
