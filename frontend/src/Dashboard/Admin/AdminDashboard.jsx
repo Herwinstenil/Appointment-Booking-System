@@ -4494,11 +4494,11 @@ const AdminDashboard = () => {
                                             return typeof prev === 'number' ? current >= prev : true;
                                         })()
                                     },
-                                     {
-                                    label: 'Completion Rate',
-                                value: dashboardStats?.appointments?.completionRate || '--',
-                                change: '',
-                                positive: true
+                                    {
+                                        label: 'Completion Rate',
+                                        value: dashboardStats?.appointments?.completionRate || '--',
+                                        change: '',
+                                        positive: true
                                     },
                                     {
                                         label: 'Cancellation Rate',
