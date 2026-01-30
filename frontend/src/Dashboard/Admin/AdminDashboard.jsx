@@ -4471,10 +4471,30 @@ const AdminDashboard = () => {
                             <h3 className="text-xl font-bold text-gray-800 mb-6">Booking Performance</h3>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {[
-                                    { label: 'Conversion Rate', value: '8.5%', change: '+1.2%', positive: true },
-                                    { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '+$12', positive: true },
-                                    { label: 'Repeat Bookings', value: '42%', change: '+3.5%', positive: true },
-                                    { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%', positive: true }
+                                    {
+                                        label: 'Conversion Rate',
+                                        value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value || '--',
+                                        change: performanceMetrics.find(m => m.name === 'Conversion Rate')?.change || '',
+                                        positive: (performanceMetrics.find(m => m.name === 'Conversion Rate')?.change || '').startsWith('+')
+                                    },
+                                    {
+                                        label: 'Avg Booking Value',
+                                        value: `$${revenueMetrics.averageOrderValue}`,
+                                        change: '+$12', // TODO: Replace with real change if available
+                                        positive: true
+                                    },
+                                    {
+                                        label: 'New Bookings',
+                                        value: dashboardStats?.appointments?.recent || '--',
+                                        change: '', // TODO: Add real change if available
+                                        positive: true
+                                    },
+                                    {
+                                        label: 'Cancellation Rate',
+                                        value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '--',
+                                        change: performanceMetrics.find(m => m.name === 'Bounce Rate')?.change || '',
+                                        positive: (performanceMetrics.find(m => m.name === 'Bounce Rate')?.change || '').startsWith('+')
+                                    }
                                 ].map((metric, index) => (
                                     <div key={index} className="bg-gray-50 p-6 rounded-xl hover:bg-rose-50 transition-all duration-300">
                                         <div className="flex items-center justify-between mb-2">
