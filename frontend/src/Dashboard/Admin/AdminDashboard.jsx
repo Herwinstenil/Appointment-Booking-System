@@ -3249,10 +3249,8 @@ const AdminDashboard = () => {
             let yPos = 80;
             doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
             doc.text(`Monthly Revenue: $${revenueMetrics.monthlyRevenue.toLocaleString()}`, 20, yPos + 10);
-            doc.text(`Growth: +${revenueMetrics.growthPercentage}%`, 20, yPos + 20);
             doc.text(`Active Subscriptions: ${revenueMetrics.activeSubscriptions.toLocaleString()}`, 20, yPos + 30);
             doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 40);
-            doc.text(`New Customers: ${revenueMetrics.newCustomers}`, 20, yPos + 50);
 
             // Revenue by Category
             yPos += 70;
