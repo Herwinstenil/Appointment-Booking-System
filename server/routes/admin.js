@@ -134,12 +134,13 @@ router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - periodDays);
 
-    // Get all active clients created within the period, grouped by company
+    // Get all active clients created within the period, grouped by company, and only those with revenue > 0
     const clients = await prisma.user.findMany({
       where: {
         role: 'CLIENT',
         isActive: true,
-        createdAt: { gte: startDate }
+        createdAt: { gte: startDate },
+        revenue: { gt: 0 }
       },
       select: {
         id: true,

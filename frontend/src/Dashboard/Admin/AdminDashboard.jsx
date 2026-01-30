@@ -600,7 +600,12 @@ const AdminDashboard = () => {
             .reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0);
     }, [users]);
     const clientCount = users.filter(user => user.role === 'CLIENT').length;
-    const averageOrderValue = clientCount > 0 ? Math.round(totalClientRevenue / clientCount) : 0;
+    // Only consider clients with revenue > 0 for average order value
+    const clientsWithRevenue = users.filter(user => user.role === 'CLIENT' && parseFloat(user.revenue.replace(/[$,]/g, '') || 0) > 0);
+    const clientCountWithRevenue = clientsWithRevenue.length;
+    const averageOrderValue = clientCountWithRevenue > 0
+        ? Math.round(clientsWithRevenue.reduce((sum, user) => sum + parseFloat(user.revenue.replace(/[$,]/g, '') || 0), 0) / clientCountWithRevenue)
+        : 0;
     const revenueMetrics = {
         totalRevenue: allMonthsRevenue.reduce((sum, m) => sum + m.revenue, 0),
         monthlyRevenue: allMonthsRevenue[monthIndex]?.revenue || 0,
@@ -917,18 +922,21 @@ const AdminDashboard = () => {
     });
 
     const filteredTopClients = topClients;
+    // Only show categories with revenue > 0 (defensive, since backend now filters too)
     const filteredRevenueByCategory = revenueByCategory.filter(category => {
         // Category filter
         const matchesCategory = revenueFilters.category === '' || category.category === revenueFilters.category;
 
         // Amount range filter
-        const categoryAmount = parseFloat(category.amount && typeof category.amount === 'string' ? category.amount.replace(/[$,]/g, '') : '0');
+        const categoryAmount = parseFloat(category.amount && typeof category.amount === 'string' ? category.amount.replace(/[$,]/g, '') : category.amount || 0);
         const matchesAmountMin = revenueFilters.amountMin === '' || categoryAmount >= parseFloat(revenueFilters.amountMin);
         const matchesAmountMax = revenueFilters.amountMax === '' || categoryAmount <= parseFloat(revenueFilters.amountMax);
 
-        return matchesCategory && matchesAmountMin && matchesAmountMax;
+        // Only show if revenue is not 0
+        return matchesCategory && matchesAmountMin && matchesAmountMax && categoryAmount > 0;
     });
 
+    // Only show transactions with revenue > 0
     const filteredRecentTransactions = recentTransactions.filter(transaction => {
         // Date range filter
         const transactionDate = new Date(transaction.date);
@@ -940,7 +948,8 @@ const AdminDashboard = () => {
         const matchesAmountMin = revenueFilters.amountMin === '' || transactionAmount >= parseFloat(revenueFilters.amountMin);
         const matchesAmountMax = revenueFilters.amountMax === '' || transactionAmount <= parseFloat(revenueFilters.amountMax);
 
-        return matchesDateFrom && matchesDateTo && matchesAmountMin && matchesAmountMax;
+        // Only show if revenue is not 0
+        return matchesDateFrom && matchesDateTo && matchesAmountMin && matchesAmountMax && transactionAmount > 0;
     });
 
     // Add Client Handlers
