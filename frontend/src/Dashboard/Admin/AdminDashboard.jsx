@@ -4485,7 +4485,7 @@ const AdminDashboard = () => {
                                     },
                                     {
                                         label: 'New Bookings',
-                                        value: dashboardStats?.appointments?.recent || '--',
+                                        value: dashboardStats?.users?.recent || '--',
                                         change: '', // TODO: Add real change if available
                                         positive: true
                                     },
