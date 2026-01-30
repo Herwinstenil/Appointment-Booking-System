@@ -3250,7 +3250,7 @@ const AdminDashboard = () => {
             doc.text(`Total Revenue: $${revenueMetrics.totalRevenue.toLocaleString()}`, 20, yPos);
             doc.text(`Monthly Revenue: $${revenueMetrics.monthlyRevenue.toLocaleString()}`, 20, yPos + 10);
             doc.text(`Active Subscriptions: ${revenueMetrics.activeSubscriptions.toLocaleString()}`, 20, yPos + 20);
-            doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 40);
+            doc.text(`Average Order Value: $${revenueMetrics.averageOrderValue}`, 20, yPos + 30);
 
             // Revenue by Category
             yPos += 70;
