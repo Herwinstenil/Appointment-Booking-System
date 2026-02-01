@@ -4474,8 +4474,6 @@ const AdminDashboard = () => {
                                     {
                                         label: 'Conversion Rate',
                                         value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value || '--',
-                                        change: performanceMetrics.find(m => m.name === 'Conversion Rate')?.change || '',
-                                        positive: (performanceMetrics.find(m => m.name === 'Conversion Rate')?.change || '').startsWith('+')
                                     },
                                     {
                                         label: 'Avg Booking Value',
