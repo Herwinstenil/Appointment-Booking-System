@@ -4505,7 +4505,6 @@ const AdminDashboard = () => {
                                             const percent = (active / total) * 100;
                                             return Number.isInteger(percent) ? percent + '%' : percent.toFixed(1).replace(/\.0$/, '') + '%';
                                         })(),
-                                        positive: true
                                     },
                                     {
                                         label: 'Cancellation Rate',
