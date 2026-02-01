@@ -4510,8 +4510,6 @@ const AdminDashboard = () => {
                                     {
                                         label: 'Cancellation Rate',
                                         value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '--',
-                                        change: performanceMetrics.find(m => m.name === 'Bounce Rate')?.change || '',
-                                        positive: (performanceMetrics.find(m => m.name === 'Bounce Rate')?.change || '').startsWith('+')
                                     }
                                 ].map((metric, index) => (
                                     <div key={index} className="bg-gray-50 p-6 rounded-xl hover:bg-rose-50 transition-all duration-300">
