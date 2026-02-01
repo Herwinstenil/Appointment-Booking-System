@@ -3585,7 +3585,7 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Total Bookings',
                                     value: bookingAnalytics.totalBookings || 0,
-                                   change: `${revenueMetrics.activeSubscriptionsGrowth >= 0 ? '+' : ''}${revenueMetrics.activeSubscriptionsGrowth.toFixed(1)}%`,
+                                    change: `${revenueMetrics.activeSubscriptionsGrowth >= 0 ? '+' : ''}${revenueMetrics.activeSubscriptionsGrowth.toFixed(1)}%`,
                                     positive: revenueMetrics.activeSubscriptionsGrowth >= 0,
                                     icon: BookOpen,
                                     gradient: 'from-purple-500 to-violet-600',
