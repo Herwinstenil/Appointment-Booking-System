@@ -3576,8 +3576,8 @@ const AdminDashboard = () => {
                                 {
                                     title: 'Active Users',
                                     value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0,
-                                    change: `+${dashboardStats.users?.growth || 0}%`,
-                                    positive: true,
+                                     change: `${revenueMetrics.activeSubscriptionsGrowth >= 0 ? '+' : ''}${revenueMetrics.activeSubscriptionsGrowth.toFixed(1)}%`,
+                                    positive: revenueMetrics.activeSubscriptionsGrowth >= 0,
                                     icon: Users,
                                     gradient: 'from-blue-500 to-cyan-600',
                                     delay: 100
