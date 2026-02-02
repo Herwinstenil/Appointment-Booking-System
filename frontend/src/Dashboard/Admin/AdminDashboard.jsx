@@ -5041,10 +5041,6 @@ const AdminDashboard = () => {
             {/* User Filter Modal */}
             {showUserFilterModal && <UserFilterModal />}
 
-
-            {/* Revenue Filter Modal */}
-            {/* RevenueFilterModal removed */}
-
             {/* System Details Modal */}
             {showSystemDetailsModal && <SystemDetailsModal />}
 
