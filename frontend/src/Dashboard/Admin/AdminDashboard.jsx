@@ -2355,8 +2355,6 @@ const AdminDashboard = () => {
         );
     };
 
-    // RevenueFilterModal removed
-
     // System Details Modal Component
     const SystemDetailsModal = () => {
         return (
