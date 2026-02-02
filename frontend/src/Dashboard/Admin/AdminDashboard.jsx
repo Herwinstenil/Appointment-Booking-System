@@ -318,15 +318,6 @@ const AdminDashboard = () => {
         revenueMax: ''
     });
 
-    const [bookingFilters, setBookingFilters] = useState({
-        dateFrom: '',
-        dateTo: '',
-        status: '',
-        serviceType: '',
-        amountMin: '',
-        amountMax: ''
-    });
-
     const [revenueFilters, setRevenueFilters] = useState({
         dateFrom: '',
         dateTo: '',
@@ -338,7 +329,6 @@ const AdminDashboard = () => {
     // Filter Modal States
     const [showUserFilterModal, setShowUserFilterModal] = useState(false);
     const [showServiceFilterModal, setShowServiceFilterModal] = useState(false);
-    const [showBookingFilterModal, setShowBookingFilterModal] = useState(false);
     // const [showRevenueFilterModal, setShowRevenueFilterModal] = useState(false); // Removed filter modal state
 
     // Add Client Modal State
@@ -2193,189 +2183,6 @@ const AdminDashboard = () => {
         );
     };
 
-    // Booking Filter Modal Component
-    const BookingFilterModal = () => {
-        const [localFilters, setLocalFilters] = useState(bookingFilters);
-
-        const handleLocalFilterChange = (field, value) => {
-            setLocalFilters(prev => ({
-                ...prev,
-                [field]: value
-            }));
-        };
-
-        const handleApplyFilters = () => {
-            setBookingFilters(localFilters);
-            setShowBookingFilterModal(false);
-        };
-
-        const handleClearFilters = () => {
-            const clearedFilters = {
-                dateFrom: '',
-                dateTo: '',
-                status: '',
-                serviceType: '',
-                amountMin: '',
-                amountMax: ''
-            };
-            setLocalFilters(clearedFilters);
-            setBookingFilters(clearedFilters);
-            setShowBookingFilterModal(false);
-        };
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                    {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">Filter Bookings</h3>
-                                <p className="text-gray-600 mt-1">Apply filters to narrow down the booking list</p>
-                            </div>
-                            <button
-                                onClick={() => setShowBookingFilterModal(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Modal Body */}
-                    <div className="p-6">
-                        <div className="space-y-6">
-                            {/* Date Range Filter */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <Calendar size={16} className="text-rose-500" />
-                                    Booking Date Range
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">From</label>
-                                        <input
-                                            type="date"
-                                            value={localFilters.dateFrom}
-                                            onChange={(e) => handleLocalFilterChange('dateFrom', e.target.value)}
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">To</label>
-                                        <input
-                                            type="date"
-                                            value={localFilters.dateTo}
-                                            onChange={(e) => handleLocalFilterChange('dateTo', e.target.value)}
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Status Filter */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <CheckCircle size={16} className="text-rose-500" />
-                                    Booking Status
-                                </label>
-                                <select
-                                    value={localFilters.status}
-                                    onChange={(e) => handleLocalFilterChange('status', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
-                                >
-                                    <option value="">All Statuses</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-
-                            {/* Service Type Filter */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <BookOpen size={16} className="text-rose-500" />
-                                    Service Type
-                                </label>
-                                <select
-                                    value={localFilters.serviceType}
-                                    onChange={(e) => handleLocalFilterChange('serviceType', e.target.value)}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 cursor-pointer"
-                                >
-                                    <option value="">All Services</option>
-                                    <option value="Web Development">Web Development</option>
-                                    <option value="Mobile App Development">Mobile App Development</option>
-                                    <option value="UI/UX Design">UI/UX Design</option>
-                                    <option value="Consultation">Consultation</option>
-                                    <option value="Digital Marketing">Digital Marketing</option>
-                                </select>
-                            </div>
-
-                            {/* Amount Range */}
-                            <div className="group">
-                                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                    <DollarSign size={16} className="text-rose-500" />
-                                    Amount Range
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Min ($)</label>
-                                        <input
-                                            type="number"
-                                            value={localFilters.amountMin}
-                                            onChange={(e) => handleLocalFilterChange('amountMin', e.target.value)}
-                                            placeholder="0"
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                            min="0"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Max ($)</label>
-                                        <input
-                                            type="number"
-                                            value={localFilters.amountMax}
-                                            onChange={(e) => handleLocalFilterChange('amountMax', e.target.value)}
-                                            placeholder="No limit"
-                                            className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300 text-sm"
-                                            min="0"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                        <div className="flex items-center justify-between">
-                            <button
-                                onClick={handleClearFilters}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                            >
-                                Clear All
-                            </button>
-                            <div className="flex items-center space-x-3">
-                                <button
-                                    onClick={() => setShowBookingFilterModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleApplyFilters}
-                                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Apply Filters
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    // Revenue Filter Modal Component
     // RevenueFilterModal removed
 
     // System Details Modal Component
@@ -4180,13 +3987,6 @@ const AdminDashboard = () => {
                                     <Download size={16} />
                                     Export Report
                                 </button>
-                                <button
-                                    onClick={() => setShowBookingFilterModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    <Filter size={16} />
-                                    Filter
-                                </button>
                             </div>
                         </div>
 
@@ -5241,8 +5041,6 @@ const AdminDashboard = () => {
             {/* User Filter Modal */}
             {showUserFilterModal && <UserFilterModal />}
 
-            {/* Booking Filter Modal */}
-            {showBookingFilterModal && <BookingFilterModal />}
 
             {/* Revenue Filter Modal */}
             {/* RevenueFilterModal removed */}
