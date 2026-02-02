@@ -2435,12 +2435,6 @@ const AdminDashboard = () => {
                                                 })()}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center gap-1 text-green-600 text-sm">
-                                                <TrendingUp size={14} />
-                                                +0.4%
-                                            </div>
-                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
