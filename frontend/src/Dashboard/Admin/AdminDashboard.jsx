@@ -2441,12 +2441,6 @@ const AdminDashboard = () => {
                                             <p className="text-sm text-gray-600">Avg Session Duration</p>
                                             <p className="text-lg font-bold text-gray-900">4m 12s</p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center gap-1 text-green-600 text-sm">
-                                                <TrendingUp size={14} />
-                                                +23s
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
