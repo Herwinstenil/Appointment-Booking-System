@@ -2388,7 +2388,7 @@ const AdminDashboard = () => {
                                 { label: 'Storage Used', value: systemMetrics.storageUsed, icon: Download, color: 'bg-amber-500', description: 'Current storage utilization' },
                                 { label: 'Server Uptime', value: systemMetrics.serverUptime, icon: CheckCircle, color: 'bg-emerald-500', description: 'System availability percentage' },
                                 { label: 'Response Time', value: systemMetrics.responseTime, icon: Clock, color: 'bg-cyan-500', description: 'Average response time' },
-                                { label: 'Total Bookings', value: bookingData.totalBookings.toLocaleString(), icon: BookOpen, color: 'bg-indigo-500', description: 'Total booking transactions' },
+                                { label: 'Total Bookings', value: bookingAnalytics.totalBookings || 0, icon: BookOpen, color: 'bg-indigo-500', description: 'Total booking transactions' },
                                 { label: 'Total Revenue', value: `$${revenueMetrics.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'bg-teal-500', description: 'Total revenue generated' }
                             ].map((metric, index) => {
                                 const Icon = metric.icon;
