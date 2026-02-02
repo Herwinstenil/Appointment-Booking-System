@@ -3023,7 +3023,9 @@ const AdminDashboard = () => {
                 },
                 {
                     label: 'Cancellation Rate',
-                    value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '0%',
+                    value: bookingAnalytics.totalBookings > 0
+                        ? `${Math.round((bookingAnalytics.cancelledBookings / bookingAnalytics.totalBookings) * 100)}%`
+                        : '0%',
                     change: ''
                 }
             ];
@@ -4323,7 +4325,9 @@ const AdminDashboard = () => {
                                     },
                                     {
                                         label: 'Cancellation Rate',
-                                        value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '--',
+                                        value: bookingAnalytics.totalBookings > 0
+                                            ? `${Math.round((bookingAnalytics.cancelledBookings / bookingAnalytics.totalBookings) * 100)}%`
+                                            : '--',
                                     }
                                 ].map((metric, index) => (
                                     <div key={index} className="bg-gray-50 p-6 rounded-xl hover:bg-rose-50 transition-all duration-300">
