@@ -2998,14 +2998,31 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             const metrics = [
-                { label: 'Conversion Rate', value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value, change: ''},
-                { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '' },
-                { label: 'Completion Rate', value: `${bookingAnalytics.bookingRate}%`, change: ''},
-                { label: 'Cancellation Rate', value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value, change: ''} 
+                {
+                    label: 'Conversion Rate',
+                    value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value || '0%',
+                    change: performanceMetrics.find(m => m.name === 'Conversion Rate')?.change || ''
+                },
+                {
+                    label: 'Avg Booking Value',
+                    value: revenueMetrics?.averageOrderValue ? `${revenueMetrics.averageOrderValue}` : 'N/A',
+                    change: ''
+                },
+                {
+                    label: 'Completion Rate',
+                    value: bookingAnalytics?.bookingRate ? `${bookingAnalytics.bookingRate}%` : 'N/A',
+                    change: ''
+                },
+                {
+                    label: 'Cancellation Rate',
+                    value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '0%',
+                    change: performanceMetrics.find(m => m.name === 'Bounce Rate')?.change || ''
+                }
             ];
 
             metrics.forEach((metric) => {
-                doc.text(`${metric.label}: ${metric.value} (${metric.change})`, 20, yPos);
+                const changeText = metric.change ? ` (${metric.change})` : '';
+                doc.text(`${metric.label}: ${metric.value}${changeText}`, 20, yPos);
                 yPos += 10;
             });
 
