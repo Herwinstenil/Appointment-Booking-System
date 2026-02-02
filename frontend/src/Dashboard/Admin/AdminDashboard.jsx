@@ -23,6 +23,11 @@ import {
     Key,
     Mail,
     Phone,
+    Database,
+    Zap,
+    FileCheck,
+    Send,
+    Server,
     Calendar,
     Activity,
     Camera,
@@ -46,7 +51,12 @@ import {
     Trash2,
     Clock,
     BookOpen,
+    MessageSquare,
+    Star,
+    CalendarDays,
+    Clock4,
     UserPlus,
+    FileText,
     TrendingUp as ArrowTrendingUp,
     TrendingDown as ArrowTrendingDown,
     Users as UsersIcon,
@@ -269,6 +279,7 @@ const AdminDashboard = () => {
 
     // Fetch recent activities on component mount
     useEffect(() => {
+        // Fetch immediately
         fetchRecentActivities();
     }, [getAuthHeaders]);
 
@@ -314,6 +325,7 @@ const AdminDashboard = () => {
 
     // User Management State
     const [users, setUsers] = useState([]);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
 
