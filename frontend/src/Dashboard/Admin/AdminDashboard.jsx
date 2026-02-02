@@ -3868,13 +3868,7 @@ const AdminDashboard = () => {
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="flex items-center gap-1 text-sm font-medium text-green-600">
-                                                        <TrendingUp size={14} />
-                                                        +12.5%
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 mt-1">Growth</p>
-                                                </div>
+                                                
                                             </div>
                                         );
                                     })}
