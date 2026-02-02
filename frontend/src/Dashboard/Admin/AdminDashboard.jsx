@@ -2449,23 +2449,11 @@ const AdminDashboard = () => {
                                             <p className="text-sm text-gray-600">Bounce Rate</p>
                                             <p className="text-lg font-bold text-gray-900">42%</p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center gap-1 text-green-600 text-sm">
-                                                <TrendingDown size={14} />
-                                                -3.2%
-                                            </div>
-                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
                                             <p className="text-sm text-gray-600">Customer Satisfaction</p>
                                             <p className="text-lg font-bold text-gray-900">4.8/5</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center gap-1 text-green-600 text-sm">
-                                                <TrendingUp size={14} />
-                                                +0.2
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
