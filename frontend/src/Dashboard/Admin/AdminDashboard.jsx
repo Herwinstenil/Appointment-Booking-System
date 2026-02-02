@@ -2383,7 +2383,7 @@ const AdminDashboard = () => {
                             {[
                                 { label: 'Total Users', value: systemMetrics.totalUsers, icon: UsersIcon, color: 'bg-blue-500', description: 'Registered users in the system' },
                                 { label: 'Active Users', value: systemMetrics.activeUsers, icon: Users, color: 'bg-green-500', description: 'Currently active users' },
-                                { label: 'Active Services', value: systemMetrics.activeServices, icon: FolderOpen, color: 'bg-purple-500', description: 'Services currently running' },
+                                { label: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0, icon: FolderOpen, color: 'bg-purple-500', description: 'Services currently running' },
                                 { label: 'New Users', value: systemMetrics.newUsers, icon: UserPlus, color: 'bg-rose-500', description: 'New registrations this period' },
                                 { label: 'Storage Used', value: systemMetrics.storageUsed, icon: Download, color: 'bg-amber-500', description: 'Current storage utilization' },
                                 { label: 'Server Uptime', value: systemMetrics.serverUptime, icon: CheckCircle, color: 'bg-emerald-500', description: 'System availability percentage' },
