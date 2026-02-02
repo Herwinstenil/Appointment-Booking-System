@@ -3016,7 +3016,7 @@ const AdminDashboard = () => {
                 {
                     label: 'Cancellation Rate',
                     value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '0%',
-                    change:''
+                    change: ''
                 }
             ];
 
