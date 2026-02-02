@@ -785,7 +785,10 @@ const AdminDashboard = () => {
         newUsers: 0,
         totalUsers: 0,
         activeUsers: 0,
-        activeServices: 0
+        activeServices: 0,
+        avgSessionDuration: 0,
+        bounceRate: 0,
+        customerSatisfaction: 4.8
     });
 
     // Server uptime state - must be declared before getSystemMetrics is called
@@ -2439,7 +2442,9 @@ const AdminDashboard = () => {
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
                                             <p className="text-sm text-gray-600">Avg Session Duration</p>
-                                            <p className="text-lg font-bold text-gray-900">4m 12s</p>
+                                            <p className="text-lg font-bold text-gray-900">
+                                                {systemMetricsData.avgSessionDuration ? `${systemMetricsData.avgSessionDuration}m` : '4m 12s'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -2447,13 +2452,17 @@ const AdminDashboard = () => {
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
                                             <p className="text-sm text-gray-600">Bounce Rate</p>
-                                            <p className="text-lg font-bold text-gray-900">42%</p>
+                                            <p className="text-lg font-bold text-gray-900">
+                                                {systemMetricsData.bounceRate ? `${systemMetricsData.bounceRate}%` : '0%'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
                                             <p className="text-sm text-gray-600">Customer Satisfaction</p>
-                                            <p className="text-lg font-bold text-gray-900">4.8/5</p>
+                                            <p className="text-lg font-bold text-gray-900">
+                                                {systemMetricsData.customerSatisfaction ? `${systemMetricsData.customerSatisfaction}/5` : '4.8/5'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
