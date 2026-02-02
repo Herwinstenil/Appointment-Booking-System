@@ -407,24 +407,31 @@ const AdminDashboard = () => {
                 labels.push('Week 1', 'Week 2', 'Week 3', 'Week 4');
                 break;
             case 'monthly':
-                // Last 7 months
-                for (let i = 11; i >= 0; i--) {
-                    const date = new Date(now);
-                    date.setMonth(now.getMonth() - i);
-                    labels.push(date.toLocaleDateString('en-US', { month: 'short' }));
-                }
+                // January to December (all months of current year)
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                labels.push(...monthNames);
                 break;
             case 'yearly':
-                // Last 5 years
-                for (let i = 4; i >= 0; i--) {
-                    const year = now.getFullYear() - i;
-                    labels.push(year.toString());
+                // Yearly range 2026-2030, shifting by 5 years when reaching 2030
+                const currentYear = now.getFullYear();
+                // Calculate the start year: if we're at or past 2030, shift to next 5-year block
+                const baseYear = currentYear >= 2030 ? 2030 + Math.floor((currentYear - 2030) / 5) * 5 : 2026;
+                for (let i = 0; i < 5; i++) {
+                    labels.push((baseYear + i).toString());
                 }
                 break;
             default:
                 labels.push('N/A');
         }
         return labels;
+    };
+
+    // Function to get year range display text for yearly view
+    const getYearRangeDisplay = () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const baseYear = currentYear >= 2030 ? 2030 + Math.floor((currentYear - 2030) / 5) * 5 : 2026;
+        return `${baseYear} - ${baseYear + 4}`;
     };
 
     // Function to generate revenue trend data based on time range
@@ -718,11 +725,14 @@ const AdminDashboard = () => {
             const clients = data.data?.users || [];
 
             // Compute booking analytics from client data
-            const totalBookings = clients.length;
-            const completedBookings = clients.filter(client => client.isActive === true).length;
+            // Only count active clients as per requirements
+            const activeClients = clients.filter(client => client.isActive === true);
+            const totalBookings = activeClients.length;
+            const completedBookings = activeClients.length;
             const pendingBookings = clients.filter(client => client.isActive === false).length;
             const cancelledBookings = 0; // No cancelled status in schema, users are deleted
-            const bookingRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+            // For analytics display, use active clients as total
+            const bookingRate = 100; // All counted clients are active
 
             // Add a small delay for smooth transition
             setTimeout(() => {
@@ -734,7 +744,7 @@ const AdminDashboard = () => {
                     bookingRate
                 });
 
-                // Compute booking trend data based on client creation dates
+                // Compute booking trend data based on client creation dates (only active clients)
                 const bookingTrendData = computeBookingTrend(clients, timeRange);
                 setBookingTrend(bookingTrendData);
             }, 150);
@@ -748,54 +758,72 @@ const AdminDashboard = () => {
     };
 
     // Function to compute booking trend from client data
+    // Only counts clients with status = "active"
     const computeBookingTrend = (clients, range) => {
         const labels = getDateLabels(range);
         const data = [];
+
+        // Filter only active clients
+        const activeClients = clients.filter(client => client.isActive === true);
+
+        // Get current date info once for all views
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
 
         for (let i = 0; i < labels.length; i++) {
             let bookings = 0;
 
             switch (range) {
                 case 'daily':
-                    // Count clients created on this day of the week
-                    const currentDate = new Date();
-                    const monday = new Date(currentDate);
-                    monday.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+                    // Count active clients created on this day of the current week (Monday to Sunday)
+                    const currentDayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                    // Calculate Monday of current week
+                    const monday = new Date(now);
+                    monday.setDate(now.getDate() - currentDayOfWeek + 1);
+                    // Target date for this label
                     const targetDate = new Date(monday);
                     targetDate.setDate(monday.getDate() + i);
+                    // Format target date for comparison
+                    const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
 
-                    bookings = clients.filter(client => {
+                    bookings = activeClients.filter(client => {
+                        if (!client.createdAt) return false;
                         const clientDate = new Date(client.createdAt);
-                        return clientDate.toDateString() === targetDate.toDateString();
+                        const clientDateStr = `${clientDate.getFullYear()}-${String(clientDate.getMonth() + 1).padStart(2, '0')}-${String(clientDate.getDate()).padStart(2, '0')}`;
+                        return clientDateStr === targetDateStr;
                     }).length;
                     break;
 
                 case 'weekly':
-                    // Count clients created in this week of the month
-                    bookings = clients.filter(client => {
+                    // Count active clients created in each week of the current month (Week 1-4)
+                    bookings = activeClients.filter(client => {
+                        if (!client.createdAt) return false;
                         const clientDate = new Date(client.createdAt);
+                        // Only count clients from the current month and year
+                        if (clientDate.getMonth() !== currentMonth || clientDate.getFullYear() !== currentYear) return false;
                         const weekOfMonth = Math.ceil(clientDate.getDate() / 7);
                         return weekOfMonth === (i + 1);
                     }).length;
                     break;
 
                 case 'monthly':
-                    // Count clients created in this month
-                    const currentMonth = new Date();
-                    const targetMonth = new Date(currentMonth);
-                    targetMonth.setMonth(currentMonth.getMonth() - (11 - i));
-
-                    bookings = clients.filter(client => {
+                    // Count active clients created in each month (January to December)
+                    bookings = activeClients.filter(client => {
+                        if (!client.createdAt) return false;
                         const clientDate = new Date(client.createdAt);
-                        return clientDate.getMonth() === targetMonth.getMonth() &&
-                            clientDate.getFullYear() === targetMonth.getFullYear();
+                        return clientDate.getMonth() === i &&
+                            clientDate.getFullYear() === currentYear;
                     }).length;
                     break;
 
                 case 'yearly':
-                    // Count clients created in this year
-                    const targetYear = new Date().getFullYear() - (4 - i);
-                    bookings = clients.filter(client => {
+                    // Count active clients created in each year (2026-2030, shifting by 5 years)
+                    const baseYear = currentYear >= 2030 ? 2030 + Math.floor((currentYear - 2030) / 5) * 5 : 2026;
+                    const targetYear = baseYear + i;
+
+                    bookings = activeClients.filter(client => {
+                        if (!client.createdAt) return false;
                         const clientDate = new Date(client.createdAt);
                         return clientDate.getFullYear() === targetYear;
                     }).length;
@@ -4094,7 +4122,21 @@ const AdminDashboard = () => {
                             {/* Booking Trend */}
                             <div className={`bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isBookingFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Booking Trend</h3>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800">Booking Trend</h3>
+                                        {timeRange === 'yearly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{getYearRangeDisplay()}</p>
+                                        )}
+                                        {timeRange === 'monthly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{new Date().getFullYear()}</p>
+                                        )}
+                                        {timeRange === 'weekly' && (
+                                            <p className="text-sm text-gray-500 mt-1">Month: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                                        )}
+                                        {timeRange === 'daily' && (
+                                            <p className="text-sm text-gray-500 mt-1">Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
