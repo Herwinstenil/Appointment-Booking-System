@@ -328,8 +328,6 @@ const AdminDashboard = () => {
 
     // Filter Modal States
     const [showUserFilterModal, setShowUserFilterModal] = useState(false);
-    const [showServiceFilterModal, setShowServiceFilterModal] = useState(false);
-    // const [showRevenueFilterModal, setShowRevenueFilterModal] = useState(false); // Removed filter modal state
 
     // Add Client Modal State
     const [showAddClientModal, setShowAddClientModal] = useState(false);
