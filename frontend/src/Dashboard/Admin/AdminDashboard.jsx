@@ -3001,14 +3001,14 @@ const AdminDashboard = () => {
                 {
                     label: 'Conversion Rate',
                     value: (() => {
-                                            const total = dashboardStats?.users?.clients || 0;
-                                            const active = Array.isArray(users)
-                                                ? users.filter(u => u.role === 'CLIENT' && typeof u.status === 'string' && u.status.toLowerCase() === 'active').length
-                                                : 0;
-                                            if (total === 0) return '--';
-                                            const percent = (active / total) * 100;
-                                            return Number.isInteger(percent) ? percent + '%' : percent.toFixed(1).replace(/\.0$/, '') + '%';
-                                        })(),
+                        const total = dashboardStats?.users?.clients || 0;
+                        const active = Array.isArray(users)
+                            ? users.filter(u => u.role === 'CLIENT' && typeof u.status === 'string' && u.status.toLowerCase() === 'active').length
+                            : 0;
+                        if (total === 0) return '--';
+                        const percent = (active / total) * 100;
+                        return Number.isInteger(percent) ? percent + '%' : percent.toFixed(1).replace(/\.0$/, '') + '%';
+                    })(),
                     change: ''
                 },
                 {
