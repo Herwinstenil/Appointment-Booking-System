@@ -3001,7 +3001,7 @@ const AdminDashboard = () => {
                 { label: 'Conversion Rate', value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value || '--' },
                 { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '' },
                 { label: `Completion Rate: ${bookingAnalytics.bookingRate}%`, value: '', change: '' },
-                { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' } 
+                { label: 'Cancellation Rate', value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value || '--',} 
             ];
 
             metrics.forEach((metric) => {
