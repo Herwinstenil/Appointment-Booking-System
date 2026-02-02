@@ -3000,7 +3000,7 @@ const AdminDashboard = () => {
             const metrics = [
                 { label: 'Conversion Rate', value: '8.5%', change: '+1.2%' },
                 { label: 'Avg Booking Value', value: '$156', change: '+$12' },
-                { label: 'Repeat Bookings', value: '42%', change: '+3.5%' },
+                
                 { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' }
             ];
 
