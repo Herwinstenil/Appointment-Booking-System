@@ -2423,7 +2423,17 @@ const AdminDashboard = () => {
                                     <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
                                         <div>
                                             <p className="text-sm text-gray-600">Conversion Rate</p>
-                                            <p className="text-lg font-bold text-gray-900">3.2%</p>
+                                            <p className="text-lg font-bold text-gray-900">
+                                                {(() => {
+                                                    const total = dashboardStats?.users?.clients || 0;
+                                                    const active = Array.isArray(users)
+                                                        ? users.filter(u => u.role === 'CLIENT' && typeof u.status === 'string' && u.status.toLowerCase() === 'active').length
+                                                        : 0;
+                                                    if (total === 0) return '--';
+                                                    const percent = (active / total) * 100;
+                                                    return Number.isInteger(percent) ? percent + '%' : percent.toFixed(1).replace(/\.0$/, '') + '%';
+                                                })()}
+                                            </p>
                                         </div>
                                         <div className="text-right">
                                             <div className="flex items-center gap-1 text-green-600 text-sm">
