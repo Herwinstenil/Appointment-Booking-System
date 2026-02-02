@@ -125,6 +125,20 @@ const AdminDashboard = () => {
         }
     };
 
+    // Function to fetch system metrics (response time, storage, new users)
+    const fetchSystemMetrics = async () => {
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/system-metrics`, { headers });
+            if (response.ok) {
+                const metricsData = await response.json();
+                setSystemMetricsData(metricsData.data);
+            }
+        } catch (error) {
+            console.error('Error fetching system metrics:', error);
+        }
+    };
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -145,7 +159,8 @@ const AdminDashboard = () => {
                     performanceMetricsResponse,
                     topClientsResponse,
                     recentActivitiesResponse,
-                    serverUptimeResponse
+                    serverUptimeResponse,
+                    systemMetricsResponse
                 ] = await Promise.all([
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
@@ -156,7 +171,8 @@ const AdminDashboard = () => {
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/top-clients`, { headers }),
                     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers })
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers }),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/system-metrics`, { headers })
                 ]);
 
                 // Process responses
@@ -215,6 +231,11 @@ const AdminDashboard = () => {
                 if (serverUptimeResponse.ok) {
                     const uptimeData = await serverUptimeResponse.json();
                     setServerUptimeData(uptimeData.data);
+                }
+
+                if (systemMetricsResponse.ok) {
+                    const metricsData = await systemMetricsResponse.json();
+                    setSystemMetricsData(metricsData.data);
                 }
 
             } catch (err) {
@@ -655,32 +676,20 @@ const AdminDashboard = () => {
     const allMonthsRevenue = getMonthlyRevenueByMonth();
 
     // System Metrics Data (dynamic based on time range)
+    // Now using real data from API
     const getSystemMetrics = (range) => {
-        const baseMetrics = {
-            totalUsers: 1250,
-            activeUsers: 847,
-            activeServices: 4,
-            newUsers: 45,
-            storageUsed: '2.3 GB',
-            serverUptime: '99.9%',
-            responseTime: '120ms'
+        // Use real data from API (systemMetricsData)
+        const realMetrics = {
+            totalUsers: systemMetricsData.totalUsers || 0,
+            activeUsers: systemMetricsData.activeUsers || 0,
+            activeServices: systemMetricsData.activeServices || 0,
+            newUsers: systemMetricsData.newUsers || 0,
+            storageUsed: systemMetricsData.storageUsed || '0 GB',
+            serverUptime: serverUptimeData.percentage || '99.9%',
+            responseTime: systemMetricsData.responseTime || '0ms'
         };
 
-        // Adjust metrics based on time range
-        const multiplier = {
-            daily: 0.03, // Daily values are smaller
-            weekly: 0.12,
-            monthly: 1,
-            yearly: 12
-        };
-
-        return {
-            ...baseMetrics,
-            totalUsers: Math.round(baseMetrics.totalUsers * multiplier[range]),
-            activeUsers: Math.round(baseMetrics.activeUsers * multiplier[range]),
-            activeServices: Math.round(baseMetrics.activeServices * multiplier[range]),
-            newUsers: Math.round(baseMetrics.newUsers * multiplier[range])
-        };
+        return realMetrics;
     };
 
     // Booking Data (dynamic based on time range)
@@ -768,6 +777,20 @@ const AdminDashboard = () => {
         churnRate: 2.3, // Placeholder
         customerLifetimeValue: 2450 // Placeholder
     };
+
+    // System metrics state (real data from API) - must be declared before getSystemMetrics is called
+    const [systemMetricsData, setSystemMetricsData] = useState({
+        responseTime: '0ms',
+        storageUsed: '0 GB',
+        newUsers: 0,
+        totalUsers: 0,
+        activeUsers: 0,
+        activeServices: 0
+    });
+
+    // Server uptime state - must be declared before getSystemMetrics is called
+    const [serverUptimeData, setServerUptimeData] = useState({ uptime: '0d 0h 0m', percentage: '99.9%' });
+
     const systemMetrics = getSystemMetrics(timeRange);
     const bookingData = getBookingData(timeRange);
 
@@ -776,7 +799,6 @@ const AdminDashboard = () => {
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [performanceMetrics, setPerformanceMetrics] = useState([]);
     const [topClients, setTopClients] = useState([]);
-    const [serverUptimeData, setServerUptimeData] = useState({ uptime: '0d 0h 0m', percentage: '99.9%' });
 
     // Trend data state
     const [revenueTrend, setRevenueTrend] = useState([]);

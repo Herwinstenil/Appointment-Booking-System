@@ -4,6 +4,8 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
@@ -687,6 +689,110 @@ router.get('/dashboard/server-uptime', authenticateToken, authorizeRoles('ADMIN'
     res.status(500).json({
       success: false,
       message: 'Failed to get server uptime'
+    });
+  }
+});
+
+// Helper function to calculate folder size
+function getFolderSize(folderPath) {
+  let totalSize = 0;
+  try {
+    if (fs.existsSync(folderPath)) {
+      const files = fs.readdirSync(folderPath);
+      for (const file of files) {
+        const filePath = path.join(folderPath, file);
+        const stats = fs.statSync(filePath);
+        if (stats.isDirectory()) {
+          totalSize += getFolderSize(filePath);
+        } else {
+          totalSize += stats.size;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error calculating folder size:', error);
+  }
+  return totalSize;
+}
+
+// Helper function to get current month boundaries
+function getCurrentMonthBoundaries() {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  return { startOfMonth, endOfMonth };
+}
+
+// Get system metrics (response time, storage, new users)
+router.get('/dashboard/system-metrics', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const startTime = Date.now();
+
+    // Calculate response time (time taken to process this request)
+    // We'll measure the time for the database queries
+    const queryStartTime = Date.now();
+
+    const { startOfMonth, endOfMonth } = getCurrentMonthBoundaries();
+
+    // Get new users count for current month (role === 'CLIENT', status === 'active')
+    // Note: In the schema, isActive is the status field and role is an enum
+    const newUsersCount = await prisma.user.count({
+      where: {
+        role: 'CLIENT',
+        isActive: true,
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      }
+    });
+
+    // Get total clients count
+    const totalClients = await prisma.user.count({
+      where: {
+        role: 'CLIENT'
+      }
+    });
+
+    // Get active services count
+    const activeServices = await prisma.service.count({
+      where: {
+        isActive: true
+      }
+    });
+
+    // Calculate storage used
+    const uploadsPath = path.join(__dirname, '..', 'uploads');
+    const uploadsSize = getFolderSize(uploadsPath);
+
+    // Estimate database size (PostgreSQL doesn't provide easy size query without extensions)
+    // We'll return a placeholder that can be updated when database size info is available
+    const dbSizeEstimate = 0; // This would require pg_database_size() or similar
+
+    const totalStorageBytes = uploadsSize + dbSizeEstimate;
+    const totalStorageGB = (totalStorageBytes / (1024 * 1024 * 1024)).toFixed(2);
+
+    const queryEndTime = Date.now();
+    const responseTime = queryEndTime - queryStartTime;
+
+    res.json({
+      success: true,
+      data: {
+        responseTime: `${responseTime}ms`,
+        storageUsed: `${totalStorageGB} GB`,
+        newUsers: newUsersCount,
+        totalUsers: totalClients,
+        activeUsers: totalClients, // Using total clients as active for now
+        activeServices: activeServices,
+        serverUptime: process.uptime()
+      }
+    });
+
+  } catch (error) {
+    console.error('Get system metrics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get system metrics'
     });
   }
 });
