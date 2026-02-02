@@ -3000,7 +3000,15 @@ const AdminDashboard = () => {
             const metrics = [
                 {
                     label: 'Conversion Rate',
-                    value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value || '0%',
+                    value: (() => {
+                                            const total = dashboardStats?.users?.clients || 0;
+                                            const active = Array.isArray(users)
+                                                ? users.filter(u => u.role === 'CLIENT' && typeof u.status === 'string' && u.status.toLowerCase() === 'active').length
+                                                : 0;
+                                            if (total === 0) return '--';
+                                            const percent = (active / total) * 100;
+                                            return Number.isInteger(percent) ? percent + '%' : percent.toFixed(1).replace(/\.0$/, '') + '%';
+                                        })(),
                     change: ''
                 },
                 {
