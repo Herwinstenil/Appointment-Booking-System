@@ -3000,7 +3000,7 @@ const AdminDashboard = () => {
             const metrics = [
                 { label: 'Conversion Rate', value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value, change: ''},
                 { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '' },
-                { label: `Completion Rate: ${bookingAnalytics.bookingRate}%`, change: ''},
+                { label: 'Completion Rate', value: `${bookingAnalytics.bookingRate}%`, change: ''},
                 { label: 'Cancellation Rate', value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value, change: ''} 
             ];
 
