@@ -3931,7 +3931,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-indigo-100 text-sm font-medium">New Customers</p>
-                                        <p className="text-2xl font-bold">{revenueMetrics.newCustomers}</p>
+                                        <p className="text-2xl font-bold">{systemMetrics.newUsers}</p>
                                         <p className="text-indigo-100 text-xs mt-1">This month</p>
                                     </div>
                                     <UserPlus size={32} className="opacity-80" />
