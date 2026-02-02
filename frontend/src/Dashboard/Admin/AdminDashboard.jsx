@@ -2973,7 +2973,6 @@ const AdminDashboard = () => {
             doc.text(`Completed Bookings: ${bookingAnalytics.completedBookings.toLocaleString()}`, 20, yPos + 10);
             doc.text(`Pending Bookings: ${bookingAnalytics.pendingBookings}`, 20, yPos + 20);
             doc.text(`Cancelled Bookings: ${bookingAnalytics.cancelledBookings}`, 20, yPos + 30);
-            doc.text(`Completion Rate: ${bookingAnalytics.bookingRate}%`, 20, yPos + 40);
 
             // Top Clients
             yPos += 60;
