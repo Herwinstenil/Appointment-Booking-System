@@ -2998,10 +2998,10 @@ const AdminDashboard = () => {
             doc.setTextColor(55, 65, 81);
             yPos += 15;
             const metrics = [
-                { label: 'Conversion Rate', value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value},
-                { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, },
-                { label: `Completion Rate: ${bookingAnalytics.bookingRate}%`, },
-                { label: 'Cancellation Rate', value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value} 
+                { label: 'Conversion Rate', value: performanceMetrics.find(m => m.name === 'Conversion Rate')?.value, change: ''},
+                { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '' },
+                { label: `Completion Rate: ${bookingAnalytics.bookingRate}%`, change: ''},
+                { label: 'Cancellation Rate', value: performanceMetrics.find(m => m.name === 'Bounce Rate')?.value, change: ''} 
             ];
 
             metrics.forEach((metric) => {
