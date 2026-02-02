@@ -833,7 +833,7 @@ const AdminDashboard = () => {
                     bookings = 0;
             }
 
-            const prevBookings = i > 0 ? data[i - 1].bookings : bookings;
+            const prevBookings = i > 0 ? data[i - 1].bookings : 0;
             const growth = prevBookings > 0 ? Math.round(((bookings - prevBookings) / prevBookings) * 100) : 0;
 
             data.push({
