@@ -2999,7 +2999,7 @@ const AdminDashboard = () => {
             yPos += 15;
             const metrics = [
                 { label: 'Conversion Rate', value: '8.5%', change: '+1.2%' },
-                { label: 'Avg Booking Value', value: '$156', change: '+$12' },
+                { label: 'Avg Booking Value', value: `$${revenueMetrics.averageOrderValue}`, change: '' },
                 { label: `Completion Rate: ${bookingAnalytics.bookingRate}%`, value: '', change: '' },
                 { label: 'Cancellation Rate', value: '6.1%', change: '-0.8%' } 
             ];
