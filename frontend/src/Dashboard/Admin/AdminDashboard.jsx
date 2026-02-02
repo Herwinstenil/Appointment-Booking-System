@@ -1420,9 +1420,10 @@ const AdminDashboard = () => {
                 // Add to users array
                 setUsers(prev => [newClientObj, ...prev]);
 
-                // Fetch updated booking analytics
+                // Fetch updated booking analytics and system metrics (for new users count)
                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
+                await fetchSystemMetrics();
 
                 // Close modal and reset form
                 handleCloseAddClientModal();
