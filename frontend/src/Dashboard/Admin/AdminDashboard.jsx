@@ -763,6 +763,18 @@ const AdminDashboard = () => {
         return date.getMonth() === prevMonthIndex;
     }).length;
     const activeSubscriptionsGrowth = prevActiveSubscriptions > 0 ? ((activeSubscriptions - prevActiveSubscriptions) / prevActiveSubscriptions) * 100 : 0;
+
+    // Calculate churn rate: (inactive clients / active clients) × 100
+    const activeClients = users.filter(u =>
+        u.role === 'CLIENT' &&
+        u.status === 'Active'
+    ).length;
+    const inactiveClients = users.filter(u =>
+        u.role === 'CLIENT' &&
+        u.status === 'Inactive'
+    ).length;
+    const churnRate = activeClients > 0 ? ((inactiveClients / activeClients) * 100).toFixed(1) : 0;
+
     const revenueMetrics = {
         totalRevenue,
         monthlyRevenue: thisMonthRevenue,
@@ -772,10 +784,7 @@ const AdminDashboard = () => {
         activeSubscriptionsGrowth,
         averageOrderValue,
         averageOrderValueGrowth: avgOrderValueGrowth,
-        topCategory: 'Premium Services', // Placeholder
-        newCustomers: 342, // Placeholder
-        churnRate: 2.3, // Placeholder
-        customerLifetimeValue: 2450 // Placeholder
+        churnRate,
     };
 
     // System metrics state (real data from API) - must be declared before getSystemMetrics is called
@@ -3930,7 +3939,10 @@ const AdminDashboard = () => {
                                     <div>
                                         <p className="text-cyan-100 text-sm font-medium">Churn Rate</p>
                                         <p className="text-2xl font-bold">{revenueMetrics.churnRate}%</p>
-                                        <p className="text-cyan-100 text-xs mt-1">-0.3% from last month</p>
+                                        <p className="text-cyan-100 text-xs mt-1">
+                                            ({users.filter(u => u.role === 'CLIENT' && u.status === 'Inactive').length} inactive /
+                                            {users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length} active)
+                                        </p>
                                     </div>
                                     <TrendingDown size={32} className="opacity-80" />
                                 </div>
