@@ -434,7 +434,131 @@ const AdminDashboard = () => {
         return `${baseYear} - ${baseYear + 4}`;
     };
 
-    // Function to generate revenue trend data based on time range
+    // Function to compute revenue trend from client data
+    // Only counts revenue from clients with status = "active"
+    const computeRevenueTrend = (clients, range) => {
+        const labels = getDateLabels(range);
+        const data = [];
+
+        // Filter only active clients with revenue
+        const activeClients = clients.filter(client => {
+            if (client.isActive !== true) return false;
+            if (!client.createdAt) return false;
+            // Parse revenue as number
+            let revenue = client.revenue;
+            if (typeof revenue === 'string') {
+                revenue = parseFloat(revenue.replace(/[$,]/g, ''));
+            }
+            return !isNaN(revenue) && revenue > 0;
+        });
+
+        // Get current date info once for all views
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        for (let i = 0; i < labels.length; i++) {
+            let revenue = 0;
+
+            switch (range) {
+                case 'daily':
+                    // Sum revenue from active clients created on this day of the current week (Monday to Sunday)
+                    const currentDayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                    // Calculate Monday of current week
+                    const monday = new Date(now);
+                    monday.setDate(now.getDate() - currentDayOfWeek + 1);
+                    // Target date for this label
+                    const targetDate = new Date(monday);
+                    targetDate.setDate(monday.getDate() + i);
+                    // Format target date for comparison
+                    const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+
+                    revenue = activeClients.reduce((sum, client) => {
+                        const clientDate = new Date(client.createdAt);
+                        const clientDateStr = `${clientDate.getFullYear()}-${String(clientDate.getMonth() + 1).padStart(2, '0')}-${String(clientDate.getDate()).padStart(2, '0')}`;
+                        if (clientDateStr === targetDateStr) {
+                            let rev = client.revenue;
+                            if (typeof rev === 'string') {
+                                rev = parseFloat(rev.replace(/[$,]/g, ''));
+                            }
+                            return sum + (rev || 0);
+                        }
+                        return sum;
+                    }, 0);
+                    break;
+
+                case 'weekly':
+                    // Sum revenue from active clients created in each week of the current month (Week 1-4)
+                    revenue = activeClients.reduce((sum, client) => {
+                        if (!client.createdAt) return sum;
+                        const clientDate = new Date(client.createdAt);
+                        // Only count clients from the current month and year
+                        if (clientDate.getMonth() !== currentMonth || clientDate.getFullYear() !== currentYear) return sum;
+                        const weekOfMonth = Math.ceil(clientDate.getDate() / 7);
+                        if (weekOfMonth === (i + 1)) {
+                            let rev = client.revenue;
+                            if (typeof rev === 'string') {
+                                rev = parseFloat(rev.replace(/[$,]/g, ''));
+                            }
+                            return sum + (rev || 0);
+                        }
+                        return sum;
+                    }, 0);
+                    break;
+
+                case 'monthly':
+                    // Sum revenue from active clients created in each month (January to December)
+                    revenue = activeClients.reduce((sum, client) => {
+                        if (!client.createdAt) return sum;
+                        const clientDate = new Date(client.createdAt);
+                        if (clientDate.getMonth() === i && clientDate.getFullYear() === currentYear) {
+                            let rev = client.revenue;
+                            if (typeof rev === 'string') {
+                                rev = parseFloat(rev.replace(/[$,]/g, ''));
+                            }
+                            return sum + (rev || 0);
+                        }
+                        return sum;
+                    }, 0);
+                    break;
+
+                case 'yearly':
+                    // Sum revenue from active clients created in each year (2026-2030, shifting by 5 years)
+                    const baseYear = currentYear >= 2030 ? 2030 + Math.floor((currentYear - 2030) / 5) * 5 : 2026;
+                    const targetYear = baseYear + i;
+
+                    revenue = activeClients.reduce((sum, client) => {
+                        if (!client.createdAt) return sum;
+                        const clientDate = new Date(client.createdAt);
+                        if (clientDate.getFullYear() === targetYear) {
+                            let rev = client.revenue;
+                            if (typeof rev === 'string') {
+                                rev = parseFloat(rev.replace(/[$,]/g, ''));
+                            }
+                            return sum + (rev || 0);
+                        }
+                        return sum;
+                    }, 0);
+                    break;
+
+                default:
+                    revenue = 0;
+            }
+
+            const prevRevenue = i > 0 ? data[i - 1].revenue : 0;
+            const growth = prevRevenue > 0 ? Math.round(((revenue - prevRevenue) / prevRevenue) * 100) : 0;
+
+            data.push({
+                label: labels[i],
+                revenue: Math.round(revenue),
+                growth: growth
+            });
+        }
+
+        return data;
+    };
+
+    // Function to generate mock revenue trend data (fallback)
     const getRevenueTrend = (range) => {
         const labels = getDateLabels(range);
         const baseRevenue = 85000;
@@ -443,13 +567,13 @@ const AdminDashboard = () => {
         for (let i = 0; i < labels.length; i++) {
             const variation = (Math.random() - 0.5) * 0.3; // -15% to +15% variation
             const revenue = Math.round(baseRevenue * (1 + variation + (i * 0.05))); // Slight upward trend
-            const prevRevenue = i > 0 ? data[i - 1].revenue : baseRevenue;
-            const growth = ((revenue - prevRevenue) / prevRevenue * 100);
+            const prevRevenue = i > 0 ? data[i - 1].revenue : 0;
+            const growth = prevRevenue > 0 ? Math.round(((revenue - prevRevenue) / prevRevenue) * 100) : 0;
 
             data.push({
                 label: labels[i],
                 revenue: revenue,
-                growth: Math.round(growth * 10) / 10
+                growth: growth
             });
         }
 
@@ -673,30 +797,29 @@ const AdminDashboard = () => {
     const fetchTrendData = async (range) => {
         try {
             const headers = getAuthHeaders();
-            const [revenueResponse, bookingResponse] = await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-trend?period=${range}`, { headers }),
-                fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/booking-trend?period=${range}`, { headers })
-            ]);
 
-            if (revenueResponse.ok) {
-                const revenueData = await revenueResponse.json();
-                let data = revenueData.data || [];
-                if (data.length === 7) {
-                    data = [...data.slice(2), ...data.slice(0, 2)];
-                }
-                setRevenueTrend(data);
+            // Fetch client data for revenue and booking trend calculations
+            const clientsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?role=CLIENT&limit=1000`, { headers });
+
+            if (!clientsResponse.ok) {
+                throw new Error('Failed to fetch client data');
             }
 
-            if (bookingResponse.ok) {
-                const bookingData = await bookingResponse.json();
-                let data = bookingData.data || [];
-                if (data.length === 7) {
-                    data = [...data.slice(2), ...data.slice(0, 2)];
-                }
-                setBookingTrend(data);
-            }
+            const clientsData = await clientsResponse.json();
+            const clients = clientsData.data?.users || [];
+
+            // Compute revenue trend from active clients only
+            const revenueTrendData = computeRevenueTrend(clients, range);
+            setRevenueTrend(revenueTrendData);
+
+            // Compute booking trend from active clients only
+            const bookingTrendData = computeBookingTrend(clients, range);
+            setBookingTrend(bookingTrendData);
         } catch (error) {
             console.error('Error fetching trend data:', error);
+            // Fallback to mock data on error
+            setRevenueTrend(getRevenueTrend(range));
+            setBookingTrend(getBookingTrend(range));
         }
     };
 
@@ -3491,7 +3614,21 @@ const AdminDashboard = () => {
                             {/* Revenue Trend Chart */}
                             <div className={`xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                        {timeRange === 'yearly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{getYearRangeDisplay()}</p>
+                                        )}
+                                        {timeRange === 'monthly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{new Date().getFullYear()}</p>
+                                        )}
+                                        {timeRange === 'weekly' && (
+                                            <p className="text-sm text-gray-500 mt-1">Month: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                                        )}
+                                        {timeRange === 'daily' && (
+                                            <p className="text-sm text-gray-500 mt-1">Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
                                             <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
