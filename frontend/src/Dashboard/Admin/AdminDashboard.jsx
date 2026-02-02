@@ -3816,10 +3816,10 @@ const AdminDashboard = () => {
                                 <h3 className="text-xl font-bold text-gray-800 mb-6">System Performance</h3>
                                 <div className="space-y-4">
                                     {[
-                                        { name: 'Response Time', value: systemMetrics.responseTime, change: '-15ms', positive: true },
-                                        { name: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0, change: '+2', positive: true },
-                                        { name: 'Storage Used', value: systemMetrics.storageUsed, change: '+0.3GB', positive: false },
-                                        { name: 'New Users', value: systemMetrics.newUsers, change: '+12', positive: true }
+                                        { name: 'Response Time', value: systemMetrics.responseTime },
+                                        { name: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0 },
+                                        { name: 'Storage Used', value: systemMetrics.storageUsed },
+                                        { name: 'New Users', value: systemMetrics.newUsers }
                                     ].map((metric, index) => (
                                         <div
                                             key={index}
@@ -3830,13 +3830,6 @@ const AdminDashboard = () => {
                                                 <p className="text-2xl font-bold text-gray-900 group-hover:text-rose-600 mt-1">
                                                     {metric.value}
                                                 </p>
-                                            </div>
-                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
-                                                ? 'bg-green-100 text-green-700 group-hover:bg-green-200'
-                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
-                                                }`}>
-                                                {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                {metric.change}
                                             </div>
                                         </div>
                                     ))}
