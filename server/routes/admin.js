@@ -1990,4 +1990,215 @@ router.post('/activities/report-downloaded', authenticateToken, authorizeRoles('
   }
 });
 
+// Get current admin's profile
+router.get('/profile', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    // req.user is already set by authenticateToken middleware
+    // Additional check to ensure only admins can access this endpoint
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only admins can access this profile.'
+      });
+    }
+
+    // Fetch fresh admin data from database
+    const admin = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        company: true,
+        mobile: true,
+        address: true,
+        bio: true,
+        position: true,
+        website: true,
+        timezone: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin profile not found'
+      });
+    }
+
+    // Format the response to match frontend expectations
+    const profileData = {
+      firstName: admin.firstName || '',
+      lastName: admin.lastName || '',
+      email: admin.email || '',
+      phone: admin.mobile ? `+91 ${admin.mobile}` : '',
+      department: admin.position || admin.company || 'IT Administration',
+      joinDate: admin.createdAt ? admin.createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      lastLogin: admin.lastLogin ? new Date(admin.lastLogin).toLocaleString() : 'N/A',
+      address: admin.address || '',
+      bio: admin.bio || '',
+      username: admin.username || '',
+      website: admin.website || '',
+      timezone: admin.timezone || '',
+      position: admin.position || '',
+      company: admin.company || '',
+      isActive: admin.isActive,
+      role: admin.role,
+      id: admin.id
+    };
+
+    res.json({
+      success: true,
+      data: { profile: profileData }
+    });
+
+  } catch (error) {
+    console.error('Get admin profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch admin profile'
+    });
+  }
+});
+
+// Update current admin's profile
+router.put('/profile', authenticateToken, authorizeRoles('ADMIN'), [
+  body('firstName').optional().isLength({ min: 1, max: 100 }).withMessage('First name must be between 1 and 100 characters'),
+  body('lastName').optional().isLength({ min: 1, max: 100 }).withMessage('Last name must be between 1 and 100 characters'),
+  body('email').optional().isEmail().withMessage('Please provide a valid email'),
+  body('mobile').optional().isLength({ min: 10, max: 10 }).withMessage('Mobile number must be 10 digits'),
+  body('address').optional().isLength({ max: 500 }).withMessage('Address must be less than 500 characters'),
+  body('bio').optional().isLength({ max: 1000 }).withMessage('Bio must be less than 1000 characters'),
+  body('position').optional().isLength({ max: 100 }).withMessage('Position must be less than 100 characters'),
+  body('website').optional().isURL().withMessage('Please provide a valid website URL'),
+  body('timezone').optional().isLength({ max: 50 }).withMessage('Timezone must be less than 50 characters')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    // Ensure only admins can update their own profile
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only admins can update this profile.'
+      });
+    }
+
+    const { firstName, lastName, email, phone, address, bio, position, website, timezone, company } = req.body;
+
+    // Extract mobile number from phone (remove +91 and spaces)
+    let mobile = null;
+    if (phone) {
+      mobile = phone.replace(/\+91\s?/g, '').replace(/\s/g, '');
+    }
+
+    // Build update data object
+    const updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+    if (mobile !== null) updateData.mobile = mobile;
+    if (address !== undefined) updateData.address = address;
+    if (bio !== undefined) updateData.bio = bio;
+    if (position !== undefined) updateData.position = position;
+    if (website !== undefined) updateData.website = website;
+    if (timezone !== undefined) updateData.timezone = timezone;
+    if (company !== undefined) updateData.company = company;
+
+    // Update admin profile in database
+    const updatedAdmin = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        company: true,
+        mobile: true,
+        address: true,
+        bio: true,
+        position: true,
+        website: true,
+        timezone: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    // Log the profile update activity
+    await prisma.activity.create({
+      data: {
+        type: 'CLIENT_EDITED',
+        description: 'Admin updated their profile',
+        userId: req.user.id,
+        metadata: {
+          updatedFields: Object.keys(updateData)
+        }
+      }
+    });
+
+    // Format response
+    const profileData = {
+      firstName: updatedAdmin.firstName || '',
+      lastName: updatedAdmin.lastName || '',
+      email: updatedAdmin.email || '',
+      phone: updatedAdmin.mobile ? `+91 ${updatedAdmin.mobile}` : '',
+      department: updatedAdmin.position || updatedAdmin.company || 'IT Administration',
+      joinDate: updatedAdmin.createdAt ? updatedAdmin.createdAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      lastLogin: updatedAdmin.lastLogin ? new Date(updatedAdmin.lastLogin).toLocaleString() : 'N/A',
+      address: updatedAdmin.address || '',
+      bio: updatedAdmin.bio || '',
+      username: updatedAdmin.username || '',
+      website: updatedAdmin.website || '',
+      timezone: updatedAdmin.timezone || '',
+      position: updatedAdmin.position || '',
+      company: updatedAdmin.company || '',
+      isActive: updatedAdmin.isActive,
+      role: updatedAdmin.role,
+      id: updatedAdmin.id
+    };
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: { profile: profileData }
+    });
+
+  } catch (error) {
+    console.error('Update admin profile error:', error);
+
+    // Handle unique constraint violations
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        success: false,
+        message: 'A user with this email already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update admin profile'
+    });
+  }
+});
+
 module.exports = router;
