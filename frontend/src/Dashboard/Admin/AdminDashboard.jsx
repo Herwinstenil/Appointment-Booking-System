@@ -99,8 +99,8 @@ const AdminDashboard = () => {
                 const usersData = await usersResponse.json();
                 const formattedUsers = usersData.data?.users.map(user => ({
                     ...user,
-                    revenue: `${user.revenue || 0}`,
-                    phone: user.mobile ? (user.mobile.startsWith('+91') ? user.mobile : `+91 ${user.mobile}`) : '',
+                    revenue: `$${user.revenue || 0}`,
+                    phone: user.mobile ? `+91 ${user.mobile}` : '',
                     joinDate: new Date(user.createdAt).toISOString().split('T')[0],
                     lastLogin: user.updatedAt ? new Date(user.updatedAt).toLocaleString() : 'N/A'
                 })) || [];
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                     const formattedUsers = usersData.data?.users.map(user => ({
                         ...user,
                         revenue: `$${user.revenue || 0}`,
-                        phone: user.mobile ? (user.mobile.startsWith('+91') ? user.mobile : `+91 ${user.mobile}`) : '',
+                        phone: user.mobile ? `+91 ${user.mobile}` : '',
                         joinDate: new Date(user.createdAt).toISOString().split('T')[0],
                         lastLogin: user.updatedAt ? new Date(user.updatedAt).toLocaleString() : 'N/A'
                     })) || [];
@@ -277,75 +277,10 @@ const AdminDashboard = () => {
         }
     };
 
-    // Function to fetch admin profile from database
-    const fetchAdminProfile = async () => {
-        try {
-            setProfileLoading(true);
-            setProfileError(null);
-            const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/profile`, { headers });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.data?.profile) {
-                    const profile = data.data.profile;
-                    setOriginalProfileData(profile);
-                    setProfileData(profile);
-                }
-            } else {
-                const errorData = await response.json();
-                setProfileError(errorData.message || 'Failed to fetch profile');
-            }
-        } catch (error) {
-            console.error('Error fetching admin profile:', error);
-            setProfileError('Network error. Please check your connection.');
-        } finally {
-            setProfileLoading(false);
-        }
-    };
-
-    // Function to update admin profile in database
-    const updateAdminProfile = async (profileUpdateData) => {
-        try {
-            setProfileLoading(true);
-            setProfileError(null);
-            const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/profile`, {
-                method: 'PUT',
-                headers: {
-                    ...headers,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(profileUpdateData)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.data?.profile) {
-                    const updatedProfile = data.data.profile;
-                    setOriginalProfileData(updatedProfile);
-                    setProfileData(updatedProfile);
-                    return { success: true };
-                }
-            } else {
-                const errorData = await response.json();
-                setProfileError(errorData.message || 'Failed to update profile');
-                return { success: false, message: errorData.message };
-            }
-        } catch (error) {
-            console.error('Error updating admin profile:', error);
-            setProfileError('Network error. Please check your connection.');
-            return { success: false, message: 'Network error' };
-        } finally {
-            setProfileLoading(false);
-        }
-    };
-
-    // Fetch recent activities and admin profile on component mount
+    // Fetch recent activities on component mount
     useEffect(() => {
         // Fetch immediately
         fetchRecentActivities();
-        fetchAdminProfile();
     }, [getAuthHeaders]);
 
     // Profile state
@@ -355,20 +290,18 @@ const AdminDashboard = () => {
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
-    const [profileLoading, setProfileLoading] = useState(false);
-    const [profileError, setProfileError] = useState(null);
 
-    // Store original data for cancel functionality - default empty values
+    // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        department: '',
-        joinDate: '',
-        lastLogin: 'N/A',
-        address: '',
-        bio: ''
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@roriri.com',
+        phone: '+91 7338941579',
+        department: 'IT Administration',
+        joinDate: '2023-01-15',
+        lastLogin: '2024-01-15 10:30 AM',
+        address: 'RORIRI IT PARK, Nallanthapuram, Kalskad, Tamil Nadu 629003',
+        bio: 'Experienced system administrator with expertise in managing enterprise software solutions and team coordination.'
     });
 
     const [profileData, setProfileData] = useState({ ...originalProfileData });
@@ -1111,14 +1044,12 @@ const AdminDashboard = () => {
         }));
     };
 
-    const handleSaveProfile = async () => {
-        // Update profile data using API
-        const result = await updateAdminProfile(profileData);
-        if (result.success) {
-            setIsEditing(false);
-            setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 3000);
-        }
+    const handleSaveProfile = () => {
+        console.log('Saving profile data:', profileData);
+        setIsEditing(false);
+        setOriginalProfileData({ ...profileData });
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
     };
 
     const handleCancelEdit = () => {
@@ -4832,27 +4763,6 @@ const AdminDashboard = () => {
                                 )}
                             </div>
                         </div>
-
-                        {/* Loading and Error States */}
-                        {profileLoading && (
-                            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center space-x-3">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                                <span className="text-blue-700 font-medium">Loading profile...</span>
-                            </div>
-                        )}
-
-                        {profileError && (
-                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-3">
-                                <AlertCircle size={20} className="text-red-600" />
-                                <span className="text-red-700 font-medium">{profileError}</span>
-                                <button
-                                    onClick={() => fetchAdminProfile()}
-                                    className="ml-auto text-sm text-red-600 hover:text-red-800 font-semibold"
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        )}
 
                         {/* Profile Overview Card */}
                         <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-2xl p-6 mb-8 text-white transform transition-all duration-500 hover:scale-[1.02]">
