@@ -2587,7 +2587,7 @@ const AdminDashboard = () => {
                                 { label: 'Active Users', value: systemMetrics.activeUsers, icon: Users, color: 'bg-green-500', description: 'Currently active users' },
                                 { label: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0, icon: FolderOpen, color: 'bg-purple-500', description: 'Services currently running' },
                                 { label: 'New Users', value: systemMetrics.newUsers, icon: UserPlus, color: 'bg-rose-500', description: 'New registrations this period' },
-                                { label: 'Storage Used', value: systemMetrics.storageUsed, icon: Download, color: 'bg-amber-500', description: 'Current storage utilization' },
+                                { label: 'Storage Used', value: profileStatsLoading ? 'Calculating...' : (profileStats.storageUsed || '0 MB'), icon: Download, color: 'bg-amber-500', description: 'Current storage utilization' },
                                 { label: 'Server Uptime', value: systemMetrics.serverUptime, icon: CheckCircle, color: 'bg-emerald-500', description: 'System availability percentage' },
                                 { label: 'Response Time', value: systemMetrics.responseTime, icon: Clock, color: 'bg-cyan-500', description: 'Average response time' },
                                 { label: 'Total Bookings', value: bookingAnalytics.totalBookings || 0, icon: BookOpen, color: 'bg-indigo-500', description: 'Total booking transactions' },
