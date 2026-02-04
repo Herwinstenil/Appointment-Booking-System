@@ -76,7 +76,9 @@ const DEFAULT_PROFILE_STATE = {
     lastLogin: '',
     address: '',
     bio: '',
-    avatarUrl: ''
+    avatarUrl: '',
+    role: 'ADMIN',
+    roleLabel: 'Administrator'
 };
 
 const buildProfileState = (admin) => {
@@ -86,6 +88,10 @@ const buildProfileState = (admin) => {
     const lastLogin = admin.lastLogin
         ? new Date(admin.lastLogin).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
         : 'Never logged in';
+    const role = admin.role || 'ADMIN';
+    const roleLabel = role === 'ADMIN'
+        ? 'Administrator'
+        : `${role.charAt(0)}${role.slice(1).toLowerCase()}`;
 
     return {
         ...DEFAULT_PROFILE_STATE,
@@ -98,7 +104,9 @@ const buildProfileState = (admin) => {
         bio: admin.bio || '',
         avatarUrl: admin.avatarUrl || '',
         joinDate,
-        lastLogin
+        lastLogin,
+        role,
+        roleLabel
     };
 };
 
@@ -367,6 +375,21 @@ const AdminDashboard = () => {
     useEffect(() => {
         loadProfile();
     }, [loadProfile]);
+
+    const profileDisplayName = useMemo(() => {
+        if (profileLoading) return 'Loading...';
+        const fullName = `${profileData.firstName} ${profileData.lastName}`.trim();
+        return fullName || 'Administrator';
+    }, [profileData.firstName, profileData.lastName, profileLoading]);
+
+    const profileInitials = useMemo(() => {
+        const first = profileData.firstName?.[0] ?? '';
+        const last = profileData.lastName?.[0] ?? '';
+        const initials = `${first}${last}`.trim().toUpperCase();
+        if (initials) return initials;
+        if (profileData.roleLabel) return profileData.roleLabel[0];
+        return 'AD';
+    }, [profileData.firstName, profileData.lastName, profileData.roleLabel]);
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -4928,7 +4951,7 @@ const AdminDashboard = () => {
                                         />
                                     ) : (
                                         <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm border-2 border-white/30">
-                                            {profileData.firstName[0]}{profileData.lastName[0]}
+                                            {profileInitials}
                                         </div>
                                     )}
                                     {isEditing && (
@@ -5323,8 +5346,12 @@ const AdminDashboard = () => {
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-800">Admin</p>
-                                        <p className="text-xs text-gray-500">Administrator</p>
+                                        <p className="text-sm font-semibold text-gray-800">
+                                            {profileLoading ? 'Loading admin...' : profileDisplayName}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {profileLoading ? 'Fetching role...' : profileData.roleLabel}
+                                        </p>
                                     </div>
                                     <div className="relative">
                                         {imagePreview ? (
@@ -5335,7 +5362,7 @@ const AdminDashboard = () => {
                                             />
                                         ) : (
                                             <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
-                                                {profileData.firstName[0]}{profileData.lastName[0]}
+                                                {profileInitials}
                                             </div>
                                         )}
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
