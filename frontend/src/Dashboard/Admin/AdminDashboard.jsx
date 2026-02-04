@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import { useAuth } from '../../Context/AuthContext.jsx';
+import { formatInternationalPhoneNumber } from '../../utils/formatPhone.js';
 import {
     Users,
     FolderOpen,
@@ -342,6 +343,7 @@ const AdminDashboard = () => {
     const [profileError, setProfileError] = useState(null);
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileSaveError, setProfileSaveError] = useState(null);
+    const formattedPhoneDisplay = formatInternationalPhoneNumber(profileData.phone);
 
     const loadProfile = useCallback(async () => {
         setProfileLoading(true);
@@ -5025,36 +5027,41 @@ const AdminDashboard = () => {
                                                     { label: 'Phone', key: 'phone', icon: Phone },
                                                     { label: 'Company', key: 'company', icon: Settings },
                                                     { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true }
-                                                ].map((field) => {
-                                                    const FieldIcon = field.icon;
-                                                    return (
-                                                        <div key={field.key} className="group">
-                                                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                                                <FieldIcon size={16} className="text-rose-500" />
-                                                                {field.label}
-                                                            </label>
-                                                            {isEditing && !field.readOnly ? (
-                                                                <input
-                                                                    type="text"
-                                                                    value={profileData[field.key]}
-                                                                    onChange={(e) => {
-                                                                        let value = e.target.value;
-                                                                        if (field.key === 'phone') {
-                                                                            // Allow only 10 digits
-                                                                            value = value.replace(/\D/g, '').slice(0, 10);
-                                                                        }
-                                                                        setProfileData(prev => ({ ...prev, [field.key]: value }));
-                                                                    }}
-                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                                                />
-                                                            ) : (
-                                                                <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-rose-100 transition-all duration-300">
-                                                                    <p className="text-gray-900">{profileData[field.key]}</p>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
+                                            ].map((field) => {
+                                                const FieldIcon = field.icon;
+                                                const fieldValue = profileData[field.key] ?? '';
+                                                const displayValue = !isEditing && field.key === 'phone'
+                                                    ? formattedPhoneDisplay
+                                                    : fieldValue;
+
+                                                return (
+                                                    <div key={field.key} className="group">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                                            <FieldIcon size={16} className="text-rose-500" />
+                                                            {field.label}
+                                                        </label>
+                                                        {isEditing && !field.readOnly ? (
+                                                            <input
+                                                                type="text"
+                                                                value={fieldValue}
+                                                                onChange={(e) => {
+                                                                    let value = e.target.value;
+                                                                    if (field.key === 'phone') {
+                                                                        // Allow only 10 digits
+                                                                        value = value.replace(/\D/g, '').slice(0, 10);
+                                                                    }
+                                                                    setProfileData(prev => ({ ...prev, [field.key]: value }));
+                                                                }}
+                                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                                            />
+                                                        ) : (
+                                                            <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-rose-100 transition-all duration-300">
+                                                                <p className="text-gray-900">{displayValue}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                             </div>
 
                                             {/* Address Field */}
