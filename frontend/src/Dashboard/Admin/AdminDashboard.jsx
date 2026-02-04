@@ -4011,7 +4011,7 @@ const AdminDashboard = () => {
                                     {[
                                         { name: 'Response Time', value: systemMetrics.responseTime },
                                         { name: 'Active Services', value: users.filter(u => u.role === 'CLIENT' && u.status === 'Active').length || 0 },
-                                        { name: 'Storage Used', value: systemMetrics.storageUsed },
+                                        { name: 'Storage Used', value: profileStatsLoading ? 'Calculating...' : (profileStats.storageUsed || '0 MB') },
                                         { name: 'New Users', value: systemMetrics.newUsers }
                                     ].map((metric, index) => (
                                         <div
