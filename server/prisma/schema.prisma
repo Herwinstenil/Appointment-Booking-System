@@ -20,6 +20,7 @@ model User {
   mobile    String?
   address   String?
   bio       String?
+  avatarUrl String?
   position  String?
   website   String?
   timezone  String?

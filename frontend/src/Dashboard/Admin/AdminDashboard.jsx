@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import { useAuth } from '../../Context/AuthContext.jsx';
@@ -65,8 +64,46 @@ import {
     UserMinus
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const ADMIN_PROFILE_ENDPOINT = `${API_BASE_URL}/api/admin/profile`;
+const DEFAULT_PROFILE_STATE = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    joinDate: '',
+    lastLogin: '',
+    address: '',
+    bio: '',
+    avatarUrl: ''
+};
+
+const buildProfileState = (admin) => {
+    const joinDate = admin.createdAt
+        ? new Date(admin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '';
+    const lastLogin = admin.lastLogin
+        ? new Date(admin.lastLogin).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+        : 'Never logged in';
+
+    return {
+        ...DEFAULT_PROFILE_STATE,
+        firstName: admin.firstName || '',
+        lastName: admin.lastName || '',
+        email: admin.email || '',
+        phone: admin.mobile || '',
+        company: admin.company || '',
+        address: admin.address || '',
+        bio: admin.bio || '',
+        avatarUrl: admin.avatarUrl || '',
+        joinDate,
+        lastLogin
+    };
+};
+
 const AdminDashboard = () => {
-    const { getAuthHeaders, user: currentUser } = useAuth();
+    const { getAuthHeaders, user: currentUser, updateUser } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -291,20 +328,45 @@ const AdminDashboard = () => {
     const [profileImage, setProfileImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
 
-    // Store original data for cancel functionality
-    const [originalProfileData, setOriginalProfileData] = useState({
-        firstName: 'Admin',
-        lastName: 'User',
-        email: 'admin@roriri.com',
-        phone: '7338941579',
-        company: 'IT Administration',
-        joinDate: '2023-01-15',
-        lastLogin: '2024-01-15 10:30 AM',
-        address: 'RORIRI IT PARK, Nallanthapuram, Kalskad, Tamil Nadu 629003',
-        bio: 'Experienced system administrator with expertise in managing enterprise software solutions and team coordination.'
-    });
+    const [profileData, setProfileData] = useState(() => ({ ...DEFAULT_PROFILE_STATE }));
+    const [originalProfileData, setOriginalProfileData] = useState(() => ({ ...DEFAULT_PROFILE_STATE }));
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [profileError, setProfileError] = useState(null);
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileSaveError, setProfileSaveError] = useState(null);
 
-    const [profileData, setProfileData] = useState({ ...originalProfileData });
+    const loadProfile = useCallback(async () => {
+        setProfileLoading(true);
+        setProfileError(null);
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(ADMIN_PROFILE_ENDPOINT, { headers });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Unable to load admin profile');
+            }
+
+            if (!data?.data) {
+                throw new Error('Invalid admin profile payload');
+            }
+
+            const profile = buildProfileState(data.data);
+            setProfileData(profile);
+            setOriginalProfileData({ ...profile });
+            setImagePreview(data.data.avatarUrl || null);
+            setProfileImage(null);
+        } catch (error) {
+            console.error('Load admin profile error:', error);
+            setProfileError(error.message || 'Failed to load profile data');
+        } finally {
+            setProfileLoading(false);
+        }
+    }, [getAuthHeaders]);
+
+    useEffect(() => {
+        loadProfile();
+    }, [loadProfile]);
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -1044,22 +1106,78 @@ const AdminDashboard = () => {
         }));
     };
 
-    const handleSaveProfile = () => {
-        console.log('Saving profile data:', profileData);
-        setIsEditing(false);
-        setOriginalProfileData({ ...profileData });
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+    const handleSaveProfile = async () => {
+        setProfileSaving(true);
+        setProfileSaveError(null);
+
+        const sanitize = (value) => (typeof value === 'string' ? value.trim() : '');
+        const payload = {
+            firstName: sanitize(profileData.firstName),
+            lastName: sanitize(profileData.lastName),
+            email: sanitize(profileData.email),
+            mobile: profileData.phone.replace(/\D/g, ''),
+            company: sanitize(profileData.company),
+            address: sanitize(profileData.address),
+            bio: sanitize(profileData.bio),
+            avatarUrl: profileData.avatarUrl
+        };
+
+        try {
+            const headers = {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(ADMIN_PROFILE_ENDPOINT, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Unable to update profile');
+            }
+
+            const updatedProfile = buildProfileState(data.data);
+            setProfileData(updatedProfile);
+            setOriginalProfileData({ ...updatedProfile });
+            setImagePreview(data.data.avatarUrl || null);
+            setProfileImage(null);
+            setIsEditing(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+
+            if (typeof updateUser === 'function') {
+                updateUser({
+                    firstName: data.data.firstName,
+                    lastName: data.data.lastName,
+                    email: data.data.email,
+                    company: data.data.company,
+                    mobile: data.data.mobile,
+                    avatarUrl: data.data.avatarUrl
+                });
+            }
+        } catch (error) {
+            console.error('Saving profile error:', error);
+            setProfileSaveError(error.message || 'Failed to save profile changes');
+        } finally {
+            setProfileSaving(false);
+        }
     };
 
     const handleCancelEdit = () => {
         setProfileData({ ...originalProfileData });
+        setImagePreview(originalProfileData.avatarUrl || null);
         setIsEditing(false);
+        setProfileSaveError(null);
     };
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
         setIsEditing(true);
+        setProfileSaveError(null);
     };
 
     const handleImageUpload = (event) => {
@@ -1068,7 +1186,9 @@ const AdminDashboard = () => {
             setProfileImage(file);
             const reader = new FileReader();
             reader.onload = (e) => {
-                setImagePreview(e.target.result);
+                const avatarData = e.target.result;
+                setImagePreview(avatarData);
+                setProfileData(prev => ({ ...prev, avatarUrl: avatarData }));
             };
             reader.readAsDataURL(file);
         }
@@ -4717,6 +4837,30 @@ const AdminDashboard = () => {
                 );
 
             case 'Profile':
+                if (profileLoading) {
+                    return (
+                        <div className="p-8 flex flex-col items-center justify-center space-y-3 text-gray-500">
+                            <div className="h-12 w-12 rounded-full bg-rose-100 animate-pulse"></div>
+                            <p>Loading admin profile...</p>
+                        </div>
+                    );
+                }
+
+                if (profileError) {
+                    return (
+                        <div className="p-8 text-center">
+                            <p className="mb-4 text-lg font-semibold text-rose-600">Unable to load admin profile.</p>
+                            <p className="text-sm text-gray-600 mb-4">{profileError}</p>
+                            <button
+                                onClick={loadProfile}
+                                className="px-6 py-3 bg-rose-500 text-white rounded-xl font-semibold hover:bg-rose-600 transition"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    );
+                }
+
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
@@ -4739,17 +4883,19 @@ const AdminDashboard = () => {
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer"
+                                            disabled={profileSaving}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
                                             <XCircle size={20} />
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-green-500/25 cursor-pointer"
+                                            disabled={profileSaving}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-green-500/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
                                             <Save size={20} />
-                                            Save Changes
+                                            {profileSaving ? ' Saving...' : ' Save Changes'}
                                         </button>
                                     </div>
                                 ) : (
@@ -4763,6 +4909,12 @@ const AdminDashboard = () => {
                                 )}
                             </div>
                         </div>
+
+                        {profileSaveError && (
+                            <div className="mb-6 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                {profileSaveError}
+                            </div>
+                        )}
 
                         {/* Profile Overview Card */}
                         <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-2xl p-6 mb-8 text-white transform transition-all duration-500 hover:scale-[1.02]">

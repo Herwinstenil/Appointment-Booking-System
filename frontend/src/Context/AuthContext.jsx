@@ -175,6 +175,18 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
     };
 
+    const updateUser = (updates) => {
+        setUser(prev => {
+            const next = { ...(prev || {}), ...updates };
+            localStorage.setItem('user', JSON.stringify(next));
+            if (updates.role) {
+                setUserRole(updates.role);
+                localStorage.setItem('userRole', updates.role);
+            }
+            return next;
+        });
+    };
+
     const getAuthHeaders = () => {
         const token = localStorage.getItem('token');
         return token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -195,6 +207,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         getAuthHeaders,
         socialLogin,
+        updateUser,
         API_BASE_URL
     };
 

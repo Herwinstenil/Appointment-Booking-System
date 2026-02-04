@@ -230,6 +230,7 @@ router.post('/register', [
         role: true,
         company: true,
         mobile: true,
+        avatarUrl: true,
         createdAt: true
       }
     });
@@ -341,7 +342,8 @@ router.post('/login', [
           lastName: user.lastName,
           role: user.role,
           company: user.company,
-          mobile: user.mobile
+          mobile: user.mobile,
+          avatarUrl: user.avatarUrl
         },
         token
       }

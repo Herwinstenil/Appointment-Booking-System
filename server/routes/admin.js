@@ -11,6 +11,21 @@ const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
 const prisma = new PrismaClient({ adapter });
 
+const ADMIN_PROFILE_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  mobile: true,
+  company: true,
+  address: true,
+  bio: true,
+  avatarUrl: true,
+  createdAt: true,
+  lastLogin: true,
+  role: true
+};
+
 // Get admin dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
   try {
@@ -127,6 +142,111 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('ADMIN'), async
     });
   }
 });
+
+// Get admin profile
+router.get('/profile', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const admin = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: ADMIN_PROFILE_SELECT
+    });
+
+    if (!admin || admin.role !== 'ADMIN') {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin profile not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: admin
+    });
+  } catch (error) {
+    console.error('Fetch admin profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load admin profile'
+    });
+  }
+});
+
+// Update admin profile
+router.put(
+  '/profile',
+  authenticateToken,
+  authorizeRoles('ADMIN'),
+  [
+    body('email').optional().isEmail().withMessage('Invalid email'),
+    body('firstName').optional().isString(),
+    body('lastName').optional().isString(),
+    body('mobile').optional().isString(),
+    body('company').optional().isString(),
+    body('address').optional().isString(),
+    body('bio').optional().isString(),
+    body('avatarUrl').optional().isString()
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation errors',
+          errors: errors.array()
+        });
+      }
+
+      const admin = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { role: true }
+      });
+
+      if (!admin || admin.role !== 'ADMIN') {
+        return res.status(403).json({
+          success: false,
+          message: 'Admin access required'
+        });
+      }
+
+      const sanitize = (value) => (typeof value === 'string' ? value.trim() : value);
+
+      const payload = {};
+      if (req.body.firstName !== undefined) payload.firstName = sanitize(req.body.firstName);
+      if (req.body.lastName !== undefined) payload.lastName = sanitize(req.body.lastName);
+      if (req.body.email !== undefined) payload.email = sanitize(req.body.email);
+      if (req.body.mobile !== undefined) payload.mobile = req.body.mobile.replace(/\D/g, '');
+      if (req.body.company !== undefined) payload.company = sanitize(req.body.company);
+      if (req.body.address !== undefined) payload.address = sanitize(req.body.address);
+      if (req.body.bio !== undefined) payload.bio = sanitize(req.body.bio);
+      if (req.body.avatarUrl !== undefined) payload.avatarUrl = req.body.avatarUrl;
+
+      if (Object.keys(payload).length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No changes provided'
+        });
+      }
+
+      const updatedAdmin = await prisma.user.update({
+        where: { id: req.user.id },
+        data: payload,
+        select: ADMIN_PROFILE_SELECT
+      });
+
+      res.json({
+        success: true,
+        data: updatedAdmin
+      });
+    } catch (error) {
+      console.error('Update admin profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update admin profile'
+      });
+    }
+  }
+);
 
 // Get revenue by category (grouped by company)
 router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
