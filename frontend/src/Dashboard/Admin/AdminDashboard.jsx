@@ -296,7 +296,7 @@ const AdminDashboard = () => {
         firstName: 'Admin',
         lastName: 'User',
         email: 'admin@roriri.com',
-        phone: '+91 7338941579',
+        phone: '7338941579',
         company: 'IT Administration',
         joinDate: '2023-01-15',
         lastLogin: '2024-01-15 10:30 AM',
@@ -4865,17 +4865,8 @@ const AdminDashboard = () => {
                                                                     onChange={(e) => {
                                                                         let value = e.target.value;
                                                                         if (field.key === 'phone') {
-                                                                            // Enforce +91 prefix and allow only 10 digits after space
-                                                                            if (value.startsWith('+91 ')) {
-                                                                                const digits = value.slice(4).replace(/\D/g, ''); // Remove non-digits after +91
-                                                                                if (digits.length <= 10) {
-                                                                                    value = '+91 ' + digits;
-                                                                                } else {
-                                                                                    value = '+91 ' + digits.slice(0, 10);
-                                                                                }
-                                                                            } else {
-                                                                                value = '+91 ';
-                                                                            }
+                                                                            // Allow only 10 digits
+                                                                            value = value.replace(/\D/g, '').slice(0, 10);
                                                                         }
                                                                         setProfileData(prev => ({ ...prev, [field.key]: value }));
                                                                     }}
