@@ -297,7 +297,7 @@ const AdminDashboard = () => {
         lastName: 'User',
         email: 'admin@roriri.com',
         phone: '+91 7338941579',
-        department: 'IT Administration',
+        company: 'IT Administration',
         joinDate: '2023-01-15',
         lastLogin: '2024-01-15 10:30 AM',
         address: 'RORIRI IT PARK, Nallanthapuram, Kalskad, Tamil Nadu 629003',
@@ -4797,7 +4797,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-2xl font-bold mb-2">{profileData.firstName} {profileData.lastName}</h3>
-                                    <p className="text-rose-100 mb-1">{profileData.department}</p>
+                                    <p className="text-rose-100 mb-1">{profileData.company}</p>
                                     <p className="text-rose-100 text-sm opacity-90">{profileData.email}</p>
                                 </div>
                                 <div className="text-right">
@@ -4848,7 +4848,7 @@ const AdminDashboard = () => {
                                                     { label: 'Last Name', key: 'lastName', icon: User },
                                                     { label: 'Email', key: 'email', icon: Mail },
                                                     { label: 'Phone', key: 'phone', icon: Phone },
-                                                    { label: 'Department', key: 'department', icon: Settings },
+                                                    { label: 'Company', key: 'company', icon: Settings },
                                                     { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true }
                                                 ].map((field) => {
                                                     const FieldIcon = field.icon;
