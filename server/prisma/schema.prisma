@@ -21,6 +21,10 @@ model User {
   address   String?
   bio       String?
   avatarUrl String?
+  emailVerified      Boolean  @default(false)
+  twoFactorEnabled   Boolean  @default(false)
+  passwordUpdatedAt  DateTime?
+  lastSuspiciousLoginAt DateTime?
   position  String?
   website   String?
   timezone  String?
@@ -43,6 +47,7 @@ model User {
   appointmentsAsUser     Appointment[] @relation("UserAppointments")
   appointmentsAsClient   Appointment[] @relation("ClientAppointments")
   activities             Activity[]
+  uploads                FileUpload[]
 }
 
 model Service {
@@ -118,4 +123,15 @@ model Activity {
   createdAt   DateTime    @default(now())
 
   user        User?       @relation(fields: [userId], references: [id])
+}
+
+model FileUpload {
+  id          String   @id @default(cuid())
+  userId      String
+  fileName    String
+  mimeType    String?
+  sizeInBytes BigInt    @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

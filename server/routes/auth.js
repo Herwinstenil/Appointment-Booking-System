@@ -219,7 +219,8 @@ router.post('/register', [
         lastName,
         role: role.toUpperCase(),
         company,
-        mobile
+        mobile,
+        passwordUpdatedAt: new Date()
       },
       select: {
         id: true,
@@ -403,7 +404,10 @@ router.post('/forgot-password', [
     // Update user password
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword }
+      data: {
+        password: hashedPassword,
+        passwordUpdatedAt: new Date()
+      }
     });
 
     res.json({

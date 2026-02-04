@@ -11,6 +11,47 @@ const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
 const prisma = new PrismaClient({ adapter });
 
+const ADMIN_PROFILE_STATS_SELECT = {
+  id: true,
+  createdAt: true,
+  emailVerified: true,
+  twoFactorEnabled: true,
+  passwordUpdatedAt: true,
+  lastSuspiciousLoginAt: true
+};
+
+const formatStorage = (bytes) => {
+  if (!bytes || bytes === 0) {
+    return { label: '0 MB', raw: 0 };
+  }
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  let size = Number(bytes);
+  let unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+  return {
+    label: `${Number(size.toFixed(2))} ${units[unitIndex]}`,
+    raw: Number(bytes)
+  };
+};
+
+const computeSecurityScore = ({ emailVerified, twoFactorEnabled, passwordUpdatedAt, lastSuspiciousLoginAt }) => {
+  const now = new Date();
+  let score = 0;
+  if (emailVerified) score += 25;
+  if (twoFactorEnabled) score += 30;
+  if (passwordUpdatedAt) {
+    const diffDays = Math.floor((now - new Date(passwordUpdatedAt)) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 180) score += 25;
+  }
+  if (!lastSuspiciousLoginAt) {
+    score += 20;
+  }
+  return Math.min(100, score);
+};
+
 const ADMIN_PROFILE_SELECT = {
   id: true,
   firstName: true,
@@ -247,6 +288,54 @@ router.put(
     }
   }
 );
+
+// Get admin profile stats
+router.get('/profile/stats', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+  try {
+    const admin = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: ADMIN_PROFILE_STATS_SELECT
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    const totalLogins = await prisma.activity.count({
+      where: {
+        userId: admin.id,
+        type: 'ADMIN_LOGIN'
+      }
+    });
+
+    const uploadsSummary = await prisma.fileUpload.aggregate({
+      where: { userId: admin.id },
+      _sum: { sizeInBytes: true }
+    });
+
+    const storageUsed = formatStorage(uploadsSummary._sum?.sizeInBytes || 0);
+    const securityScore = computeSecurityScore(admin);
+
+    res.json({
+      success: true,
+      data: {
+        adminSince: admin.createdAt?.toISOString() || null,
+        totalLogins,
+        securityScore,
+        storageUsed
+      }
+    });
+  } catch (error) {
+    console.error('Fetch admin profile stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load profile stats'
+    });
+  }
+});
 
 // Get revenue by category (grouped by company)
 router.get('/dashboard/revenue-by-category', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {

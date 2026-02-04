@@ -343,6 +343,15 @@ const AdminDashboard = () => {
     const [profileError, setProfileError] = useState(null);
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileSaveError, setProfileSaveError] = useState(null);
+
+    const [profileStats, setProfileStats] = useState({
+        adminSince: '',
+        totalLogins: 0,
+        securityScore: 0,
+        storageUsed: '0 MB'
+    });
+    const [profileStatsLoading, setProfileStatsLoading] = useState(true);
+    const [profileStatsError, setProfileStatsError] = useState(null);
     const formattedPhoneDisplay = formatInternationalPhoneNumber(profileData.phone);
 
     const loadProfile = useCallback(async () => {
@@ -377,6 +386,41 @@ const AdminDashboard = () => {
     useEffect(() => {
         loadProfile();
     }, [loadProfile]);
+
+    const loadProfileStats = useCallback(async () => {
+        setProfileStatsLoading(true);
+        setProfileStatsError(null);
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(`${ADMIN_PROFILE_ENDPOINT}/stats`, { headers });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Unable to load profile stats');
+            }
+
+            const stats = data.data || {};
+            const formattedSince = stats.adminSince
+                ? new Date(stats.adminSince).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+                : 'N/A';
+
+            setProfileStats({
+                adminSince: formattedSince,
+                totalLogins: stats.totalLogins ?? 0,
+                securityScore: stats.securityScore ?? 0,
+                storageUsed: stats.storageUsed?.label || '0 MB'
+            });
+        } catch (error) {
+            console.error('Load profile stats error:', error);
+            setProfileStatsError(error.message || 'Failed to load profile stats');
+        } finally {
+            setProfileStatsLoading(false);
+        }
+    }, [getAuthHeaders]);
+
+    useEffect(() => {
+        loadProfileStats();
+    }, [loadProfileStats]);
 
     const profileDisplayName = useMemo(() => {
         if (profileLoading) return 'Loading...';
@@ -1170,6 +1214,7 @@ const AdminDashboard = () => {
             setOriginalProfileData({ ...updatedProfile });
             setImagePreview(data.data.avatarUrl || null);
             setProfileImage(null);
+            await loadProfileStats();
             setIsEditing(false);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
@@ -4883,8 +4928,31 @@ const AdminDashboard = () => {
                                 Retry
                             </button>
                         </div>
-                    );
-                }
+                );
+            }
+
+                const accountStatsRows = [
+                    {
+                        label: 'Admin Since',
+                        value: profileStatsLoading ? 'Loading...' : (profileStats.adminSince || 'N/A'),
+                        icon: Calendar
+                    },
+                    {
+                        label: 'Total Logins',
+                        value: profileStatsLoading ? 'Loading...' : (profileStats.totalLogins?.toLocaleString() || '0'),
+                        icon: Activity
+                    },
+                    {
+                        label: 'Security Score',
+                        value: profileStatsLoading ? 'Calculating...' : `${profileStats.securityScore ?? 0}%`,
+                        icon: Shield
+                    },
+                    {
+                        label: 'Storage Used',
+                        value: profileStatsLoading ? 'Calculating...' : (profileStats.storageUsed || '0 MB'),
+                        icon: Download
+                    }
+                ];
 
                 return (
                     <div className="p-8 animate-fadeIn">
@@ -5265,13 +5333,13 @@ const AdminDashboard = () => {
                                 {/* Account Stats */}
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Account Stats</h3>
+                                    {profileStatsError && (
+                                        <p className="text-xs text-rose-600 mb-3">
+                                            {profileStatsError}
+                                        </p>
+                                    )}
                                     <div className="space-y-4">
-                                        {[
-                                            { label: 'Admin Since', value: 'Jan 2023', icon: Calendar },
-                                            { label: 'Total Logins', value: '1,247', icon: Activity },
-                                            { label: 'Security Score', value: '98%', icon: Shield },
-                                            { label: 'Storage Used', value: '2.3 GB', icon: Download }
-                                        ].map((stat, index) => {
+                                        {accountStatsRows.map((stat, index) => {
                                             const StatIcon = stat.icon;
                                             return (
                                                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group hover:bg-rose-50 transition-all duration-300 transform hover:scale-105 group">
