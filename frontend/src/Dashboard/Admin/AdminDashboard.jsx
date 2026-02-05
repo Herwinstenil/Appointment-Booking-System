@@ -1377,7 +1377,12 @@ const AdminDashboard = () => {
             onClick: handleExportProfilePDF,
             disabled: profileLoading || profileStatsLoading || isExporting
         },
-        { icon: CreditCard, label: 'Billing Info', color: 'text-green-600' },
+        {
+            icon: CreditCard,
+            label: 'Billing Info',
+            color: 'text-green-600',
+            onClick: () => setShowAllTransactionsModal(true)
+        },
         { icon: Globe, label: 'Language', color: 'text-purple-600' },
         { icon: Settings, label: 'Preferences', color: 'text-amber-600' }
     ], [handleExportProfilePDF, isExporting, profileLoading, profileStatsLoading]);
