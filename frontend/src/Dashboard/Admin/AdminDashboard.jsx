@@ -1330,10 +1330,9 @@ const AdminDashboard = () => {
                 personalY += 6;
             });
 
-            const statsX = 320;
-            let statsY = 120;
+            let statsY = personalY + 20;
             doc.setFontSize(16);
-            doc.text('Account Stats', statsX, statsY);
+            doc.text('Account Stats', 40, statsY);
             statsY += 25;
             doc.setFontSize(11);
 
@@ -1347,11 +1346,11 @@ const AdminDashboard = () => {
             stats.forEach(stat => {
                 doc.setFontSize(10);
                 doc.setTextColor('#555');
-                doc.text(`${stat.label}:`, statsX, statsY);
+                doc.text(`${stat.label}:`, 40, statsY);
                 doc.setFontSize(11);
                 doc.setTextColor('#111');
-                doc.text(stat.value, statsX, statsY + 12);
-                statsY += 28;
+                doc.text(stat.value, 140, statsY);
+                statsY += 20;
             });
 
             doc.save('admin-profile.pdf');
