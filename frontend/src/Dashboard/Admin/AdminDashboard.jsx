@@ -343,6 +343,8 @@ const AdminDashboard = () => {
     const [profileError, setProfileError] = useState(null);
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileSaveError, setProfileSaveError] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState(null);
 
     const [profileStats, setProfileStats] = useState({
         adminSince: '',
@@ -1243,6 +1245,143 @@ const AdminDashboard = () => {
         setIsEditing(false);
         setProfileSaveError(null);
     };
+
+    const handleExportProfilePDF = useCallback(async () => {
+        if (profileLoading || profileStatsLoading) {
+            setExportError('Profile data is still loading. Please wait a moment.');
+            return;
+        }
+
+        setExportError(null);
+        setIsExporting(true);
+
+        try {
+            let avatarSource = imagePreview || profileData.avatarUrl;
+            if (avatarSource && !avatarSource.startsWith('data:')) {
+                try {
+                    const response = await fetch(avatarSource, { cache: 'no-store' });
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        avatarSource = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(blob);
+                        });
+                    } else {
+                        avatarSource = null;
+                    }
+                } catch (fetchError) {
+                    console.warn('Unable to load avatar for PDF export', fetchError);
+                    avatarSource = null;
+                }
+            }
+
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const exportTimestamp = new Date().toLocaleString('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+
+            doc.setFontSize(10);
+            doc.text(`Exported: ${exportTimestamp}`, 40, 40);
+
+            const headerY = 70;
+            doc.setFontSize(20);
+            doc.text(`${profileData.firstName} ${profileData.lastName}`.trim() || 'Administrator', 40, headerY);
+            doc.setFontSize(12);
+            doc.text(profileData.roleLabel || 'Administrator', 40, headerY + 20);
+
+            if (avatarSource) {
+                const width = 90;
+                const height = 90;
+                const imageFormat = avatarSource.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+                doc.addImage(avatarSource, imageFormat, 400, 30, width, height);
+            }
+
+            let personalY = 120;
+            doc.setFontSize(16);
+            doc.text('Personal Information', 40, personalY);
+            personalY += 25;
+            doc.setFontSize(12);
+
+            const personalFields = [
+                { label: 'First Name', value: profileData.firstName },
+                { label: 'Last Name', value: profileData.lastName },
+                { label: 'Email', value: profileData.email },
+                { label: 'Phone', value: formattedPhoneDisplay },
+                { label: 'Company', value: profileData.company },
+                { label: 'Join Date', value: profileData.joinDate },
+                { label: 'Address', value: profileData.address },
+                { label: 'Bio', value: profileData.bio }
+            ];
+
+            personalFields.forEach(field => {
+                const labelX = 40;
+                const valueX = 140;
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${field.label}:`, labelX, personalY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                const lines = doc.splitTextToSize(field.value || 'N/A', 270);
+                doc.text(lines, valueX, personalY);
+                personalY += lines.length * 14;
+                personalY += 6;
+            });
+
+            const statsX = 320;
+            let statsY = 120;
+            doc.setFontSize(16);
+            doc.text('Account Stats', statsX, statsY);
+            statsY += 25;
+            doc.setFontSize(11);
+
+            const stats = [
+                { label: 'Admin Since', value: profileStats.adminSince || 'N/A' },
+                { label: 'Total Logins', value: profileStats.totalLogins?.toLocaleString() || '0' },
+                { label: 'Security Score', value: `${profileStats.securityScore ?? 0}%` },
+                { label: 'Storage Used', value: profileStats.storageUsed || '0 MB' }
+            ];
+
+            stats.forEach(stat => {
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${stat.label}:`, statsX, statsY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                doc.text(stat.value, statsX, statsY + 12);
+                statsY += 28;
+            });
+
+            doc.save('admin-profile.pdf');
+        } catch (error) {
+            console.error('Export profile PDF error:', error);
+            setExportError(error.message || 'Failed to export profile');
+        } finally {
+            setIsExporting(false);
+        }
+    }, [
+        profileData,
+        profileLoading,
+        profileStats,
+        profileStatsLoading,
+        formattedPhoneDisplay,
+        imagePreview
+    ]);
+
+    const quickActions = useMemo(() => [
+        {
+            icon: Download,
+            label: isExporting ? 'Exporting...' : 'Export Data',
+            color: 'text-blue-600',
+            onClick: handleExportProfilePDF,
+            disabled: profileLoading || profileStatsLoading || isExporting
+        },
+        { icon: CreditCard, label: 'Billing Info', color: 'text-green-600' },
+        { icon: Globe, label: 'Language', color: 'text-purple-600' },
+        { icon: Settings, label: 'Preferences', color: 'text-amber-600' }
+    ], [handleExportProfilePDF, isExporting, profileLoading, profileStatsLoading]);
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
@@ -5310,23 +5449,26 @@ const AdminDashboard = () => {
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
-                                        {[
-                                            { icon: Download, label: 'Export Data', color: 'text-blue-600' },
-                                            { icon: CreditCard, label: 'Billing Info', color: 'text-green-600' },
-                                            { icon: Globe, label: 'Language', color: 'text-purple-600' },
-                                            { icon: Settings, label: 'Preferences', color: 'text-amber-600' }
-                                        ].map((action, index) => {
+                                        {quickActions.map((action, index) => {
                                             const ActionIcon = action.icon;
                                             return (
                                                 <button
                                                     key={index}
-                                                    className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-rose-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group cursor-pointer"
+                                                    type="button"
+                                                    onClick={action.onClick}
+                                                    disabled={action.disabled}
+                                                    className={`w-full flex items-center gap-3 p-3 text-gray-700 rounded-xl transition-all duration-300 transform hover:translate-x-2 group ${action.disabled ? 'cursor-not-allowed opacity-70 hover:translate-x-0' : 'hover:bg-rose-50'}`}
                                                 >
                                                     <ActionIcon size={20} className={`${action.color} group-hover:scale-110 transition-transform`} />
                                                     <span className="font-medium group-hover:text-rose-700">{action.label}</span>
                                                 </button>
                                             );
                                         })}
+                                        {exportError && (
+                                            <p className="text-xs text-rose-600 mt-2">
+                                                {exportError}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
