@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import { useAuth } from '../../Context/AuthContext.jsx';
+import { useTranslation } from 'react-i18next';
 import { formatInternationalPhoneNumber } from '../../utils/formatPhone.js';
 import {
     Users,
@@ -79,7 +80,8 @@ const DEFAULT_PROFILE_STATE = {
     bio: '',
     avatarUrl: '',
     role: 'ADMIN',
-    roleLabel: 'Administrator'
+    roleLabel: 'Administrator',
+    language: 'en'
 };
 
 const buildProfileState = (admin) => {
@@ -107,15 +109,32 @@ const buildProfileState = (admin) => {
         joinDate,
         lastLogin,
         role,
-        roleLabel
+        roleLabel,
+        language: admin.language || 'en'
     };
 };
 
+const LANGUAGE_OPTIONS = [
+    { code: 'en', name: 'English', nativeName: 'English' },
+    { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+    { code: 'es', name: 'Spanish', nativeName: 'Español' },
+    { code: 'fr', name: 'French', nativeName: 'Français' },
+    { code: 'de', name: 'German', nativeName: 'Deutsch' },
+    { code: 'zh', name: 'Chinese', nativeName: '中文' },
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية' }
+];
+
 const AdminDashboard = () => {
     const { getAuthHeaders, user: currentUser, updateUser } = useAuth();
+    const { t } = useTranslation();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+    const [showLanguageModal, setShowLanguageModal] = useState(false);
+    const [languageSearch, setLanguageSearch] = useState('');
+    const [languageSaving, setLanguageSaving] = useState(false);
+    const [languageError, setLanguageError] = useState(null);
 
     // Icon mapping for activity icons
     const iconMap = {
@@ -355,6 +374,76 @@ const AdminDashboard = () => {
     const [profileStatsLoading, setProfileStatsLoading] = useState(true);
     const [profileStatsError, setProfileStatsError] = useState(null);
     const formattedPhoneDisplay = formatInternationalPhoneNumber(profileData.phone);
+
+    const localized = useMemo(() => ({
+        quickActionsTitle: t('quickActions.title'),
+        profileHeaderTitle: t('profile.title'),
+        profileHeaderDescription: t('profile.description'),
+        personalInfoLabel: t('profile.personalInfo'),
+        accountStatsLabel: t('profile.accountStats'),
+        loadingProfile: t('dashboard.loadingProfile'),
+        profileErrorTitle: t('dashboard.profileErrorTitle'),
+        profileErrorDescription: t('dashboard.profileErrorDescription'),
+        retryLabel: t('dashboard.retry'),
+        changesSaved: t('dashboard.changesSaved'),
+        editProfile: t('dashboard.editProfile'),
+        saveChanges: t('dashboard.saveChanges'),
+        cancel: t('dashboard.cancel'),
+        saving: t('dashboard.saving'),
+        loading: t('dashboard.loading'),
+        calculating: t('dashboard.calculating')
+    }), [t]);
+
+    const filteredLanguageOptions = useMemo(() => {
+        const term = languageSearch.trim().toLowerCase();
+        if (!term) {
+            return LANGUAGE_OPTIONS;
+        }
+        return LANGUAGE_OPTIONS.filter(lang => `${lang.name} ${lang.nativeName}`.toLowerCase().includes(term));
+    }, [languageSearch]);
+
+    const activeLanguageCode = profileData.language || currentUser?.language || 'en';
+
+    const resetLanguageModalState = useCallback(() => {
+        setShowLanguageModal(false);
+        setLanguageSearch('');
+        setLanguageError(null);
+    }, []);
+
+    const handleLanguageChange = useCallback(async (languageOption) => {
+        if (!languageOption || languageSaving) return;
+        if (activeLanguageCode === languageOption.code) {
+            resetLanguageModalState();
+            return;
+        }
+
+        setLanguageSaving(true);
+        setLanguageError(null);
+        try {
+            const headers = {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            };
+            const response = await fetch(ADMIN_PROFILE_ENDPOINT, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ language: languageOption.code })
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.message || 'Unable to update language preference');
+            }
+            const updatedLanguage = payload.data?.language || languageOption.code;
+            setProfileData(prev => ({ ...prev, language: updatedLanguage }));
+            updateUser({ language: updatedLanguage });
+            resetLanguageModalState();
+        } catch (err) {
+            console.error('Language update error:', err);
+            setLanguageError(err.message || 'Failed to update language preference');
+        } finally {
+            setLanguageSaving(false);
+        }
+    }, [activeLanguageCode, getAuthHeaders, languageSaving, resetLanguageModalState, updateUser]);
 
     const loadProfile = useCallback(async () => {
         setProfileLoading(true);
@@ -1372,20 +1461,29 @@ const AdminDashboard = () => {
     const quickActions = useMemo(() => [
         {
             icon: Download,
-            label: isExporting ? 'Exporting...' : 'Export Data',
+            label: isExporting ? localized.saving : t('quickActions.export'),
             color: 'text-blue-600',
             onClick: handleExportProfilePDF,
             disabled: profileLoading || profileStatsLoading || isExporting
         },
         {
             icon: CreditCard,
-            label: 'Billing Info',
+            label: t('quickActions.billing'),
             color: 'text-green-600',
             onClick: () => setShowAllTransactionsModal(true)
         },
-        { icon: Globe, label: 'Language', color: 'text-purple-600' },
-        { icon: Settings, label: 'Preferences', color: 'text-amber-600' }
-    ], [handleExportProfilePDF, isExporting, profileLoading, profileStatsLoading]);
+        {
+            icon: Globe,
+            label: t('quickActions.language'),
+            color: 'text-purple-600',
+            onClick: () => {
+                setLanguageSearch('');
+                setLanguageError(null);
+                setShowLanguageModal(true);
+            }
+        },
+        { icon: Settings, label: t('quickActions.preferences'), color: 'text-amber-600' }
+    ], [handleExportProfilePDF, isExporting, profileLoading, profileStatsLoading, localized, t]);
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
@@ -5054,7 +5152,7 @@ const AdminDashboard = () => {
                     return (
                         <div className="p-8 flex flex-col items-center justify-center space-y-3 text-gray-500">
                             <div className="h-12 w-12 rounded-full bg-rose-100 animate-pulse"></div>
-                            <p>Loading admin profile...</p>
+                            <p>{localized.loadingProfile}</p>
                         </div>
                     );
                 }
@@ -5062,13 +5160,13 @@ const AdminDashboard = () => {
                 if (profileError) {
                     return (
                         <div className="p-8 text-center">
-                            <p className="mb-4 text-lg font-semibold text-rose-600">Unable to load admin profile.</p>
+                            <p className="mb-4 text-lg font-semibold text-rose-600">{localized.profileErrorTitle}</p>
                             <p className="text-sm text-gray-600 mb-4">{profileError}</p>
                             <button
                                 onClick={loadProfile}
                                 className="px-6 py-3 bg-rose-500 text-white rounded-xl font-semibold hover:bg-rose-600 transition"
                             >
-                                Retry
+                                {localized.retryLabel}
                             </button>
                         </div>
                 );
@@ -5076,23 +5174,23 @@ const AdminDashboard = () => {
 
                 const accountStatsRows = [
                     {
-                        label: 'Admin Since',
-                        value: profileStatsLoading ? 'Loading...' : (profileStats.adminSince || 'N/A'),
+                        label: t('stats.adminSince'),
+                        value: profileStatsLoading ? localized.loading : (profileStats.adminSince || 'N/A'),
                         icon: Calendar
                     },
                     {
-                        label: 'Total Logins',
-                        value: profileStatsLoading ? 'Loading...' : (profileStats.totalLogins?.toLocaleString() || '0'),
+                        label: t('stats.totalLogins'),
+                        value: profileStatsLoading ? localized.loading : (profileStats.totalLogins?.toLocaleString() || '0'),
                         icon: Activity
                     },
                     {
-                        label: 'Security Score',
-                        value: profileStatsLoading ? 'Calculating...' : `${profileStats.securityScore ?? 0}%`,
+                        label: t('stats.securityScore'),
+                        value: profileStatsLoading ? localized.calculating : `${profileStats.securityScore ?? 0}%`,
                         icon: Shield
                     },
                     {
-                        label: 'Storage Used',
-                        value: profileStatsLoading ? 'Calculating...' : (profileStats.storageUsed || '0 MB'),
+                        label: t('stats.storageUsed'),
+                        value: profileStatsLoading ? localized.calculating : (profileStats.storageUsed || '0 MB'),
                         icon: Download
                     }
                 ];
@@ -5101,17 +5199,17 @@ const AdminDashboard = () => {
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-                            <div className="mb-4 lg:mb-0">
-                                <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                                    Admin Profile
-                                </h2>
-                                <p className="text-gray-600 text-lg">Manage your personal information and account settings</p>
-                            </div>
+                                <div className="mb-4 lg:mb-0">
+                                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+                                        {localized.profileHeaderTitle}
+                                    </h2>
+                                    <p className="text-gray-600 text-lg">{localized.profileHeaderDescription}</p>
+                                </div>
                             <div className="flex items-center space-x-4">
                                 {saveSuccess && (
                                     <div className="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg animate-bounce">
                                         <CheckCircle size={16} />
-                                        <span className="text-sm font-medium">Changes saved successfully!</span>
+                                        <span className="text-sm font-medium">{localized.changesSaved}</span>
                                     </div>
                                 )}
 
@@ -5123,7 +5221,7 @@ const AdminDashboard = () => {
                                             className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
                                             <XCircle size={20} />
-                                            Cancel
+                                            {localized.cancel}
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
@@ -5131,7 +5229,7 @@ const AdminDashboard = () => {
                                             className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-green-500/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
                                             <Save size={20} />
-                                            {profileSaving ? ' Saving...' : ' Save Changes'}
+                                            {profileSaving ? localized.saving : localized.saveChanges}
                                         </button>
                                     </div>
                                 ) : (
@@ -5140,7 +5238,7 @@ const AdminDashboard = () => {
                                         className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:shadow-rose-500/25 cursor-pointer"
                                     >
                                         <Edit3 size={20} />
-                                        Edit Profile
+                                        {localized.editProfile}
                                     </button>
                                 )}
                             </div>
@@ -5451,7 +5549,7 @@ const AdminDashboard = () => {
                             <div className="space-y-6">
                                 {/* Quick Actions */}
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">{localized.quickActionsTitle}</h3>
                                     <div className="space-y-3">
                                         {quickActions.map((action, index) => {
                                             const ActionIcon = action.icon;
@@ -5478,7 +5576,7 @@ const AdminDashboard = () => {
 
                                 {/* Account Stats */}
                                 <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <h3 className="text-xl font-bold text-gray-800 mb-4">Account Stats</h3>
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">{localized.accountStatsLabel}</h3>
                                     {profileStatsError && (
                                         <p className="text-xs text-rose-600 mb-3">
                                             {profileStatsError}
@@ -5670,6 +5768,64 @@ const AdminDashboard = () => {
 
             {/* Revenue Transactions Modal */}
             {showAllTransactionsModal && <AllTransactionsModal />}
+
+            {/* Language Selector Modal */}
+            {showLanguageModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
+                    <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="px-6 py-5 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">{t('languageModal.title')}</h3>
+                            <p className="text-sm text-gray-500 mt-1">{t('languageModal.description')}</p>
+                        </div>
+                        <div className="px-6 py-4 space-y-4">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    value={languageSearch}
+                                    onChange={(event) => setLanguageSearch(event.target.value)}
+                                    placeholder={t('languageModal.searchPlaceholder')}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-100 focus:border-rose-500 text-sm"
+                                />
+                            </div>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                                {filteredLanguageOptions.map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => handleLanguageChange(lang)}
+                                        disabled={languageSaving}
+                                        className="w-full flex items-center justify-between gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white hover:bg-rose-50 transition focus:outline-none focus:ring-2 focus:ring-rose-200"
+                                    >
+                                        <div className="text-left">
+                                            <p className="font-medium text-gray-800">{lang.name}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">{lang.nativeName}</p>
+                                        </div>
+                                        {activeLanguageCode === lang.code && (
+                                            <span className="text-sm font-semibold text-green-600">{t('languageModal.selected')}</span>
+                                        )}
+                                    </button>
+                                ))}
+                                {!filteredLanguageOptions.length && (
+                                    <p className="text-sm text-center text-gray-500">{t('languageModal.noResults')}</p>
+                                )}
+                            </div>
+                            {languageError && (
+                                <p className="text-sm text-rose-600">{languageError}</p>
+                            )}
+                        </div>
+                        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={resetLanguageModalState}
+                                className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                            >
+                                {t('languageModal.close')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Modal */}
             {deleteConfirm && (

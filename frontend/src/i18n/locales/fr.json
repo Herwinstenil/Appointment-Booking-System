@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "Actions rapides",
+    "export": "Exporter les données",
+    "billing": "Informations de facturation",
+    "language": "Langues",
+    "preferences": "Préférences"
+  },
+  "profile": {
+    "title": "Profil administrateur",
+    "description": "Gérez vos informations personnelles et les paramètres du compte",
+    "personalInfo": "Informations personnelles",
+    "accountStats": "Statistiques du compte"
+  },
+  "dashboard": {
+    "loadingProfile": "Chargement du profil administrateur...",
+    "profileErrorTitle": "Impossible de charger le profil administrateur.",
+    "profileErrorDescription": "Veuillez vérifier votre connexion et réessayer.",
+    "retry": "Réessayer",
+    "changesSaved": "Modifications enregistrées avec succès !",
+    "editProfile": "Modifier le profil",
+    "saveChanges": "Enregistrer les modifications",
+    "cancel": "Annuler",
+    "saving": "Enregistrement...",
+    "loading": "Chargement...",
+    "calculating": "Calcul en cours..."
+  },
+  "stats": {
+    "adminSince": "Admin depuis",
+    "totalLogins": "Connexions totales",
+    "securityScore": "Score de sécurité",
+    "storageUsed": "Stockage utilisé"
+  },
+  "languageModal": {
+    "title": "Sélectionner la langue",
+    "description": "Choisissez une langue pour traduire instantanément le tableau de bord.",
+    "searchPlaceholder": "Rechercher une langue...",
+    "selected": "Sélectionné",
+    "noResults": "Aucune langue trouvée",
+    "close": "Fermer"
+  }
+}

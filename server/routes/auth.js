@@ -220,7 +220,8 @@ router.post('/register', [
         role: role.toUpperCase(),
         company,
         mobile,
-        passwordUpdatedAt: new Date()
+        passwordUpdatedAt: new Date(),
+        language: 'en'
       },
       select: {
         id: true,
@@ -232,6 +233,7 @@ router.post('/register', [
         company: true,
         mobile: true,
         avatarUrl: true,
+        language: true,
         createdAt: true
       }
     });
@@ -344,7 +346,8 @@ router.post('/login', [
           role: user.role,
           company: user.company,
           mobile: user.mobile,
-          avatarUrl: user.avatarUrl
+          avatarUrl: user.avatarUrl,
+          language: user.language || 'en'
         },
         token
       }

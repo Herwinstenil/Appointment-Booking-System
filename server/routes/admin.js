@@ -62,6 +62,7 @@ const ADMIN_PROFILE_SELECT = {
   address: true,
   bio: true,
   avatarUrl: true,
+  language: true,
   createdAt: true,
   lastLogin: true,
   role: true
@@ -225,7 +226,8 @@ router.put(
     body('company').optional().isString(),
     body('address').optional().isString(),
     body('bio').optional().isString(),
-    body('avatarUrl').optional().isString()
+    body('avatarUrl').optional().isString(),
+    body('language').optional().isString()
   ],
   async (req, res) => {
     try {
@@ -261,6 +263,7 @@ router.put(
       if (req.body.address !== undefined) payload.address = sanitize(req.body.address);
       if (req.body.bio !== undefined) payload.bio = sanitize(req.body.bio);
       if (req.body.avatarUrl !== undefined) payload.avatarUrl = req.body.avatarUrl;
+      if (req.body.language !== undefined) payload.language = req.body.language;
 
       if (Object.keys(payload).length === 0) {
         return res.status(400).json({

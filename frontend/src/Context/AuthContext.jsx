@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import i18n from '../i18n/index.js';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -20,6 +21,12 @@ export const AuthProvider = ({ children }) => {
 
     const API_BASE_URL = 'http://localhost:5000/api';
 
+    const applyLanguage = (lang) => {
+        if (!lang) return;
+        i18n.changeLanguage(lang);
+        localStorage.setItem('language', lang);
+    };
+
     // Check for social login callback on mount
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -35,9 +42,10 @@ export const AuthProvider = ({ children }) => {
                 setIsLoggedIn(true);
                 setUserRole(user.role);
                 setUser(user);
-                // Clean up URL
+                applyLanguage(user.language || 'en');
+                applyLanguage(user.language || 'en');
+                applyLanguage(user.language || 'en');
                 window.history.replaceState({}, document.title, window.location.pathname);
-                // Navigate based on role
                 const role = user.role;
                 if (role === 'USER') {
                     navigate('/dashboard/user');
@@ -52,16 +60,26 @@ export const AuthProvider = ({ children }) => {
         }
     }, [navigate]);
 
+    // Apply stored language at mount
+    useEffect(() => {
+        const storedLang = localStorage.getItem('language');
+        if (storedLang) {
+            applyLanguage(storedLang);
+        }
+    }, []);
+
     // Check for existing auth state on mount
     useEffect(() => {
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('userRole');
         const userData = localStorage.getItem('user');
+        const parsedUser = userData ? JSON.parse(userData) : null;
 
-        if (token && role && userData) {
+        if (token && role && parsedUser) {
             setIsLoggedIn(true);
             setUserRole(role);
-            setUser(JSON.parse(userData));
+            setUser(parsedUser);
+            applyLanguage(parsedUser.language || localStorage.getItem('language') || 'en');
         }
         setLoading(false);
     }, []);
@@ -173,6 +191,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('isLoggedIn');
         localStorage.removeItem('userRole');
         localStorage.removeItem('user');
+        localStorage.removeItem('language');
     };
 
     const updateUser = (updates) => {
@@ -182,6 +201,9 @@ export const AuthProvider = ({ children }) => {
             if (updates.role) {
                 setUserRole(updates.role);
                 localStorage.setItem('userRole', updates.role);
+            }
+            if (updates.language) {
+                applyLanguage(updates.language);
             }
             return next;
         });

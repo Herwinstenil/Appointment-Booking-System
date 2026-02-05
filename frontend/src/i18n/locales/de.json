@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "Schnellaktionen",
+    "export": "Daten exportieren",
+    "billing": "Abrechnungsinformationen",
+    "language": "Sprachen",
+    "preferences": "Einstellungen"
+  },
+  "profile": {
+    "title": "Administratorprofil",
+    "description": "Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen",
+    "personalInfo": "Persönliche Informationen",
+    "accountStats": "Kontostatistiken"
+  },
+  "dashboard": {
+    "loadingProfile": "Lade Administratorprofil...",
+    "profileErrorTitle": "Administratorenprofil konnte nicht geladen werden.",
+    "profileErrorDescription": "Bitte überprüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen",
+    "changesSaved": "Änderungen wurden erfolgreich gespeichert!",
+    "editProfile": "Profil bearbeiten",
+    "saveChanges": "Änderungen speichern",
+    "cancel": "Abbrechen",
+    "saving": "Wird gespeichert...",
+    "loading": "Wird geladen...",
+    "calculating": "Berechnung läuft..."
+  },
+  "stats": {
+    "adminSince": "Administrator seit",
+    "totalLogins": "Gesamtanmeldungen",
+    "securityScore": "Sicherheitswert",
+    "storageUsed": "Speicher verbraucht"
+  },
+  "languageModal": {
+    "title": "Sprache auswählen",
+    "description": "Wählen Sie eine Sprache um das Dashboard sofort zu übersetzen.",
+    "searchPlaceholder": "Sprachen suchen...",
+    "selected": "Ausgewählt",
+    "noResults": "Keine Sprachen gefunden",
+    "close": "Schließen"
+  }
+}

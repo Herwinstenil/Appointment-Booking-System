@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "إجراءات سريعة",
+    "export": "تصدير البيانات",
+    "billing": "معلومات الفوترة",
+    "language": "اللغات",
+    "preferences": "التفضيلات"
+  },
+  "profile": {
+    "title": "ملف المسؤول",
+    "description": "قم بإدارة معلوماتك الشخصية وإعدادات الحساب",
+    "personalInfo": "المعلومات الشخصية",
+    "accountStats": "إحصائيات الحساب"
+  },
+  "dashboard": {
+    "loadingProfile": "جاري تحميل ملف المسؤول...",
+    "profileErrorTitle": "تعذر تحميل ملف المسؤول.",
+    "profileErrorDescription": "يرجى التحقق من الاتصال وحاول مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "changesSaved": "تم حفظ التغييرات بنجاح!",
+    "editProfile": "تعديل الملف",
+    "saveChanges": "حفظ التغييرات",
+    "cancel": "إلغاء",
+    "saving": "جاري الحفظ...",
+    "loading": "جاري التحميل...",
+    "calculating": "جاري الحساب..."
+  },
+  "stats": {
+    "adminSince": "المسؤول منذ",
+    "totalLogins": "إجمالي تسجيلات الدخول",
+    "securityScore": "درجة الأمان",
+    "storageUsed": "التخزين المستخدم"
+  },
+  "languageModal": {
+    "title": "اختر اللغة",
+    "description": "اختر لغة لترجمة لوحة التحكم على الفور.",
+    "searchPlaceholder": "ابحث عن اللغات...",
+    "selected": "مختار",
+    "noResults": "لم يتم العثور على لغات",
+    "close": "إغلاق"
+  }
+}

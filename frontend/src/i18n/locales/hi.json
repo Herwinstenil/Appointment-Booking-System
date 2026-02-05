@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "त्वरित क्रियाएं",
+    "export": "डेटा एक्सपोर्ट करें",
+    "billing": "बिलिंग जानकारी",
+    "language": "भाषाएं",
+    "preferences": "पसंद"
+  },
+  "profile": {
+    "title": "एडमिन प्रोफ़ाइल",
+    "description": "अपनी व्यक्तिगत जानकारी और खाता सेटिंग्स प्रबंधित करें",
+    "personalInfo": "व्यक्तिगत जानकारी",
+    "accountStats": "खाता आँकड़े"
+  },
+  "dashboard": {
+    "loadingProfile": "एडमिन प्रोफ़ाइल लोड किया जा रहा है...",
+    "profileErrorTitle": "एडमिन प्रोफ़ाइल लोड करने में असमर्थ।",
+    "profileErrorDescription": "कृपया कनेक्शन की जांच करें और पुनः प्रयास करें।",
+    "retry": "पुनः प्रयास करें",
+    "changesSaved": "परिवर्तनों को सफलतापूर्वक सहेजा गया!",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "saveChanges": "परिवर्तनों को सहेजें",
+    "cancel": "रद्द करें",
+    "saving": "सहेजा जा रहा है...",
+    "loading": "लोड हो रहा है...",
+    "calculating": "गणना की जा रही है..."
+  },
+  "stats": {
+    "adminSince": "एडमिन से",
+    "totalLogins": "कुल लॉगिन",
+    "securityScore": "सुरक्षा स्कोर",
+    "storageUsed": "स्टोरेज उपयोग"
+  },
+  "languageModal": {
+    "title": "भाषा चुनें",
+    "description": "डैशबोर्ड को तुरंत अनुवाद करने के लिए एक भाषा चुनें।",
+    "searchPlaceholder": "भाषाओं को खोजें...",
+    "selected": "चयनित",
+    "noResults": "कोई भाषा नहीं मिली",
+    "close": "बंद करें"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "Quick Actions",
+    "export": "Export Data",
+    "billing": "Billing Info",
+    "language": "Languages",
+    "preferences": "Preferences"
+  },
+  "profile": {
+    "title": "Admin Profile",
+    "description": "Manage your personal information and account settings",
+    "personalInfo": "Personal Info",
+    "accountStats": "Account Stats"
+  },
+  "dashboard": {
+    "loadingProfile": "Loading admin profile...",
+    "profileErrorTitle": "Unable to load admin profile.",
+    "profileErrorDescription": "Please check your connection and try again.",
+    "retry": "Retry",
+    "changesSaved": "Changes saved successfully!",
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "calculating": "Calculating..."
+  },
+  "stats": {
+    "adminSince": "Admin Since",
+    "totalLogins": "Total Logins",
+    "securityScore": "Security Score",
+    "storageUsed": "Storage Used"
+  },
+  "languageModal": {
+    "title": "Select Language",
+    "description": "Choose a language to instantly translate the dashboard.",
+    "searchPlaceholder": "Search languages...",
+    "selected": "Selected",
+    "noResults": "No languages found",
+    "close": "Close"
+  }
+}

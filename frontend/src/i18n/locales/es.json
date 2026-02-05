@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "Acciones rápidas",
+    "export": "Exportar datos",
+    "billing": "Información de facturación",
+    "language": "Idiomas",
+    "preferences": "Preferencias"
+  },
+  "profile": {
+    "title": "Perfil de administrador",
+    "description": "Administra tu información personal y la configuración de la cuenta",
+    "personalInfo": "Información personal",
+    "accountStats": "Estadísticas de cuenta"
+  },
+  "dashboard": {
+    "loadingProfile": "Cargando el perfil del administrador...",
+    "profileErrorTitle": "No se pudo cargar el perfil del administrador.",
+    "profileErrorDescription": "Verifica tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "changesSaved": "¡Cambios guardados con éxito!",
+    "editProfile": "Editar perfil",
+    "saveChanges": "Guardar cambios",
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "loading": "Cargando...",
+    "calculating": "Calculando..."
+  },
+  "stats": {
+    "adminSince": "Administrador desde",
+    "totalLogins": "Inicios de sesión",
+    "securityScore": "Puntuación de seguridad",
+    "storageUsed": "Almacenamiento usado"
+  },
+  "languageModal": {
+    "title": "Seleccionar idioma",
+    "description": "Elige un idioma para traducir el panel al instante.",
+    "searchPlaceholder": "Buscar idiomas...",
+    "selected": "Seleccionado",
+    "noResults": "No se encontraron idiomas",
+    "close": "Cerrar"
+  }
+}

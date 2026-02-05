@@ -1,0 +1,42 @@
+{
+  "quickActions": {
+    "title": "快速操作",
+    "export": "导出数据",
+    "billing": "账单信息",
+    "language": "语言",
+    "preferences": "偏好"
+  },
+  "profile": {
+    "title": "管理员资料",
+    "description": "管理您的个人信息和帐户设置",
+    "personalInfo": "个人信息",
+    "accountStats": "账户统计"
+  },
+  "dashboard": {
+    "loadingProfile": "正在加载管理员资料...",
+    "profileErrorTitle": "无法加载管理员资料。",
+    "profileErrorDescription": "请检查你的网络连接并重试。",
+    "retry": "重试",
+    "changesSaved": "更改已成功保存！",
+    "editProfile": "编辑资料",
+    "saveChanges": "保存更改",
+    "cancel": "取消",
+    "saving": "保存中...",
+    "loading": "加载中...",
+    "calculating": "计算中..."
+  },
+  "stats": {
+    "adminSince": "管理员自",
+    "totalLogins": "总登录次数",
+    "securityScore": "安全评分",
+    "storageUsed": "已用存储"
+  },
+  "languageModal": {
+    "title": "选择语言",
+    "description": "选择一种语言，立即翻译仪表板。",
+    "searchPlaceholder": "搜索语言...",
+    "selected": "已选择",
+    "noResults": "未找到语言",
+    "close": "关闭"
+  }
+}
