@@ -1482,7 +1482,6 @@ const AdminDashboard = () => {
                 setShowLanguageModal(true);
             }
         },
-        { icon: Settings, label: t('quickActions.preferences'), color: 'text-amber-600' }
     ], [handleExportProfilePDF, isExporting, profileLoading, profileStatsLoading, localized, t]);
 
     const handleStartEditing = () => {
