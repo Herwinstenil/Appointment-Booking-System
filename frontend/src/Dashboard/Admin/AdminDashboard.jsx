@@ -1837,7 +1837,7 @@ const AdminDashboard = () => {
                     name: `${newUser.firstName} ${newUser.lastName}`,
                     email: newUser.email,
                     role: newUser.role,
-                    status: 'Active', // Default status
+                    status: 'Active', 
                     joinDate: new Date(newUser.createdAt).toISOString().split('T')[0],
                     lastLogin: 'Just now',
                     clientNo: newUser.clientNo || 0,
