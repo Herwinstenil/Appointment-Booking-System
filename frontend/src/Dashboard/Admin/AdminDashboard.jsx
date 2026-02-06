@@ -1240,7 +1240,6 @@ const AdminDashboard = () => {
     };
 
     const handleViewAllActivities = () => {
-        // Open all activities modal
         console.log('Viewing all activities...');
         setShowAllActivitiesModal(true);
     };
