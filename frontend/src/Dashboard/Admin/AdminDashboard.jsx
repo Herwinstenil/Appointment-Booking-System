@@ -2274,7 +2274,6 @@ const AdminDashboard = () => {
         };
 
         const handleSave = async () => {
-            // Reset errors
             setErrors({});
 
             const newErrors = {};
