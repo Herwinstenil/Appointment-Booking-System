@@ -961,7 +961,6 @@ const AdminDashboard = () => {
     const prevTotalRevenue = allMonthsRevenue.slice(0, 12).reduce((sum, m, i) => i !== monthIndex ? sum + m.revenue : sum, 0);
     const monthlyGrowth = prevMonthRevenue > 0 ? ((thisMonthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : 0;
     const totalGrowth = prevTotalRevenue > 0 ? ((totalRevenue - prevTotalRevenue) / prevTotalRevenue) * 100 : 0;
-    // For mock, keep activeSubscriptions and newCustomers static, but you can add logic if you have real data
     const avgOrderValuePrev = (() => {
         // Calculate previous month average order value
         const prevClients = users.filter(user => {
