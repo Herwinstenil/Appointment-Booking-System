@@ -896,7 +896,6 @@ const AdminDashboard = () => {
     const allMonthsRevenue = getMonthlyRevenueByMonth();
 
     // System Metrics Data (dynamic based on time range)
-    // Now using real data from API
     const getSystemMetrics = (range) => {
         // Use real data from API (systemMetricsData)
         const realMetrics = {
