@@ -897,7 +897,6 @@ const AdminDashboard = () => {
 
     // System Metrics Data (dynamic based on time range)
     const getSystemMetrics = (range) => {
-        // Use real data from API (systemMetricsData)
         const realMetrics = {
             totalUsers: systemMetricsData.totalUsers || 0,
             activeUsers: systemMetricsData.activeUsers || 0,
