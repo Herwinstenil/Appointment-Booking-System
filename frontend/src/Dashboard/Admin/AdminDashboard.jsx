@@ -1644,7 +1644,6 @@ const AdminDashboard = () => {
             console.error('Error deleting user:', error);
             setDeleteConfirm(false);
             setUserToDelete(null);
-            // You might want to add an error state here
         } finally {
             setIsRefreshing(false);
         }
