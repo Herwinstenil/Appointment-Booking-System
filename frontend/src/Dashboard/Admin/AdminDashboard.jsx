@@ -344,7 +344,6 @@ const AdminDashboard = () => {
 
     // Fetch recent activities on component mount
     useEffect(() => {
-        // Fetch immediately
         fetchRecentActivities();
     }, [getAuthHeaders]);
 
