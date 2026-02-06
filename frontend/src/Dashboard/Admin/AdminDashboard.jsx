@@ -1104,7 +1104,7 @@ const AdminDashboard = () => {
             const totalBookings = activeClients.length;
             const completedBookings = activeClients.length;
             const pendingBookings = clients.filter(client => client.isActive === false).length;
-            const cancelledBookings = 0; // No cancelled status in schema, users are deleted
+            const cancelledBookings = 0; 
             // For analytics display, use active clients as total
             const bookingRate = 100; // All counted clients are active
 
