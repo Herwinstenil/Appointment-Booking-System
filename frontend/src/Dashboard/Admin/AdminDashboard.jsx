@@ -1642,7 +1642,6 @@ const AdminDashboard = () => {
             await fetchBookingAnalytics();
         } catch (error) {
             console.error('Error deleting user:', error);
-            // Show error notification
             setDeleteConfirm(false);
             setUserToDelete(null);
             // You might want to add an error state here
