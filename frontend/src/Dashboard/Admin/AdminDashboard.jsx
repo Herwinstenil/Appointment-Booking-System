@@ -1222,7 +1222,6 @@ const AdminDashboard = () => {
 
     // Fetch booking analytics on timeRange change
     useEffect(() => {
-        // Fetch immediately
         fetchBookingAnalytics();
     }, [timeRange, getAuthHeaders]);
 
