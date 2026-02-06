@@ -1235,7 +1235,6 @@ const AdminDashboard = () => {
 
     // Dashboard button handlers
     const handleViewSystemDetails = () => {
-        // Open system details modal
         console.log('Viewing system details...');
         setShowSystemDetailsModal(true);
     };
