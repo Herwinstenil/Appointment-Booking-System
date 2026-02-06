@@ -1851,7 +1851,7 @@ const AdminDashboard = () => {
                 // Add to users array
                 setUsers(prev => [newClientObj, ...prev]);
 
-                // Fetch updated booking analytics and system metrics (for new users count)
+                // Fetch updated booking analytics and system metrics 
                 await fetchRecentActivities();
                 await fetchBookingAnalytics();
                 await fetchSystemMetrics();
