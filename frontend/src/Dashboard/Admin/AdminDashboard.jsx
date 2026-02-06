@@ -3469,7 +3469,6 @@ const AdminDashboard = () => {
                                                                         {selectedTransaction.status}
                                                                     </span>
                                                                 </div>
-                                                                {/* Add more fields here if needed */}
                                                             </div>
                                                         </div>
                                                     </div>
