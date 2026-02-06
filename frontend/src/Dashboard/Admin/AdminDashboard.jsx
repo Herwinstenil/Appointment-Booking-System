@@ -1549,7 +1549,7 @@ const AdminDashboard = () => {
     });
 
     const filteredTopClients = topClients;
-    // Only show categories with revenue > 0 (defensive, since backend now filters too)
+    // Only show categories with revenue > 0 
     const filteredRevenueByCategory = revenueByCategory.filter(category => {
         // Category filter
         const matchesCategory = revenueFilters.category === '' || category.category === revenueFilters.category;
