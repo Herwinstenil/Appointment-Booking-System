@@ -1984,7 +1984,6 @@ const ClientDashboard = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteService(service.id)}
-                                                    disabled={isDeleting}
                                                     className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
                                                 >
                                                     <Trash2 size={14} className="inline mr-1" />
