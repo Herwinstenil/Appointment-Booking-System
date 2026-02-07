@@ -72,9 +72,9 @@ const normalizeServiceForUI = (service = {}) => {
         priceLabel: formatCurrency(priceValue),
         bookings: service._count?.appointments ?? 0,
         rating: typeof service.rating === 'number' ? service.rating : 0,
-    status: service.isActive ? 'Active' : 'Inactive',
-    isActive: Boolean(service.isActive)
-  };
+        status: service.isActive ? 'Active' : 'Inactive',
+        isActive: Boolean(service.isActive)
+    };
 };
 
 const createServiceMutationState = () => ({
@@ -480,21 +480,24 @@ const ClientDashboard = () => {
     const [showEditBookingModal, setShowEditBookingModal] = useState(false);
     const [showAddClientModal, setShowAddClientModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState(false);
+    const [deleteSuccess, setDeleteSuccess] = useState(false);
+    const [serviceToDelete, setServiceToDelete] = useState(null);
     const [newServiceData, setNewServiceData] = useState({
         name: '',
         description: '',
         price: '',
         category: '',
-    status: 'Active'
-  });
+        status: 'Active'
+    });
     const [editServiceData, setEditServiceData] = useState({
         id: null,
         name: '',
         description: '',
         price: '',
         category: '',
-    status: 'Active'
-  });
+        status: 'Active'
+    });
     const [editUserData, setEditUserData] = useState({
         id: null,
         name: '',
@@ -1193,23 +1196,22 @@ const ClientDashboard = () => {
     };
 
     // Delete Service Handler
-    const handleDeleteService = async (serviceId) => {
-        if (!window.confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-            return;
-        }
+    const handleDeleteService = async () => {
+        if (!serviceToDelete) return;
+        setDeleteConfirm(false);
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = getAuthHeaders();
 
         setServiceMutation({
             type: 'delete',
             loading: true,
             error: null,
-            targetId: serviceId
+            targetId: serviceToDelete
         });
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
-        const headers = getAuthHeaders();
-
         try {
-            const response = await fetch(`${baseUrl}/services/${serviceId}`, {
+            const response = await fetch(`${baseUrl}/services/${serviceToDelete}`, {
                 method: 'DELETE',
                 headers
             });
@@ -1219,14 +1221,18 @@ const ClientDashboard = () => {
                 throw new Error(errorBody.message || 'Failed to delete service');
             }
 
-            removeServiceFromState(serviceId);
+            removeServiceFromState(serviceToDelete);
             resetServiceMutation();
+            setDeleteSuccess(true);
+            setTimeout(() => {
+                setDeleteSuccess(false);
+            }, 3000);
         } catch (err) {
             setServiceMutation({
                 type: 'delete',
                 loading: false,
                 error: err.message,
-                targetId: serviceId
+                targetId: serviceToDelete
             });
         }
     };
@@ -1925,75 +1931,78 @@ const ClientDashboard = () => {
                                     const isDeleting = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'delete';
                                     return (
                                         <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                        <div className="p-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
-                                                <button
-                                                    onClick={() => toggleServiceStatus(service.id)}
-                                                    disabled={isToggling}
-                                                    aria-busy={isToggling}
-                                                    className={`relative inline-flex h-6 w-11 ${isToggling ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
-                                                        }`}
-                                                >
-                                                    <span
-                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                            <div className="p-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                                                    <button
+                                                        onClick={() => toggleServiceStatus(service.id)}
+                                                        disabled={isToggling}
+                                                        aria-busy={isToggling}
+                                                        className={`relative inline-flex h-6 w-11 ${isToggling ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
                                                             }`}
-                                                    />
-                                                </button>
-                                            </div>
-                                            <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <span className="text-2xl font-bold text-emerald-600">{service.priceLabel}</span>
-                                                    <span className="text-sm text-gray-500 ml-2">per session</span>
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
+                                                        />
+                                                    </button>
                                                 </div>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
-                                                    ? 'bg-emerald-100 text-emerald-800'
-                                                    : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {service.status}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar size={14} />
-                                                    <span>{service.bookings} bookings</span>
+                                                <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div>
+                                                        <span className="text-2xl font-bold text-emerald-600">{service.priceLabel}</span>
+                                                        <span className="text-sm text-gray-500 ml-2">per session</span>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        {service.status}
+                                                    </span>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Star size={14} className="text-amber-500" />
-                                                    <span>{service.rating}</span>
+                                                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar size={14} />
+                                                        <span>{service.bookings} bookings</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Star size={14} className="text-amber-500" />
+                                                        <span>{service.rating}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="pt-4 border-t border-gray-200">
-                                                <span className="text-sm text-gray-500">Category: {service.category}</span>
-                                            </div>
-                                            <div className="mt-4 flex items-center space-x-2">
-                                                <button
-                                                    onClick={() => handleEditService(service)}
-                                                    className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm cursor-pointer"
-                                                >
-                                                    <Edit size={14} className="inline mr-1" />
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleViewServiceDetails(service)}
-                                                    className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm cursor-pointer"
-                                                >
-                                                    <ViewIcon size={14} className="inline mr-1" />
-                                                    View
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteService(service.id)}
-                                                    className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                                >
-                                                    <Trash2 size={14} className="inline mr-1" />
-                                                    {isDeleting ? 'Deleting...' : 'Delete'}
-                                                </button>
+                                                <div className="pt-4 border-t border-gray-200">
+                                                    <span className="text-sm text-gray-500">Category: {service.category}</span>
+                                                </div>
+                                                <div className="mt-4 flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleEditService(service)}
+                                                        className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm cursor-pointer"
+                                                    >
+                                                        <Edit size={14} className="inline mr-1" />
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleViewServiceDetails(service)}
+                                                        className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm cursor-pointer"
+                                                    >
+                                                        <ViewIcon size={14} className="inline mr-1" />
+                                                        View
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setServiceToDelete(service.id);
+                                                            setDeleteConfirm(true);
+                                                        }}
+                                                        className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        <Trash2 size={14} className="inline mr-1" />
+                                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -3289,13 +3298,13 @@ const ClientDashboard = () => {
 
                             {/* Services Revenue Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {services.map((service) => {
-                                        // Calculate revenue for this service based on time range
-                                        const revenueAmount = service.bookings * service.price;
-                                        const adjustedRevenue = Math.round(revenueAmount * (timeRange === 'daily' ? 0.03 : timeRange === 'weekly' ? 0.12 : timeRange === 'monthly' ? 1 : 12));
+                                {services.map((service) => {
+                                    // Calculate revenue for this service based on time range
+                                    const revenueAmount = service.bookings * service.price;
+                                    const adjustedRevenue = Math.round(revenueAmount * (timeRange === 'daily' ? 0.03 : timeRange === 'weekly' ? 0.12 : timeRange === 'monthly' ? 1 : 12));
 
-                                        return (
-                                            <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                    return (
+                                        <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                             <div className="p-6">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
@@ -3320,7 +3329,7 @@ const ClientDashboard = () => {
                                                         <p className="text-xs text-gray-500">Bookings</p>
                                                     </div>
                                                     <div className="text-center">
-                                                    <div className="text-lg font-semibold text-gray-900">{service.priceLabel}</div>
+                                                        <div className="text-lg font-semibold text-gray-900">{service.priceLabel}</div>
                                                         <p className="text-xs text-gray-500">Price</p>
                                                     </div>
                                                 </div>
@@ -3721,11 +3730,11 @@ const ClientDashboard = () => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">Add New Service</h3>
                                     <p className="text-gray-600 mt-1">Create a new service offering</p>
-                                {serviceMutation.type === 'create' && serviceMutation.error && (
-                                    <p className="text-sm text-rose-600 mt-2">
-                                        {serviceMutation.error}
-                                    </p>
-                                )}
+                                    {serviceMutation.type === 'create' && serviceMutation.error && (
+                                        <p className="text-sm text-rose-600 mt-2">
+                                            {serviceMutation.error}
+                                        </p>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -3852,7 +3861,7 @@ const ClientDashboard = () => {
                             </form>
                         </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                                <div className="flex items-center justify-end space-x-3">
+                            <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => {
                                         setShowAddServiceModal(false);
@@ -3892,11 +3901,11 @@ const ClientDashboard = () => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">Edit Service</h3>
                                     <p className="text-gray-600 mt-1">Update service information</p>
-                                {serviceMutation.type === 'update' && serviceMutation.error && (
-                                    <p className="text-sm text-rose-600 mt-2">
-                                        {serviceMutation.error}
-                                    </p>
-                                )}
+                                    {serviceMutation.type === 'update' && serviceMutation.error && (
+                                        <p className="text-sm text-rose-600 mt-2">
+                                            {serviceMutation.error}
+                                        </p>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -4016,25 +4025,25 @@ const ClientDashboard = () => {
                             </form>
                         </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                                <div className="flex items-center justify-end space-x-3">
-                                    <button
-                                        onClick={() => {
-                                            setShowEditServiceModal(false);
-                                            setServiceErrors({});
-                                            resetServiceMutation();
-                                        }}
-                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleEditServiceSubmit}
-                                        disabled={serviceMutation.loading && serviceMutation.type === 'update'}
-                                        className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer ${serviceMutation.loading && serviceMutation.type === 'update' ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                    >
-                                        {serviceMutation.loading && serviceMutation.type === 'update' ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                </div>
+                            <div className="flex items-center justify-end space-x-3">
+                                <button
+                                    onClick={() => {
+                                        setShowEditServiceModal(false);
+                                        setServiceErrors({});
+                                        resetServiceMutation();
+                                    }}
+                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleEditServiceSubmit}
+                                    disabled={serviceMutation.loading && serviceMutation.type === 'update'}
+                                    className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer ${serviceMutation.loading && serviceMutation.type === 'update' ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                >
+                                    {serviceMutation.loading && serviceMutation.type === 'update' ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4103,9 +4112,9 @@ const ClientDashboard = () => {
                                         >
                                             <option value="" disabled>Select a Service</option>
                                             {services.filter(s => s.status === 'Active').map((service) => (
-                                            <option key={service.id} value={service.name}>
-                                                {service.name} - {service.priceLabel}
-                                            </option>
+                                                <option key={service.id} value={service.name}>
+                                                    {service.name} - {service.priceLabel}
+                                                </option>
                                             ))}
                                         </select>
                                         {bookingErrors.service && (
@@ -4301,9 +4310,9 @@ const ClientDashboard = () => {
                                         >
                                             <option value="" disabled>Select a Service</option>
                                             {services.filter(s => s.status === 'Active').map((service) => (
-                                            <option key={service.id} value={service.name}>
-                                                {service.name} - {service.priceLabel}
-                                            </option>
+                                                <option key={service.id} value={service.name}>
+                                                    {service.name} - {service.priceLabel}
+                                                </option>
                                             ))}
                                         </select>
                                         {bookingErrors.service && (
@@ -4730,6 +4739,52 @@ const ClientDashboard = () => {
                     scroll-behavior: smooth;
                 }
             `}</style>
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <AlertCircle className="w-6 h-6 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">Delete Service</h3>
+                                <p className="text-gray-600 mt-1">Are you sure you want to delete this service? This action cannot be undone.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setDeleteConfirm(false)}
+                                className="px-5 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    handleDeleteService();
+                                    setDeleteConfirm(false);
+                                }}
+                                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition"
+                            >
+                                Delete Service
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Service Success Notification */}
+            {deleteSuccess && (
+                <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
+                    <Trash2 size={24} />
+                    <div>
+                        <p className="font-semibold">Service Deleted Successfully!</p>
+                        <p className="text-sm opacity-90">The service has been permanently removed from the system.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
