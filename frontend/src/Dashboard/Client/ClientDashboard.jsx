@@ -152,7 +152,6 @@ const ClientDashboard = () => {
 
                 setBookings(appointmentsData.data?.appointments || []);
                 setRevenue(revenueData.data?.revenue || []);
-                await fetchServicesList();
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching dashboard data:', err);
@@ -162,7 +161,11 @@ const ClientDashboard = () => {
         };
 
         fetchDashboardData();
-    }, [getAuthHeaders, API_BASE_URL, fetchServicesList]);
+    }, [getAuthHeaders, API_BASE_URL]);
+
+    useEffect(() => {
+        fetchServicesList();
+    }, [fetchServicesList]);
 
     const resetServiceMutation = () => {
         setServiceMutation(createServiceMutationState());
@@ -1838,8 +1841,15 @@ const ClientDashboard = () => {
                             </button>
                         </div>
                         {servicesError && (
-                            <div className="text-sm text-rose-600 mb-4">
-                                {servicesError}
+                            <div className="mb-4 flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                <AlertCircle size={16} />
+                                <span className="flex-1">{servicesError}</span>
+                                <button
+                                    onClick={fetchServicesList}
+                                    className="text-xs font-semibold text-rose-600 underline-offset-2 hover:underline"
+                                >
+                                    Retry
+                                </button>
                             </div>
                         )}
                         {serviceMutation.error && !['create', 'update'].includes(serviceMutation.type) && (
@@ -1848,8 +1858,9 @@ const ClientDashboard = () => {
                             </div>
                         )}
                         {servicesLoading && (
-                            <div className="text-sm text-gray-500 mb-4">
-                                Refreshing services...
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                                <RefreshCw size={16} className="animate-spin" />
+                                <span>Loading services...</span>
                             </div>
                         )}
 
@@ -1895,84 +1906,97 @@ const ClientDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Services Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {services.map((service) => {
-                                const isToggling = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'toggle';
-                                const isDeleting = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'delete';
-                                return (
-                                    <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                    <div className="p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
-                                            <button
-                                                onClick={() => toggleServiceStatus(service.id)}
-                                                disabled={isToggling}
-                                                aria-busy={isToggling}
-                                                className={`relative inline-flex h-6 w-11 ${isToggling ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
-                                                    }`}
-                                            >
-                                                <span
-                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                        {!servicesLoading && !servicesError && services.length === 0 ? (
+                            <div className="mt-8 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-gray-200 bg-white p-10 text-gray-600 shadow-inner">
+                                <FolderOpen size={40} className="text-emerald-400" />
+                                <p className="text-lg font-semibold text-gray-900">No services yet</p>
+                                <p className="text-sm">Add a service to start offering bookings and track performance.</p>
+                                <button
+                                    onClick={() => setShowAddServiceModal(true)}
+                                    className="mt-2 rounded-full bg-emerald-500 px-6 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                                >
+                                    Create your first service
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {services.map((service) => {
+                                    const isToggling = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'toggle';
+                                    const isDeleting = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'delete';
+                                    return (
+                                        <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                        <div className="p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                                                <button
+                                                    onClick={() => toggleServiceStatus(service.id)}
+                                                    disabled={isToggling}
+                                                    aria-busy={isToggling}
+                                                    className={`relative inline-flex h-6 w-11 ${isToggling ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
                                                         }`}
-                                                />
-                                            </button>
-                                        </div>
-                                        <p className="text-gray-600 text-sm mb-4">{service.description}</p>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <span className="text-2xl font-bold text-emerald-600">{service.priceLabel}</span>
-                                                <span className="text-sm text-gray-500 ml-2">per session</span>
+                                                >
+                                                    <span
+                                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${service.status === 'Active' ? 'translate-x-6' : 'translate-x-1'
+                                                            }`}
+                                                    />
+                                                </button>
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
-                                                ? 'bg-emerald-100 text-emerald-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {service.status}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                            <div className="flex items-center gap-2">
-                                                <Calendar size={14} />
-                                                <span>{service.bookings} bookings</span>
+                                            <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <span className="text-2xl font-bold text-emerald-600">{service.priceLabel}</span>
+                                                    <span className="text-sm text-gray-500 ml-2">per session</span>
+                                                </div>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
+                                                    ? 'bg-emerald-100 text-emerald-800'
+                                                    : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {service.status}
+                                                </span>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Star size={14} className="text-amber-500" />
-                                                <span>{service.rating}</span>
+                                            <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar size={14} />
+                                                    <span>{service.bookings} bookings</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Star size={14} className="text-amber-500" />
+                                                    <span>{service.rating}</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="pt-4 border-t border-gray-200">
-                                            <span className="text-sm text-gray-500">Category: {service.category}</span>
-                                        </div>
-                                        <div className="mt-4 flex items-center space-x-2">
-                                            <button
-                                                onClick={() => handleEditService(service)}
-                                                className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm cursor-pointer"
-                                            >
-                                                <Edit size={14} className="inline mr-1" />
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleViewServiceDetails(service)}
-                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm cursor-pointer"
-                                            >
-                                                <ViewIcon size={14} className="inline mr-1" />
-                                                View
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteService(service.id)}
-                                                disabled={isDeleting}
-                                                className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
-                                            >
-                                                <Trash2 size={14} className="inline mr-1" />
-                                                {isDeleting ? 'Deleting...' : 'Delete'}
-                                            </button>
+                                            <div className="pt-4 border-t border-gray-200">
+                                                <span className="text-sm text-gray-500">Category: {service.category}</span>
+                                            </div>
+                                            <div className="mt-4 flex items-center space-x-2">
+                                                <button
+                                                    onClick={() => handleEditService(service)}
+                                                    className="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-lg hover:bg-emerald-600 transition-colors text-sm cursor-pointer"
+                                                >
+                                                    <Edit size={14} className="inline mr-1" />
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleViewServiceDetails(service)}
+                                                    className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm cursor-pointer"
+                                                >
+                                                    <ViewIcon size={14} className="inline mr-1" />
+                                                    View
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteService(service.id)}
+                                                    disabled={isDeleting}
+                                                    className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                >
+                                                    <Trash2 size={14} className="inline mr-1" />
+                                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                        </div>
+                                );
+                            })}
+                            </div>
+                        )}
                     </div>
                 );
 
