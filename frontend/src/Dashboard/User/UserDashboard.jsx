@@ -58,7 +58,7 @@ import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { logout, user, getAuthHeaders } = useAuth();
+    const { logout, user, getAuthHeaders, API_BASE_URL } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -78,6 +78,53 @@ const UserDashboard = () => {
     const [activeTab, setActiveTab] = useState('personal');
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
+    const [serviceOptions, setServiceOptions] = useState([]);
+    const [serviceLoading, setServiceLoading] = useState(false);
+    const [serviceError, setServiceError] = useState('');
+
+    useEffect(() => {
+        if (!user) {
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchServices = async () => {
+            setServiceLoading(true);
+            setServiceError('');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/services/active`, {
+                    headers: getAuthHeaders()
+                });
+                const payload = await response.json();
+
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to load services');
+                }
+
+                if (isMounted) {
+                    setServiceOptions(payload.data.services || []);
+                }
+            } catch (error) {
+                console.error('Failed to fetch services:', error);
+                if (isMounted) {
+                    setServiceOptions([]);
+                    setServiceError(error.message || 'Failed to load services');
+                }
+            } finally {
+                if (isMounted) {
+                    setServiceLoading(false);
+                }
+            }
+        };
+
+        fetchServices();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [API_BASE_URL, getAuthHeaders, user]);
     const [imagePreview, setImagePreview] = useState(null);
 
     // Modal States
@@ -531,17 +578,6 @@ const UserDashboard = () => {
         const [selectedTime, setSelectedTime] = useState(null);
         const [errors, setErrors] = useState({});
 
-        const services = [
-            { name: 'Consultation', duration: '30 min', price: '$50' },
-            { name: 'Full Service', duration: '60 min', price: '$100' },
-            { name: 'Premium Package', duration: '90 min', price: '$150' },
-            { name: 'Web Development Consultation', duration: '1 hour', price: '$150' },
-            { name: 'UI/UX Design Review', duration: '1.5 hours', price: '$120' },
-            { name: 'IT Support Session', duration: '45 mins', price: '$80' },
-            { name: 'Digital Marketing Consultation', duration: '2 hours', price: '$200' },
-            { name: 'Mobile App Planning', duration: '1.5 hours', price: '$180' }
-        ];
-
         const handleBookingSubmit = () => {
             const newErrors = {};
 
@@ -567,16 +603,20 @@ const UserDashboard = () => {
             setErrors(newErrors);
 
             if (Object.keys(newErrors).length === 0) {
-                // Create new appointment
+                const selectedService = serviceOptions.find((service) => service.id === bookingForm.service);
+                const priceValue = Number.isFinite(Number(selectedService?.price)) ? Number(selectedService.price) : NaN;
+                const amountText = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$100';
+                const serviceLabel = selectedService?.name || 'Service';
+
                 const newAppointment = {
                     id: appointments.length + 1,
-                    service: bookingForm.service,
+                    service: serviceLabel,
                     provider: 'Tech Solutions Inc.', // Default provider
                     date: bookingForm.date,
                     time: bookingForm.time,
                     status: 'Upcoming',
-                    amount: services.find(s => s.name === bookingForm.service)?.price || '$100',
-                    duration: services.find(s => s.name === bookingForm.service)?.duration || '1 hour'
+                    amount: amountText,
+                    duration: '1 hour'
                 };
 
                 // Add to appointments list
@@ -585,7 +625,7 @@ const UserDashboard = () => {
                 // Add to recent activities
                 const newActivity = {
                     id: recentActivities.length + 1,
-                    action: `Booked ${bookingForm.service}`,
+                    action: `Booked ${serviceLabel}`,
                     time: 'Just now',
                     status: 'booking',
                     icon: Calendar
@@ -686,18 +726,37 @@ const UserDashboard = () => {
 
                             <div>
                                 <label className="block text-gray-700 font-semibold mb-2">Service</label>
-                                <select
-                                    value={bookingForm.service}
-                                    onChange={(e) => setBookingForm({ ...bookingForm, service: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                >
-                                    <option value="">Select a service</option>
-                                    {services.map((service, idx) => (
-                                        <option key={idx} value={service.name}>
-                                            {service.name} - {service.duration} - {service.price}
-                                        </option>
-                                    ))}
-                                </select>
+                                {serviceLoading ? (
+                                    <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
+                                        Loading services...
+                                    </div>
+                                ) : serviceError ? (
+                                    <div className="w-full px-4 py-3 rounded-lg border border-red-300 bg-red-50 text-red-700">
+                                        {serviceError}
+                                    </div>
+                                ) : serviceOptions.length === 0 ? (
+                                    <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-yellow-50 text-gray-700">
+                                        No active services are available right now. Please check back later.
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={bookingForm.service}
+                                        onChange={(e) => setBookingForm({ ...bookingForm, service: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
+                                    >
+                                        <option value="">Select a service</option>
+                                        {serviceOptions.map((service) => {
+                                            const priceValue = Number(service.price);
+                                            const priceLabel = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$0.00';
+                                            return (
+                                                <option key={service.id} value={service.id}>
+                                                    {service.name} - {priceLabel}
+                                                    {service.category ? ` (${service.category})` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                )}
                                 {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
                             </div>
 
