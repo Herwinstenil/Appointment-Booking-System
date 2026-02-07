@@ -15,6 +15,7 @@ export default function AppointmentBooking() {
     const [isLoading, setIsLoading] = useState(false);
     const [services, setServices] = useState([]);
     const [servicesLoading, setServicesLoading] = useState(true);
+    const [servicesError, setServicesError] = useState('');
     const [formData, setFormData] = useState({
         serviceId: '',
         date: '',
@@ -35,25 +36,48 @@ export default function AppointmentBooking() {
 
     // Fetch available services
     useEffect(() => {
+        if (!isLoggedIn) {
+            setServicesLoading(false);
+            return;
+        }
+
+        let isMounted = true;
+
         const fetchServices = async () => {
+            setServicesLoading(true);
+            setServicesError('');
+
             try {
-                const response = await fetch(`${API_BASE_URL}/client/services`, {
+                const response = await fetch(`${API_BASE_URL}/services/active`, {
                     headers: getAuthHeaders()
                 });
-                const data = await response.json();
-                if (data.success) {
-                    setServices(data.data.services);
+                const payload = await response.json();
+
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to load services');
+                }
+
+                if (isMounted) {
+                    setServices(payload.data.services || []);
                 }
             } catch (error) {
                 console.error('Error fetching services:', error);
+                if (isMounted) {
+                    setServices([]);
+                    setServicesError(error.message || 'Failed to load services');
+                }
             } finally {
-                setServicesLoading(false);
+                if (isMounted) {
+                    setServicesLoading(false);
+                }
             }
         };
 
-        if (isLoggedIn) {
-            fetchServices();
-        }
+        fetchServices();
+
+        return () => {
+            isMounted = false;
+        };
     }, [isLoggedIn, API_BASE_URL, getAuthHeaders]);
 
     const handleSubmit = async () => {
@@ -118,6 +142,14 @@ export default function AppointmentBooking() {
                                 <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
                                     Loading services...
                                 </div>
+                            ) : servicesError ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-red-300 bg-red-50 text-red-700">
+                                    {servicesError}
+                                </div>
+                            ) : services.length === 0 ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-yellow-50 text-gray-700">
+                                    No active services are available right now. Please check back later.
+                                </div>
                             ) : (
                                 <select
                                     value={formData.serviceId}
@@ -127,7 +159,8 @@ export default function AppointmentBooking() {
                                     <option value="">Select a service</option>
                                     {services.map((service) => (
                                         <option key={service.id} value={service.id}>
-                                            {service.name} - ${service.price} ({service.duration})
+                                            {service.name} - ${service.price}
+                                            {service.category ? ` (${service.category})` : ''}
                                         </option>
                                     ))}
                                 </select>
