@@ -11,6 +11,13 @@ const prisma = new PrismaClient({ adapter });
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
     const clientId = req.user.id;
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - please contact support'
+      });
+    }
     const { period = '30' } = req.query;
     const periodDays = parseInt(period);
     const startDate = new Date();
@@ -72,13 +79,13 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
 
       // Total services offered by client
       prisma.service.count({
-        where: { userId: clientId }
+        where: { clientNo }
       }),
 
       // Active services
       prisma.service.count({
         where: {
-          userId: clientId,
+          clientNo,
           isActive: true
         }
       }),
@@ -149,304 +156,6 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
 });
 
 // Get client's services
-router.get('/services', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 10,
-      status,
-      category,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
-    } = req.query;
-
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    const skip = (pageNum - 1) * limitNum;
-
-    // Build where clause
-    const where = {
-      userId: req.user.id
-    };
-
-    if (status !== undefined) {
-      where.isActive = status === 'active';
-    }
-
-    if (category) {
-      where.category = {
-        contains: category,
-        mode: 'insensitive'
-      };
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { category: { contains: search, mode: 'insensitive' } }
-      ];
-    }
-
-    // Get services with pagination
-    const [services, total] = await Promise.all([
-      prisma.service.findMany({
-        where,
-        include: {
-          _count: {
-            select: {
-              appointments: true
-            }
-          }
-        },
-        orderBy: {
-          [sortBy]: sortOrder
-        },
-        skip,
-        take: limitNum
-      }),
-      prisma.service.count({ where })
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        services,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum)
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('Get client services error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get services'
-    });
-  }
-});
-
-// Create new service
-router.post('/services', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      price,
-      category,
-      duration
-    } = req.body;
-
-    // Validation
-    if (!name || !description || !price || !category) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name, description, price, and category are required'
-      });
-    }
-
-    if (parseFloat(price) <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Price must be greater than 0'
-      });
-    }
-
-    // Check if service name already exists for this client
-    const existingService = await prisma.service.findFirst({
-      where: {
-        userId: req.user.id,
-        name: {
-          equals: name,
-          mode: 'insensitive'
-        }
-      }
-    });
-
-    if (existingService) {
-      return res.status(409).json({
-        success: false,
-        message: 'Service with this name already exists'
-      });
-    }
-
-    // Create service
-    const service = await prisma.service.create({
-      data: {
-        userId: req.user.id,
-        name: name.trim(),
-        description: description.trim(),
-        price: parseFloat(price),
-        category: category.trim(),
-        duration: duration || '1 hour',
-        isActive: true,
-        rating: 0
-      }
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Service created successfully',
-      data: { service }
-    });
-
-  } catch (error) {
-    console.error('Create service error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create service'
-    });
-  }
-});
-
-// Update service
-router.put('/services/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-    const {
-      name,
-      description,
-      price,
-      category,
-      duration,
-      isActive
-    } = req.body;
-
-    // Check if service exists and belongs to client
-    const service = await prisma.service.findFirst({
-      where: {
-        id: serviceId,
-        userId: req.user.id
-      }
-    });
-
-    if (!service) {
-      return res.status(404).json({
-        success: false,
-        message: 'Service not found'
-      });
-    }
-
-    // Validation
-    if (price !== undefined && parseFloat(price) <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Price must be greater than 0'
-      });
-    }
-
-    // Check name uniqueness if name is being changed
-    if (name && name !== service.name) {
-      const existingService = await prisma.service.findFirst({
-        where: {
-          userId: req.user.id,
-          name: {
-            equals: name,
-            mode: 'insensitive'
-          },
-          id: {
-            not: serviceId
-          }
-        }
-      });
-
-      if (existingService) {
-        return res.status(409).json({
-          success: false,
-          message: 'Service with this name already exists'
-        });
-      }
-    }
-
-    // Update service
-    const updatedService = await prisma.service.update({
-      where: { id: serviceId },
-      data: {
-        name: name ? name.trim() : undefined,
-        description: description ? description.trim() : undefined,
-        price: price ? parseFloat(price) : undefined,
-        category: category ? category.trim() : undefined,
-        duration: duration || undefined,
-        isActive: isActive !== undefined ? isActive : undefined
-      }
-    });
-
-    res.json({
-      success: true,
-      message: 'Service updated successfully',
-      data: { service: updatedService }
-    });
-
-  } catch (error) {
-    console.error('Update service error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update service'
-    });
-  }
-});
-
-// Delete service
-router.delete('/services/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
-  try {
-    const { serviceId } = req.params;
-
-    // Check if service exists and belongs to client
-    const service = await prisma.service.findFirst({
-      where: {
-        id: serviceId,
-        userId: req.user.id
-      }
-    });
-
-    if (!service) {
-      return res.status(404).json({
-        success: false,
-        message: 'Service not found'
-      });
-    }
-
-    // Check if service has active appointments
-    const activeAppointments = await prisma.appointment.count({
-      where: {
-        serviceId: serviceId,
-        status: {
-          in: ['PENDING', 'CONFIRMED']
-        }
-      }
-    });
-
-    if (activeAppointments > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot delete service with active appointments'
-      });
-    }
-
-    // Delete service
-    await prisma.service.delete({
-      where: { id: serviceId }
-    });
-
-    res.json({
-      success: true,
-      message: 'Service deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Delete service error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete service'
-    });
-  }
-});
-
 // Get client's appointments
 router.get('/appointments', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
@@ -560,6 +269,13 @@ router.get('/appointments', authenticateToken, authorizeRoles('CLIENT'), async (
 router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
     const { period = '30', groupBy = 'month' } = req.query;
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot build revenue report'
+      });
+    }
     const periodDays = parseInt(period);
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - periodDays);
@@ -572,7 +288,7 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
         SUM(a."amount") as revenue
       FROM "Appointment" a
       JOIN "Service" s ON a."serviceId" = s.id
-      WHERE s."userId" = ${req.user.id}
+      WHERE s."clientNo" = ${clientNo}
         AND a."createdAt" >= ${startDate}
         AND a."status" = 'COMPLETED'
       GROUP BY DATE_TRUNC(${groupBy === 'month' ? 'month' : 'day'}, a."createdAt")
@@ -589,7 +305,7 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
         AVG(a."rating") as avg_rating
       FROM "Appointment" a
       JOIN "Service" s ON a."serviceId" = s.id
-      WHERE s."userId" = ${req.user.id}
+      WHERE s."clientNo" = ${clientNo}
         AND a."createdAt" >= ${startDate}
         AND a."status" = 'COMPLETED'
       GROUP BY s.id, s."name", s."category"
@@ -600,7 +316,7 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     const totalStats = await prisma.appointment.aggregate({
       where: {
         service: {
-          userId: req.user.id
+          clientNo
         },
         status: 'COMPLETED',
         createdAt: {
@@ -640,6 +356,13 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
   try {
     const { appointmentId } = req.params;
     const { status } = req.body;
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot update appointment status'
+      });
+    }
 
     // Validate status
     const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
@@ -664,7 +387,7 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
     }
 
     // Check if client owns this service
-    if (appointment.service.userId !== req.user.id) {
+    if (appointment.service.clientNo !== clientNo) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this appointment'

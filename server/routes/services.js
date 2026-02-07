@@ -47,6 +47,18 @@ const handleErrorResponse = (res, error) => {
 
 const normalizeSortBy = (field) => ALLOWED_SORT_FIELDS.includes(field) ? field : 'createdAt';
 
+const ensureClientNo = (req, res) => {
+  const clientNo = req.user?.clientNo;
+  if (!clientNo) {
+    res.status(400).json({
+      success: false,
+      message: 'Client number missing from profile'
+    });
+    return null;
+  }
+  return clientNo;
+};
+
 router.get('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
     const {
@@ -61,7 +73,10 @@ router.get('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) =>
 
     const { pageNum, limitNum, skip } = buildPaginator(page, limit);
     const orderDirection = sortOrder === 'asc' ? 'asc' : 'desc';
-    const where = { userId: req.user.id };
+    const clientNo = ensureClientNo(req, res);
+    if (!clientNo) return;
+
+    const where = { clientNo };
 
     if (status) {
       const normalized = status.toLowerCase();
@@ -122,7 +137,10 @@ router.get('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) =>
 
 router.post('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
-    const { name, description, price, category, duration, isActive = true } = req.body;
+    const clientNo = ensureClientNo(req, res);
+    if (!clientNo) return;
+
+    const { name, description, price, category, isActive = true } = req.body;
     if (!name || !description || price === undefined || price === null) {
       return res.status(400).json({
         success: false,
@@ -144,7 +162,7 @@ router.post('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) =
     const service = await prisma.$transaction(async (tx) => {
       const existing = await tx.service.findFirst({
         where: {
-          userId: req.user.id,
+          clientNo,
           name: {
             equals: name.trim(),
             mode: 'insensitive'
@@ -158,12 +176,11 @@ router.post('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) =
 
       return tx.service.create({
         data: {
-          userId: req.user.id,
+          clientNo,
           name: name.trim(),
           description: description.trim(),
           price: parsedPrice,
           category: category ? category.trim() : null,
-          duration: duration || '1 hour',
           isActive: Boolean(isActive),
           rating: 0
         },
@@ -189,8 +206,11 @@ router.post('/', authenticateToken, authorizeRoles('CLIENT'), async (req, res) =
 
 router.put('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
+    const clientNo = ensureClientNo(req, res);
+    if (!clientNo) return;
+
     const { serviceId } = req.params;
-    const { name, description, price, category, duration, isActive } = req.body;
+    const { name, description, price, category, isActive } = req.body;
 
     let parsedPrice;
     if (price !== undefined) {
@@ -214,20 +234,20 @@ router.put('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (re
         where: { id: serviceId }
       });
 
-      if (!service || service.userId !== req.user.id) {
-        throw notFoundError;
-      }
+        if (!service || service.clientNo !== clientNo) {
+          throw notFoundError;
+        }
 
       const updates = {};
 
       if (name && name.trim() !== service.name) {
         const existing = await tx.service.findFirst({
           where: {
-            userId: req.user.id,
+            clientNo,
             name: {
               equals: name.trim(),
               mode: 'insensitive'
-            },
+          },
             id: {
               not: serviceId
             }
@@ -251,10 +271,6 @@ router.put('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (re
 
       if (category !== undefined) {
         updates.category = category ? category.trim() : null;
-      }
-
-      if (duration !== undefined) {
-        updates.duration = duration || '1 hour';
       }
 
       if (isActive !== undefined) {
@@ -299,6 +315,9 @@ router.put('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (re
 
 router.delete('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
+    const clientNo = ensureClientNo(req, res);
+    if (!clientNo) return;
+
     const { serviceId } = req.params;
 
     const notFoundError = new Error('Service not found');
@@ -312,7 +331,7 @@ router.delete('/:serviceId', authenticateToken, authorizeRoles('CLIENT'), async 
         where: { id: serviceId }
       });
 
-      if (!service || service.userId !== req.user.id) {
+      if (!service || service.clientNo !== clientNo) {
         throw notFoundError;
       }
 

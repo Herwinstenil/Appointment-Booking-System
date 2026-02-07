@@ -72,10 +72,9 @@ const normalizeServiceForUI = (service = {}) => {
         priceLabel: formatCurrency(priceValue),
         bookings: service._count?.appointments ?? 0,
         rating: typeof service.rating === 'number' ? service.rating : 0,
-        status: service.isActive ? 'Active' : 'Inactive',
-        duration: service.duration || '1 hour',
-        isActive: Boolean(service.isActive)
-    };
+    status: service.isActive ? 'Active' : 'Inactive',
+    isActive: Boolean(service.isActive)
+  };
 };
 
 const createServiceMutationState = () => ({
@@ -483,18 +482,16 @@ const ClientDashboard = () => {
         description: '',
         price: '',
         category: '',
-        status: 'Active',
-        duration: '1 hour'
-    });
+    status: 'Active'
+  });
     const [editServiceData, setEditServiceData] = useState({
         id: null,
         name: '',
         description: '',
         price: '',
         category: '',
-        status: 'Active',
-        duration: '1 hour'
-    });
+    status: 'Active'
+  });
     const [editUserData, setEditUserData] = useState({
         id: null,
         name: '',
@@ -929,7 +926,6 @@ const ClientDashboard = () => {
                     description: newServiceData.description.trim(),
                     price: parsedPrice,
                     category: newServiceData.category?.trim() || null,
-                    duration: newServiceData.duration || '1 hour',
                     isActive: newServiceData.status === 'Active'
                 })
             });
@@ -948,8 +944,7 @@ const ClientDashboard = () => {
                 description: '',
                 price: '',
                 category: '',
-                status: 'Active',
-                duration: '1 hour'
+                status: 'Active'
             });
             resetServiceMutation();
         } catch (err) {
@@ -972,8 +967,7 @@ const ClientDashboard = () => {
             description: service.description,
             price: service.price ? service.price.toFixed(2) : '',
             category: service.category || '',
-            status: service.status,
-            duration: service.duration || '1 hour'
+            status: service.status
         });
         setShowEditServiceModal(true);
     };
@@ -1172,7 +1166,6 @@ const ClientDashboard = () => {
                     description: editServiceData.description.trim(),
                     price: parsedPrice,
                     category: editServiceData.category?.trim() || null,
-                    duration: editServiceData.duration || '1 hour',
                     isActive: editServiceData.status === 'Active'
                 })
             });
@@ -3719,8 +3712,7 @@ const ClientDashboard = () => {
                                             description: '',
                                             price: '',
                                             category: '',
-                                            status: 'Active',
-                                            duration: '1 hour'
+                                            status: 'Active'
                                         });
                                         setServiceErrors({});
                                         resetServiceMutation();
@@ -3846,8 +3838,7 @@ const ClientDashboard = () => {
                                             description: '',
                                             price: '',
                                             category: 'Development',
-                                            status: 'Active',
-                                            duration: '1 hour'
+                                            status: 'Active'
                                         });
                                         setServiceErrors({});
                                         resetServiceMutation();

@@ -1673,7 +1673,6 @@ router.post('/services', authenticateToken, authorizeRoles('ADMIN'), [
       description,
       price,
       category,
-      duration,
       userId
     } = req.body;
 
@@ -1688,11 +1687,17 @@ router.post('/services', authenticateToken, authorizeRoles('ADMIN'), [
         message: 'User not found'
       });
     }
+    if (!user.clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Selected user does not have a client number assigned'
+      });
+    }
 
     // Check if service name already exists for this user
     const existingService = await prisma.service.findFirst({
       where: {
-        userId: userId,
+        clientNo: user.clientNo,
         name: {
           equals: name,
           mode: 'insensitive'
@@ -1709,18 +1714,17 @@ router.post('/services', authenticateToken, authorizeRoles('ADMIN'), [
 
     // Create service
     const service = await prisma.service.create({
-      data: {
-        name: name.trim(),
-        description: description?.trim(),
-        price: parseFloat(price),
-        category: category.trim(),
-        duration: duration || '1 hour',
-        userId: userId,
-        isActive: true,
-        rating: 0
-      },
-      include: {
-        user: {
+        data: {
+          name: name.trim(),
+          description: description?.trim(),
+          price: parseFloat(price),
+          category: category.trim(),
+          clientNo: user.clientNo,
+          isActive: true,
+          rating: 0
+        },
+        include: {
+        client: {
           select: {
             id: true,
             username: true,
@@ -1768,7 +1772,6 @@ router.put('/services/:serviceId', authenticateToken, authorizeRoles('ADMIN'), [
       description,
       price,
       category,
-      duration,
       isActive
     } = req.body;
 
@@ -1785,14 +1788,14 @@ router.put('/services/:serviceId', authenticateToken, authorizeRoles('ADMIN'), [
     }
 
     // Check name uniqueness if name is being changed
-    if (name && name !== service.name) {
-      const existingService = await prisma.service.findFirst({
-        where: {
-          userId: service.userId,
-          name: {
-            equals: name,
-            mode: 'insensitive'
-          },
+      if (name && name !== service.name) {
+        const existingService = await prisma.service.findFirst({
+          where: {
+            clientNo: service.clientNo,
+            name: {
+              equals: name,
+              mode: 'insensitive'
+            },
           id: {
             not: serviceId
           }
@@ -1808,27 +1811,26 @@ router.put('/services/:serviceId', authenticateToken, authorizeRoles('ADMIN'), [
     }
 
     // Update service
-    const updatedService = await prisma.service.update({
-      where: { id: serviceId },
-      data: {
-        name: name ? name.trim() : undefined,
-        description: description ? description.trim() : undefined,
-        price: price ? parseFloat(price) : undefined,
-        category: category ? category.trim() : undefined,
-        duration: duration || undefined,
-        isActive: isActive !== undefined ? isActive : undefined
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true
+      const updatedService = await prisma.service.update({
+        where: { id: serviceId },
+        data: {
+          name: name ? name.trim() : undefined,
+          description: description ? description.trim() : undefined,
+          price: price ? parseFloat(price) : undefined,
+          category: category ? category.trim() : undefined,
+          isActive: isActive !== undefined ? isActive : undefined
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true
+            }
           }
         }
-      }
-    });
+      });
 
     res.json({
       success: true,
