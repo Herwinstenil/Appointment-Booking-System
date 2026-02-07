@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../Context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
@@ -54,9 +54,40 @@ import {
     Edit3
 } from 'lucide-react';
 
+const formatCurrency = (value) => {
+    const number = typeof value === 'number' ? value : Number(value);
+    if (Number.isNaN(number)) {
+        return '$0.00';
+    }
+    return `$${number.toFixed(2)}`;
+};
+
+const normalizeServiceForUI = (service = {}) => {
+    const parsedPrice = typeof service.price === 'number' ? service.price : Number(service.price);
+    const priceValue = Number.isNaN(parsedPrice) ? 0 : parsedPrice;
+
+    return {
+        ...service,
+        price: priceValue,
+        priceLabel: formatCurrency(priceValue),
+        bookings: service._count?.appointments ?? 0,
+        rating: typeof service.rating === 'number' ? service.rating : 0,
+        status: service.isActive ? 'Active' : 'Inactive',
+        duration: service.duration || '1 hour',
+        isActive: Boolean(service.isActive)
+    };
+};
+
+const createServiceMutationState = () => ({
+    type: null,
+    loading: false,
+    error: null,
+    targetId: null
+});
+
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const { getAuthHeaders } = useAuth();
+    const { getAuthHeaders, API_BASE_URL } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -64,6 +95,31 @@ const ClientDashboard = () => {
     // Loading and error states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const fetchServicesList = useCallback(async () => {
+        setServicesLoading(true);
+        setServicesError(null);
+        const headers = getAuthHeaders();
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+
+        try {
+            const servicesResponse = await fetch(`${baseUrl}/services`, {
+                headers
+            });
+            if (!servicesResponse.ok) {
+                const errorBody = await servicesResponse.json().catch(() => ({}));
+                throw new Error(errorBody.message || 'Failed to fetch services');
+            }
+            const servicesData = await servicesResponse.json();
+            const normalized = (servicesData.data?.services || []).map(normalizeServiceForUI);
+            setServices(normalized);
+        } catch (err) {
+            setServicesError(err.message);
+            console.error('Fetch services error:', err);
+        } finally {
+            setServicesLoading(false);
+        }
+    }, [API_BASE_URL, getAuthHeaders]);
 
     // Fetch data on component mount
     useEffect(() => {
@@ -73,40 +129,31 @@ const ClientDashboard = () => {
                 setError(null);
 
                 const headers = getAuthHeaders();
+                const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
 
-                // Fetch dashboard stats
-                const statsResponse = await fetch('http://localhost:5000/api/client/dashboard/stats', {
-                    headers
-                });
+                const [statsResponse, appointmentsResponse, revenueResponse] = await Promise.all([
+                    fetch(`${baseUrl}/client/dashboard/stats`, {
+                        headers
+                    }),
+                    fetch(`${baseUrl}/client/appointments`, {
+                        headers
+                    }),
+                    fetch(`${baseUrl}/client/revenue`, {
+                        headers
+                    })
+                ]);
+
                 if (!statsResponse.ok) throw new Error('Failed to fetch dashboard stats');
-                const statsData = await statsResponse.json();
-
-                // Fetch services
-                const servicesResponse = await fetch('http://localhost:5000/api/client/services', {
-                    headers
-                });
-                if (!servicesResponse.ok) throw new Error('Failed to fetch services');
-                const servicesData = await servicesResponse.json();
-
-                // Fetch appointments
-                const appointmentsResponse = await fetch('http://localhost:5000/api/client/appointments', {
-                    headers
-                });
                 if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
-                const appointmentsData = await appointmentsResponse.json();
-
-                // Fetch revenue
-                const revenueResponse = await fetch('http://localhost:5000/api/client/revenue', {
-                    headers
-                });
                 if (!revenueResponse.ok) throw new Error('Failed to fetch revenue');
+
+                await statsResponse.json();
+                const appointmentsData = await appointmentsResponse.json();
                 const revenueData = await revenueResponse.json();
 
-                // Update state with fetched data
-                setServices(servicesData.data?.services || []);
                 setBookings(appointmentsData.data?.appointments || []);
-                // Update other state variables as needed
-
+                setRevenue(revenueData.data?.revenue || []);
+                await fetchServicesList();
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching dashboard data:', err);
@@ -116,7 +163,28 @@ const ClientDashboard = () => {
         };
 
         fetchDashboardData();
-    }, [getAuthHeaders]);
+    }, [getAuthHeaders, API_BASE_URL, fetchServicesList]);
+
+    const resetServiceMutation = () => {
+        setServiceMutation(createServiceMutationState());
+    };
+
+    const mergeServiceIntoState = (service, addToStart = false) => {
+        const normalized = normalizeServiceForUI(service);
+        setServices(prev => {
+            const existingIndex = prev.findIndex(item => item.id === normalized.id);
+            if (existingIndex === -1) {
+                return addToStart ? [normalized, ...prev] : [...prev, normalized];
+            }
+            const updated = [...prev];
+            updated[existingIndex] = normalized;
+            return updated;
+        });
+    };
+
+    const removeServiceFromState = (serviceId) => {
+        setServices(prev => prev.filter(service => service.id !== serviceId));
+    };
 
     // Profile State
     const [isEditing, setIsEditing] = useState(false);
@@ -176,6 +244,9 @@ const ClientDashboard = () => {
 
     // Service Management State
     const [services, setServices] = useState([]);
+    const [servicesLoading, setServicesLoading] = useState(false);
+    const [servicesError, setServicesError] = useState(null);
+    const [serviceMutation, setServiceMutation] = useState(createServiceMutationState);
 
     // Booking Management State
     const [bookings, setBookings] = useState([]);
@@ -412,7 +483,8 @@ const ClientDashboard = () => {
         description: '',
         price: '',
         category: '',
-        status: 'Active'
+        status: 'Active',
+        duration: '1 hour'
     });
     const [editServiceData, setEditServiceData] = useState({
         id: null,
@@ -420,7 +492,8 @@ const ClientDashboard = () => {
         description: '',
         price: '',
         category: '',
-        status: 'Active'
+        status: 'Active',
+        duration: '1 hour'
     });
     const [editUserData, setEditUserData] = useState({
         id: null,
@@ -595,12 +668,48 @@ const ClientDashboard = () => {
     );
 
     // Service Management Handlers
-    const toggleServiceStatus = (serviceId) => {
-        setServices(services.map(service =>
-            service.id === serviceId
-                ? { ...service, status: service.status === 'Active' ? 'Inactive' : 'Active' }
-                : service
-        ));
+    const toggleServiceStatus = async (serviceId) => {
+        const targetService = services.find(service => service.id === serviceId);
+        if (!targetService) return;
+
+        const nextIsActive = !targetService.isActive;
+
+        setServiceMutation({
+            type: 'toggle',
+            loading: true,
+            error: null,
+            targetId: serviceId
+        });
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/services/${serviceId}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ isActive: nextIsActive })
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                throw new Error(errorBody.message || 'Failed to update service status');
+            }
+
+            const responseBody = await response.json();
+            mergeServiceIntoState(responseBody.data.service);
+            resetServiceMutation();
+        } catch (err) {
+            setServiceMutation({
+                type: 'toggle',
+                loading: false,
+                error: err.message,
+                targetId: serviceId
+            });
+        }
     };
 
     // Booking Management Handlers
@@ -708,7 +817,7 @@ const ClientDashboard = () => {
             if (name === 'service') {
                 const selectedService = services.find(s => s.name === value);
                 if (selectedService) {
-                    updated.amount = selectedService.price.replace('$', '');
+                    updated.amount = selectedService.price.toFixed(2);
                 }
             }
             return updated;
@@ -772,7 +881,7 @@ const ClientDashboard = () => {
         setShowNewBookingModal(false);
     };
 
-    const handleAddServiceSubmit = (e) => {
+    const handleAddServiceSubmit = async (e) => {
         e.preventDefault();
 
         // Validation
@@ -786,50 +895,85 @@ const ClientDashboard = () => {
         if (!newServiceData.price.trim()) {
             errors.price = 'Price is required';
         }
+        const parsedPrice = parseFloat(newServiceData.price);
+        if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
+            errors.price = 'Price must be greater than 0';
+        }
 
         if (Object.keys(errors).length > 0) {
             setServiceErrors(errors);
             return;
         }
 
-        // Clear errors
         setServiceErrors({});
 
-        // Create new service
-        const newService = {
-            id: services.length + 1,
-            name: newServiceData.name.trim(),
-            description: newServiceData.description.trim(),
-            price: `$${newServiceData.price}`,
-            category: newServiceData.category,
-            status: newServiceData.status,
-            bookings: 0,
-            rating: 0
+        setServiceMutation({
+            type: 'create',
+            loading: true,
+            error: null,
+            targetId: null
+        });
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
         };
 
-        // Add to services array
-        setServices(prev => [...prev, newService]);
+        try {
+            const response = await fetch(`${baseUrl}/services`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    name: newServiceData.name.trim(),
+                    description: newServiceData.description.trim(),
+                    price: parsedPrice,
+                    category: newServiceData.category?.trim() || null,
+                    duration: newServiceData.duration || '1 hour',
+                    isActive: newServiceData.status === 'Active'
+                })
+            });
 
-        // Reset form and close modal
-        setNewServiceData({
-            name: '',
-            description: '',
-            price: '',
-            category: '',
-            status: 'Active'
-        });
-        setShowAddServiceModal(false);
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                throw new Error(errorBody.message || 'Failed to create service');
+            }
+
+            const responseBody = await response.json();
+            mergeServiceIntoState(responseBody.data.service, true);
+
+            setShowAddServiceModal(false);
+            setNewServiceData({
+                name: '',
+                description: '',
+                price: '',
+                category: '',
+                status: 'Active',
+                duration: '1 hour'
+            });
+            resetServiceMutation();
+        } catch (err) {
+            setServiceMutation({
+                type: 'create',
+                loading: false,
+                error: err.message,
+                targetId: null
+            });
+        }
     };
 
     // Edit Service Handlers
     const handleEditService = (service) => {
+        setServiceErrors({});
+        resetServiceMutation();
         setEditServiceData({
             id: service.id,
             name: service.name,
             description: service.description,
-            price: service.price.replace('$', ''),
-            category: service.category,
-            status: service.status
+            price: service.price ? service.price.toFixed(2) : '',
+            category: service.category || '',
+            status: service.status,
+            duration: service.duration || '1 hour'
         });
         setShowEditServiceModal(true);
     };
@@ -914,7 +1058,7 @@ const ClientDashboard = () => {
             if (name === 'service') {
                 const selectedService = services.find(s => s.name === value);
                 if (selectedService) {
-                    updated.amount = selectedService.price.replace('$', '');
+                    updated.amount = selectedService.price.toFixed(2);
                 }
             }
             return updated;
@@ -978,10 +1122,9 @@ const ClientDashboard = () => {
         }));
     };
 
-    const handleEditServiceSubmit = (e) => {
+    const handleEditServiceSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation
         const errors = {};
         if (!editServiceData.name.trim()) {
             errors.name = 'Service name is required';
@@ -992,37 +1135,103 @@ const ClientDashboard = () => {
         if (!editServiceData.price.trim()) {
             errors.price = 'Price is required';
         }
+        const parsedPrice = parseFloat(editServiceData.price);
+        if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
+            errors.price = 'Price must be greater than 0';
+        }
 
         if (Object.keys(errors).length > 0) {
             setServiceErrors(errors);
             return;
         }
 
-        // Clear errors
         setServiceErrors({});
+        if (!editServiceData.id) {
+            return;
+        }
 
-        // Update service
-        setServices(prev => prev.map(service =>
-            service.id === editServiceData.id
-                ? {
-                    ...service,
+        setServiceMutation({
+            type: 'update',
+            loading: true,
+            error: null,
+            targetId: editServiceData.id
+        });
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/services/${editServiceData.id}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({
                     name: editServiceData.name.trim(),
                     description: editServiceData.description.trim(),
-                    price: `$${editServiceData.price}`,
-                    category: editServiceData.category,
-                    status: editServiceData.status
-                }
-                : service
-        ));
+                    price: parsedPrice,
+                    category: editServiceData.category?.trim() || null,
+                    duration: editServiceData.duration || '1 hour',
+                    isActive: editServiceData.status === 'Active'
+                })
+            });
 
-        // Close modal
-        setShowEditServiceModal(false);
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                throw new Error(errorBody.message || 'Failed to update service');
+            }
+
+            const responseBody = await response.json();
+            mergeServiceIntoState(responseBody.data.service);
+            setShowEditServiceModal(false);
+            resetServiceMutation();
+        } catch (err) {
+            setServiceMutation({
+                type: 'update',
+                loading: false,
+                error: err.message,
+                targetId: editServiceData.id
+            });
+        }
     };
 
     // Delete Service Handler
-    const handleDeleteService = (serviceId) => {
-        if (window.confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-            setServices(prev => prev.filter(service => service.id !== serviceId));
+    const handleDeleteService = async (serviceId) => {
+        if (!window.confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+            return;
+        }
+
+        setServiceMutation({
+            type: 'delete',
+            loading: true,
+            error: null,
+            targetId: serviceId
+        });
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = getAuthHeaders();
+
+        try {
+            const response = await fetch(`${baseUrl}/services/${serviceId}`, {
+                method: 'DELETE',
+                headers
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                throw new Error(errorBody.message || 'Failed to delete service');
+            }
+
+            removeServiceFromState(serviceId);
+            resetServiceMutation();
+        } catch (err) {
+            setServiceMutation({
+                type: 'delete',
+                loading: false,
+                error: err.message,
+                targetId: serviceId
+            });
         }
     };
 
@@ -1635,6 +1844,21 @@ const ClientDashboard = () => {
                                 Add New Service
                             </button>
                         </div>
+                        {servicesError && (
+                            <div className="text-sm text-rose-600 mb-4">
+                                {servicesError}
+                            </div>
+                        )}
+                        {serviceMutation.error && !['create', 'update'].includes(serviceMutation.type) && (
+                            <div className="text-sm text-rose-600 mb-4">
+                                {serviceMutation.error}
+                            </div>
+                        )}
+                        {servicesLoading && (
+                            <div className="text-sm text-gray-500 mb-4">
+                                Refreshing services...
+                            </div>
+                        )}
 
                         {/* Service Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -1680,14 +1904,19 @@ const ClientDashboard = () => {
 
                         {/* Services Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {services.map((service) => (
-                                <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            {services.map((service) => {
+                                const isToggling = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'toggle';
+                                const isDeleting = serviceMutation.loading && serviceMutation.targetId === service.id && serviceMutation.type === 'delete';
+                                return (
+                                    <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
                                             <button
                                                 onClick={() => toggleServiceStatus(service.id)}
-                                                className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
+                                                disabled={isToggling}
+                                                aria-busy={isToggling}
+                                                className={`relative inline-flex h-6 w-11 ${isToggling ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} items-center rounded-full transition-colors ${service.status === 'Active' ? 'bg-emerald-500' : 'bg-gray-300'
                                                     }`}
                                             >
                                                 <span
@@ -1699,7 +1928,7 @@ const ClientDashboard = () => {
                                         <p className="text-gray-600 text-sm mb-4">{service.description}</p>
                                         <div className="flex items-center justify-between mb-4">
                                             <div>
-                                                <span className="text-2xl font-bold text-emerald-600">{service.price}</span>
+                                                <span className="text-2xl font-bold text-emerald-600">{service.priceLabel}</span>
                                                 <span className="text-sm text-gray-500 ml-2">per session</span>
                                             </div>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${service.status === 'Active'
@@ -1739,15 +1968,17 @@ const ClientDashboard = () => {
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteService(service.id)}
-                                                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer"
+                                                disabled={isDeleting}
+                                                className={`flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
                                             >
                                                 <Trash2 size={14} className="inline mr-1" />
-                                                Delete
+                                                {isDeleting ? 'Deleting...' : 'Delete'}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );
+                        })}
                         </div>
                     </div>
                 );
@@ -2940,7 +3171,7 @@ const ClientDashboard = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-gray-50 p-4 rounded-xl">
                                         <p className="text-sm text-gray-600">Price</p>
-                                        <p className="text-2xl font-bold text-emerald-600">{selectedService.price}</p>
+                                        <p className="text-2xl font-bold text-emerald-600">{selectedService.priceLabel}</p>
                                     </div>
                                     <div className="bg-gray-50 p-4 rounded-xl">
                                         <p className="text-sm text-gray-600">Bookings</p>
@@ -3042,13 +3273,13 @@ const ClientDashboard = () => {
 
                             {/* Services Revenue Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {services.map((service) => {
-                                    // Calculate revenue for this service based on time range
-                                    const revenueAmount = service.bookings * parseFloat(service.price.replace('$', ''));
-                                    const adjustedRevenue = Math.round(revenueAmount * (timeRange === 'daily' ? 0.03 : timeRange === 'weekly' ? 0.12 : timeRange === 'monthly' ? 1 : 12));
+                                    {services.map((service) => {
+                                        // Calculate revenue for this service based on time range
+                                        const revenueAmount = service.bookings * service.price;
+                                        const adjustedRevenue = Math.round(revenueAmount * (timeRange === 'daily' ? 0.03 : timeRange === 'weekly' ? 0.12 : timeRange === 'monthly' ? 1 : 12));
 
-                                    return (
-                                        <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                        return (
+                                            <div key={service.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                             <div className="p-6">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
@@ -3073,7 +3304,7 @@ const ClientDashboard = () => {
                                                         <p className="text-xs text-gray-500">Bookings</p>
                                                     </div>
                                                     <div className="text-center">
-                                                        <div className="text-lg font-semibold text-gray-900">{service.price}</div>
+                                                    <div className="text-lg font-semibold text-gray-900">{service.priceLabel}</div>
                                                         <p className="text-xs text-gray-500">Price</p>
                                                     </div>
                                                 </div>
@@ -3474,6 +3705,11 @@ const ClientDashboard = () => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">Add New Service</h3>
                                     <p className="text-gray-600 mt-1">Create a new service offering</p>
+                                {serviceMutation.type === 'create' && serviceMutation.error && (
+                                    <p className="text-sm text-rose-600 mt-2">
+                                        {serviceMutation.error}
+                                    </p>
+                                )}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -3483,8 +3719,11 @@ const ClientDashboard = () => {
                                             description: '',
                                             price: '',
                                             category: '',
-                                            status: 'Active'
+                                            status: 'Active',
+                                            duration: '1 hour'
                                         });
+                                        setServiceErrors({});
+                                        resetServiceMutation();
                                     }}
                                     className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
@@ -3598,7 +3837,7 @@ const ClientDashboard = () => {
                             </form>
                         </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                            <div className="flex items-center justify-end space-x-3">
+                                <div className="flex items-center justify-end space-x-3">
                                 <button
                                     onClick={() => {
                                         setShowAddServiceModal(false);
@@ -3607,8 +3846,11 @@ const ClientDashboard = () => {
                                             description: '',
                                             price: '',
                                             category: 'Development',
-                                            status: 'Active'
+                                            status: 'Active',
+                                            duration: '1 hour'
                                         });
+                                        setServiceErrors({});
+                                        resetServiceMutation();
                                     }}
                                     className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
@@ -3616,9 +3858,10 @@ const ClientDashboard = () => {
                                 </button>
                                 <button
                                     onClick={handleAddServiceSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    disabled={serviceMutation.loading && serviceMutation.type === 'create'}
+                                    className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer ${serviceMutation.loading && serviceMutation.type === 'create' ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 >
-                                    Add Service
+                                    {serviceMutation.loading && serviceMutation.type === 'create' ? 'Saving...' : 'Add Service'}
                                 </button>
                             </div>
                         </div>
@@ -3635,9 +3878,18 @@ const ClientDashboard = () => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">Edit Service</h3>
                                     <p className="text-gray-600 mt-1">Update service information</p>
+                                {serviceMutation.type === 'update' && serviceMutation.error && (
+                                    <p className="text-sm text-rose-600 mt-2">
+                                        {serviceMutation.error}
+                                    </p>
+                                )}
                                 </div>
                                 <button
-                                    onClick={() => setShowEditServiceModal(false)}
+                                    onClick={() => {
+                                        setShowEditServiceModal(false);
+                                        setServiceErrors({});
+                                        resetServiceMutation();
+                                    }}
                                     className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                 >
                                     <X size={24} />
@@ -3750,20 +4002,25 @@ const ClientDashboard = () => {
                             </form>
                         </div>
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                            <div className="flex items-center justify-end space-x-3">
-                                <button
-                                    onClick={() => setShowEditServiceModal(false)}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleEditServiceSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Save Changes
-                                </button>
-                            </div>
+                                <div className="flex items-center justify-end space-x-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowEditServiceModal(false);
+                                            setServiceErrors({});
+                                            resetServiceMutation();
+                                        }}
+                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleEditServiceSubmit}
+                                        disabled={serviceMutation.loading && serviceMutation.type === 'update'}
+                                        className={`px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer ${serviceMutation.loading && serviceMutation.type === 'update' ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    >
+                                        {serviceMutation.loading && serviceMutation.type === 'update' ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -3832,9 +4089,9 @@ const ClientDashboard = () => {
                                         >
                                             <option value="" disabled>Select a Service</option>
                                             {services.filter(s => s.status === 'Active').map((service) => (
-                                                <option key={service.id} value={service.name}>
-                                                    {service.name} - {service.price}
-                                                </option>
+                                            <option key={service.id} value={service.name}>
+                                                {service.name} - {service.priceLabel}
+                                            </option>
                                             ))}
                                         </select>
                                         {bookingErrors.service && (
@@ -4030,9 +4287,9 @@ const ClientDashboard = () => {
                                         >
                                             <option value="" disabled>Select a Service</option>
                                             {services.filter(s => s.status === 'Active').map((service) => (
-                                                <option key={service.id} value={service.name}>
-                                                    {service.name} - {service.price}
-                                                </option>
+                                            <option key={service.id} value={service.name}>
+                                                {service.name} - {service.priceLabel}
+                                            </option>
                                             ))}
                                         </select>
                                         {bookingErrors.service && (
