@@ -3264,10 +3264,9 @@ const UserDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
+                                            { icon: Download, label: 'Export Data', color: 'text-purple-600' },
                                             { icon: FileText, label: 'Download Invoices', color: 'text-blue-600' },
                                             { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600' },
-                                            { icon: Download, label: 'Export Data', color: 'text-purple-600' },
-                                            
                                         ].map((action, index) => {
                                             const ActionIcon = action.icon;
                                             return (
