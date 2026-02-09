@@ -3375,7 +3375,6 @@ const UserDashboard = () => {
                                 >
                                     <div className="text-right hidden sm:block">
                                         <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
-                                        <p className="text-xs text-gray-500">Premium Customer</p>
                                     </div>
                                     <div className="relative">
                                         {imagePreview ? (
