@@ -10,8 +10,12 @@ const prisma = new PrismaClient({ adapter });
 // Get user profile
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
+    const user = await prisma.user.findFirst({
+      where: {
+        id: req.user.id,
+        role: 'USER',
+        isActive: true
+      },
       select: {
         id: true,
         username: true,
@@ -22,9 +26,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
         lastName: true,
         address: true,
         bio: true,
-        company: true,
-        position: true,
-        website: true,
+        avatarUrl: true,
         timezone: true,
         isActive: true,
         lastLogin: true,
@@ -36,13 +38,31 @@ router.get('/profile', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'Active user not found'
       });
     }
 
+    const formattedUser = {
+      id: user.id,
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      phone: user.mobile || '',
+      address: user.address || '',
+      bio: user.bio || '',
+      role: (user.role || 'USER').toLowerCase(),
+      status: user.isActive ? 'active' : 'inactive',
+      avatar: user.avatarUrl || '',
+      timezone: user.timezone || '',
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
     res.json({
       success: true,
-      data: { user }
+      data: { user: formattedUser }
     });
 
   } catch (error) {
@@ -66,7 +86,8 @@ router.put('/profile', authenticateToken, async (req, res) => {
       company,
       position,
       website,
-      timezone
+      timezone,
+      avatarUrl
     } = req.body;
 
     // Validate mobile if provided
@@ -91,7 +112,8 @@ router.put('/profile', authenticateToken, async (req, res) => {
         company: company || null,
         position: position || null,
         website: website || null,
-        timezone: timezone || null
+        timezone: timezone || null,
+        avatarUrl: avatarUrl || undefined
       },
       select: {
         id: true,
@@ -107,6 +129,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         position: true,
         website: true,
         timezone: true,
+        avatarUrl: true,
         isActive: true,
         lastLogin: true,
         createdAt: true,

@@ -56,6 +56,49 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../Context/AuthContext.jsx';
 
+const emptyProfileTemplate = {
+    id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    bio: '',
+    joinDate: '',
+    lastLogin: '',
+    avatar: '',
+    role: '',
+    status: '',
+    createdAt: '',
+    updatedAt: ''
+};
+
+const formatProfileData = (record = {}) => {
+    const firstName = record.firstName || '';
+    const lastName = record.lastName || '';
+    const joinDate = record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '';
+    const lastLogin = record.lastLogin ? new Date(record.lastLogin).toLocaleString() : '';
+    const phone = record.phone || record.mobile || '';
+    const avatar = record.avatar || record.avatarUrl || '';
+
+    return {
+        id: record.id || '',
+        firstName,
+        lastName,
+        email: record.email || '',
+        phone,
+        address: record.address || '',
+        bio: record.bio || '',
+        joinDate,
+        lastLogin,
+        avatar,
+        role: record.role || '',
+        status: record.status || (record.isActive ? 'active' : ''),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt
+    };
+};
+
 const UserDashboard = () => {
     const navigate = useNavigate();
     const { logout, user, getAuthHeaders, API_BASE_URL } = useAuth();
@@ -77,7 +120,10 @@ const UserDashboard = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('personal');
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [profileError, setProfileError] = useState(null);
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileSaveError, setProfileSaveError] = useState(null);
     const [serviceOptions, setServiceOptions] = useState([]);
     const [serviceLoading, setServiceLoading] = useState(false);
     const [serviceError, setServiceError] = useState('');
@@ -127,6 +173,59 @@ const UserDashboard = () => {
     }, [API_BASE_URL, getAuthHeaders, user]);
     const [imagePreview, setImagePreview] = useState(null);
 
+    useEffect(() => {
+        if (!user) {
+            setProfileData({ ...emptyProfileTemplate });
+            setOriginalProfileData({ ...emptyProfileTemplate });
+            setImagePreview(null);
+            setProfileError(null);
+            setProfileLoading(false);
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchProfile = async () => {
+            setProfileLoading(true);
+            setProfileError(null);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                    headers: getAuthHeaders()
+                });
+                const payload = await response.json();
+
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to load profile');
+                }
+
+                const userRecord = payload.data?.user;
+                if (!userRecord) {
+                    throw new Error('Profile not found');
+                }
+
+                const formattedProfile = formatProfileData(userRecord);
+                if (!isMounted) return;
+                setProfileData({ ...formattedProfile });
+                setOriginalProfileData({ ...formattedProfile });
+                setImagePreview(formattedProfile.avatar || null);
+            } catch (err) {
+                if (!isMounted) return;
+                setProfileError(err.message || 'Failed to load profile');
+            } finally {
+                if (isMounted) {
+                    setProfileLoading(false);
+                }
+            }
+        };
+
+        fetchProfile();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [API_BASE_URL, getAuthHeaders, user]);
+
     // Modal States
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
     const [showBookingModal, setShowBookingModal] = useState(false);
@@ -143,25 +242,8 @@ const UserDashboard = () => {
     const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
     // Store original data for cancel functionality
-    const [originalProfileData, setOriginalProfileData] = useState({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 (555) 123-4567',
-        address: '123 Main Street, Apt 4B, New York, NY 10001',
-        joinDate: '2023-06-15',
-        lastLogin: '2024-01-15 09:30 AM',
-        bio: 'Regular customer who enjoys booking various services. Always looking for quality and convenience.',
-        preferences: {
-            emailNotifications: true,
-            smsNotifications: true,
-            bookingReminders: true,
-            promotionalOffers: false,
-            newsletter: true
-        }
-    });
-
-    const [profileData, setProfileData] = useState({ ...originalProfileData });
+    const [originalProfileData, setOriginalProfileData] = useState(() => ({ ...emptyProfileTemplate }));
+    const [profileData, setProfileData] = useState(() => ({ ...emptyProfileTemplate }));
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -383,31 +465,72 @@ const UserDashboard = () => {
         }));
     };
 
-    const handleSaveProfile = () => {
-        console.log('Saving profile data:', profileData);
-        setIsEditing(false);
-        setOriginalProfileData({ ...profileData });
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+    const handleSaveProfile = async () => {
+        setProfileSaveError(null);
+        setProfileSaving(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({
+                    firstName: profileData.firstName,
+                    lastName: profileData.lastName,
+                    mobile: profileData.phone,
+                    address: profileData.address,
+                    bio: profileData.bio,
+                    avatarUrl: imagePreview || profileData.avatar
+                })
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to save profile');
+            }
+
+            const updatedProfile = formatProfileData(payload.data.user);
+            setProfileData({ ...updatedProfile });
+            setOriginalProfileData({ ...updatedProfile });
+            setImagePreview(updatedProfile.avatar || null);
+            setIsEditing(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (error) {
+            console.error('Saving profile data failed:', error);
+            setProfileSaveError(error.message || 'Failed to save profile');
+        } finally {
+            setProfileSaving(false);
+        }
     };
 
     const handleCancelEdit = () => {
         setProfileData({ ...originalProfileData });
+        setImagePreview(originalProfileData.avatar || null);
+        setProfileSaveError(null);
         setIsEditing(false);
     };
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
+        setProfileSaveError(null);
         setIsEditing(true);
     };
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
         if (file) {
-            setProfileImage(file);
             const reader = new FileReader();
             reader.onload = (e) => {
-                setImagePreview(e.target.result);
+                const preview = e.target.result;
+                setImagePreview(preview);
+                setProfileData(prev => ({
+                    ...prev,
+                    avatar: preview
+                }));
             };
             reader.readAsDataURL(file);
         }
@@ -2054,9 +2177,32 @@ const UserDashboard = () => {
                                 <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
                                     User Dashboard
                                 </h2>
-                                <p className="text-gray-600 text-lg">Welcome back, {profileData.firstName}! Here's your overview.</p>
+                                <p className="text-gray-600 text-lg">
+                                    Welcome back, {profileData.firstName || profileData.email || 'there'}! Here's your overview.
+                                </p>
                             </div>
                         </div>
+
+                        {profileLoading && (
+                            <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                                Loading your profile details...
+                            </div>
+                        )}
+                        {!profileLoading && profileError && (
+                            <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {profileError}
+                            </div>
+                        )}
+                        {!profileLoading && !profileError && profileSaveError && (
+                            <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                                {profileSaveError}
+                            </div>
+                        )}
+                        {!profileLoading && !profileError && !profileData.id && (
+                            <div className="mb-6 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
+                                We could not find your profile right now. Please refresh the page or contact support if the issue persists.
+                            </div>
+                        )}
 
                         {/* Key Metrics Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -2770,26 +2916,29 @@ const UserDashboard = () => {
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500"
+                                            disabled={profileSaving}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
                                         >
                                             <XCircle size={20} />
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25"
+                                            disabled={profileSaving}
+                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed"
                                         >
                                             <Save size={20} />
-                                            Save Changes
+                                            {profileSaving ? 'Saving profile...' : 'Save Changes'}
                                         </button>
                                     </div>
                                 ) : (
                                     <button
                                         onClick={handleStartEditing}
-                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white hover:shadow-violet-500/25"
+                                        disabled={profileLoading || !profileData.id}
+                                        className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white hover:shadow-violet-500/25 disabled:opacity-60 disabled:cursor-not-allowed ${profileLoading || !profileData.id ? 'pointer-events-none' : ''}`}
                                     >
                                         <Edit3 size={20} />
-                                        Edit Profile
+                                        {profileLoading ? 'Loading profile...' : 'Edit Profile'}
                                     </button>
                                 )}
                             </div>
