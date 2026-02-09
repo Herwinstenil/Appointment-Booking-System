@@ -4,49 +4,98 @@ const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('..
 const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public';
+const adapter = new PrismaPg({ connectionString: DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+
+const STATUS_LABELS = {
+  PENDING: 'Upcoming',
+  CONFIRMED: 'Confirmed',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled'
+};
+
+const mapStatusLabel = (status = '') => {
+  if (!status) return 'Upcoming';
+  const normalized = status.toString().toUpperCase();
+  return STATUS_LABELS[normalized] || normalized.charAt(0) + normalized.slice(1).toLowerCase();
+};
+
+const buildAppointmentPayload = (appointment) => {
+  const appointmentDate = appointment.date ? appointment.date.toISOString() : null;
+  return {
+    id: appointment.id,
+    userId: appointment.userId,
+    clientId: appointment.clientId,
+    clientNo: appointment.user?.clientNo || appointment.client?.clientNo || null,
+    serviceId: appointment.serviceId,
+    serviceName: appointment.service?.name || appointment.serviceName || 'Service',
+    appointmentDate,
+    appointmentTime: appointment.time,
+    status: appointment.status,
+    statusLabel: mapStatusLabel(appointment.status),
+    createdAt: appointment.createdAt,
+    amount: appointment.amount,
+    duration: appointment.duration || appointment.service?.duration || null,
+    notes: appointment.notes || null,
+    rating: appointment.rating || null,
+    service: appointment.service ? {
+      id: appointment.service.id,
+      name: appointment.service.name,
+      price: appointment.service.price,
+      category: appointment.service.category,
+      duration: appointment.service.duration,
+      isActive: appointment.service.isActive
+    } : null,
+    client: appointment.client ? {
+      id: appointment.client.id,
+      firstName: appointment.client.firstName,
+      lastName: appointment.client.lastName,
+      company: appointment.client.company,
+      email: appointment.client.email,
+      clientNo: appointment.client.clientNo,
+      mobile: appointment.client.mobile
+    } : null,
+    user: appointment.user ? {
+      id: appointment.user.id,
+      firstName: appointment.user.firstName,
+      lastName: appointment.user.lastName,
+      email: appointment.user.email,
+      clientNo: appointment.user.clientNo,
+      role: appointment.user.role
+    } : null
+  };
+};
 
 // Create appointment
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const {
-      serviceId,
-      clientId,
-      date,
-      time,
-      duration,
-      notes
-    } = req.body;
+    const { serviceId, appointmentDate, appointmentTime, notes } = req.body;
 
-    // Validation
-    if (!serviceId || !date || !time) {
+    if (!serviceId || !appointmentDate || !appointmentTime) {
       return res.status(400).json({
         success: false,
         message: 'Service, date, and time are required'
       });
     }
 
-    // Validate date format
-    const appointmentDate = new Date(date);
-    if (isNaN(appointmentDate.getTime())) {
+    const parsedDate = new Date(appointmentDate);
+    if (isNaN(parsedDate.getTime())) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid date format'
+        message: 'Invalid appointment date'
       });
     }
 
-    // Check if date is not in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (appointmentDate < today) {
+    if (parsedDate < today) {
       return res.status(400).json({
         success: false,
         message: 'Cannot book appointments in the past'
       });
     }
 
-    // Check if service exists and is active
     const service = await prisma.service.findUnique({
       where: { id: serviceId }
     });
@@ -65,107 +114,50 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    // Determine client ID based on user role
-    let finalClientId = clientId;
-
-    if (req.user.role === 'USER') {
-      // Users can only book for themselves, so client should be null or the user themselves
-      finalClientId = null; // Users book directly
-    } else if (req.user.role === 'CLIENT') {
-      // Clients can book for themselves or specify another client
-      finalClientId = clientId || req.user.id;
-    } else if (req.user.role === 'ADMIN') {
-      // Admins can book for any client
-      if (!clientId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Client ID is required for admin bookings'
-        });
-      }
-      finalClientId = clientId;
-    }
-
-    // Check if client exists (if specified)
-    if (finalClientId) {
-      const client = await prisma.user.findUnique({
-        where: { id: finalClientId }
-      });
-
-      if (!client) {
-        return res.status(404).json({
-          success: false,
-          message: 'Client not found'
-        });
-      }
-    }
-
-    // Check for scheduling conflicts
-    const existingAppointment = await prisma.appointment.findFirst({
+    const conflict = await prisma.appointment.findFirst({
       where: {
-        serviceId: serviceId,
-        date: appointmentDate,
-        time: time,
+        userId: req.user.id,
+        serviceId,
+        date: parsedDate,
+        time: appointmentTime,
         status: {
           in: ['PENDING', 'CONFIRMED']
         }
       }
     });
 
-    if (existingAppointment) {
+    if (conflict) {
       return res.status(409).json({
         success: false,
-        message: 'Time slot is already booked'
+        message: 'You already have an appointment at this time'
       });
     }
 
-    // Create appointment
     const appointment = await prisma.appointment.create({
       data: {
         userId: req.user.id,
-        serviceId: serviceId,
-        clientId: finalClientId,
-        date: appointmentDate,
-        time: time,
-        duration: duration || service.duration || '1 hour',
+        clientId: req.user.id,
+        serviceId,
+        date: parsedDate,
+        time: appointmentTime,
+        duration: service.duration || '1 hour',
         amount: service.price,
         status: 'PENDING',
-        notes: notes || null
+        notes: notes ? notes.trim() : null
       },
       include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            category: true,
-            duration: true
-          }
-        },
-        client: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            company: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        }
+        service: true,
+        client: true,
+        user: true
       }
     });
 
     res.status(201).json({
       success: true,
       message: 'Appointment booked successfully',
-      data: { appointment }
+      data: {
+        appointment: buildAppointmentPayload(appointment)
+      }
     });
 
   } catch (error) {
@@ -177,121 +169,60 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get appointments with filtering
+// Get appointments for the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const {
-      page = 1,
-      limit = 10,
       status,
       dateFrom,
       dateTo,
-      serviceId,
-      clientId,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      serviceId
     } = req.query;
 
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    const skip = (pageNum - 1) * limitNum;
-
-    // Build where clause based on user role and filters
     const where = {};
 
-    // Role-based filtering
     if (req.user.role === 'USER') {
-      // Users can only see their own appointments
       where.userId = req.user.id;
     } else if (req.user.role === 'CLIENT') {
-      // Clients can see appointments where they are the client or the booker
       where.OR = [
         { userId: req.user.id },
         { clientId: req.user.id }
       ];
     }
-    // Admins can see all appointments
 
-    // Additional filters
     if (status) {
       where.status = status.toUpperCase();
     }
 
-    if (dateFrom) {
-      where.date = {
-        ...where.date,
-        gte: new Date(dateFrom)
-      };
-    }
-
-    if (dateTo) {
-      where.date = {
-        ...where.date,
-        lte: new Date(dateTo)
-      };
+    if (dateFrom || dateTo) {
+      where.date = {};
+      if (dateFrom) where.date.gte = new Date(dateFrom);
+      if (dateTo) where.date.lte = new Date(dateTo);
     }
 
     if (serviceId) {
       where.serviceId = serviceId;
     }
 
-    if (clientId) {
-      where.clientId = clientId;
-    }
+    const appointments = await prisma.appointment.findMany({
+      where,
+      include: {
+        service: true,
+        client: true,
+        user: true
+      },
+      orderBy: [
+        { date: 'desc' },
+        { time: 'desc' }
+      ]
+    });
 
-    // Get appointments with pagination
-    const [appointments, total] = await Promise.all([
-      prisma.appointment.findMany({
-        where,
-        include: {
-          service: {
-            select: {
-              id: true,
-              name: true,
-              price: true,
-              category: true,
-              duration: true
-            }
-          },
-          client: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              company: true,
-              email: true
-            }
-          },
-          user: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              role: true
-            }
-          }
-        },
-        orderBy: {
-          [sortBy]: sortOrder
-        },
-        skip,
-        take: limitNum
-      }),
-      prisma.appointment.count({ where })
-    ]);
+    const payload = appointments.map(buildAppointmentPayload);
 
     res.json({
       success: true,
       data: {
-        appointments,
-        pagination: {
-          page: pageNum,
-          limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum)
-        }
+        appointments: payload
       }
     });
 

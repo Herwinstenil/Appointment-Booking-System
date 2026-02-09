@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -112,10 +112,6 @@ const UserDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-    // Loading and error states
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     // Chart state
     const [chartType, setChartType] = useState('area');
     const [showChartMenu, setShowChartMenu] = useState(false);
@@ -133,6 +129,79 @@ const UserDashboard = () => {
     const [serviceOptions, setServiceOptions] = useState([]);
     const [serviceLoading, setServiceLoading] = useState(false);
     const [serviceError, setServiceError] = useState('');
+
+    const STATUS_LABELS = {
+        PENDING: 'Upcoming',
+        CONFIRMED: 'Confirmed',
+        COMPLETED: 'Completed',
+        CANCELLED: 'Cancelled'
+    };
+
+    const mapStatusLabel = (status = '') => {
+        const key = status?.toString().toUpperCase();
+        return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Upcoming';
+    };
+
+    const formatCurrency = (value) => {
+        const amount = Number(value);
+        if (Number.isNaN(amount)) return '$0.00';
+        return `$${amount.toFixed(2)}`;
+    };
+
+    const normalizeAppointment = (raw = {}) => {
+        const appointmentDate = raw.appointmentDate || raw.date;
+        const appointmentTime = raw.appointmentTime || raw.time || '';
+        const parsedDate = appointmentDate ? new Date(appointmentDate) : null;
+        const providerName = raw.client?.company || [raw.client?.firstName, raw.client?.lastName].filter(Boolean).join(' ') || 'Service Team';
+
+        return {
+            id: raw.id,
+            service: raw.serviceName || raw.service?.name || 'Service',
+            provider: providerName,
+            date: parsedDate ? parsedDate.toLocaleDateString() : '',
+            time: appointmentTime,
+            appointmentDate,
+            appointmentTime,
+            status: mapStatusLabel(raw.status),
+            statusRaw: raw.status,
+            amount: formatCurrency(raw.amount ?? raw.service?.price),
+            duration: raw.duration || raw.service?.duration || '1 hour',
+            rating: raw.rating || 0,
+            comment: raw.comment || '',
+            notes: raw.notes || '',
+            serviceId: raw.serviceId,
+            clientId: raw.clientId,
+            createdAt: raw.createdAt
+        };
+    };
+
+    const loadAppointments = useCallback(async () => {
+        setAppointmentsLoading(true);
+        setAppointmentsError(null);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments`, {
+                headers: getAuthHeaders()
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to load appointments');
+            }
+
+            const records = payload.data?.appointments || [];
+            const mapped = records.map(normalizeAppointment);
+            setAppointments(mapped);
+            setBookingHistory(mapped.filter(entry => entry.status === 'Completed'));
+        } catch (err) {
+            console.error('Failed to load appointments', err);
+            setAppointments([]);
+            setBookingHistory([]);
+            setAppointmentsError(err.message || 'Failed to load appointments');
+        } finally {
+            setAppointmentsLoading(false);
+        }
+    }, [API_BASE_URL, getAuthHeaders]);
 
     useEffect(() => {
         if (!user) {
@@ -269,70 +338,16 @@ const UserDashboard = () => {
 
     // Appointments State - Load from API
     const [appointments, setAppointments] = useState([]);
+    const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+    const [appointmentsError, setAppointmentsError] = useState(null);
 
     // Booking History State - Load from API
     const [bookingHistory, setBookingHistory] = useState([]);
 
-    // Bookings State
-    const [bookings, setBookings] = useState([]);
-
-    // Fetch data on component mount
+    // Fetch appointments when the component mounts
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const headers = getAuthHeaders();
-
-                // Fetch all appointments (both upcoming and completed)
-                const appointmentsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/appointments?limit=200`, {
-                    headers
-                });
-
-                if (appointmentsResponse.ok) {
-                    const appointmentsData = await appointmentsResponse.json();
-                    const allAppointments = appointmentsData.data?.appointments || [];
-
-                    // Transform data to match component expectations
-                    const transformedAppointments = allAppointments.map(apt => ({
-                        id: apt.id,
-                        service: apt.service?.name || 'Unknown Service',
-                        provider: apt.client?.company || apt.client?.firstName + ' ' + apt.client?.lastName || 'Unknown Provider',
-                        date: apt.date ? new Date(apt.date).toLocaleDateString() : '',
-                        time: apt.time || '',
-                        status: apt.status || 'Unknown',
-                        amount: `$${apt.amount || 0}`,
-                        duration: apt.duration || '1 hour',
-                        rating: apt.rating || 0,
-                        comment: apt.comment || '',
-                        serviceId: apt.service?.id,
-                        clientId: apt.client?.id,
-                        createdAt: apt.createdAt
-                    }));
-
-                    // Separate upcoming and completed appointments
-                    const upcoming = transformedAppointments.filter(apt =>
-                        apt.status === 'PENDING' || apt.status === 'CONFIRMED'
-                    );
-                    const completed = transformedAppointments.filter(apt =>
-                        apt.status === 'COMPLETED'
-                    );
-
-                    setAppointments(upcoming);
-                    setBookingHistory(completed);
-                }
-
-            } catch (err) {
-                console.error('Error fetching user data:', err);
-                setError(err.message || 'Failed to load user data');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-    }, [getAuthHeaders]);
+        loadAppointments();
+    }, [loadAppointments]);
 
     // Appointments filtering state
     const [searchTerm, setSearchTerm] = useState('');
@@ -547,10 +562,28 @@ const UserDashboard = () => {
     };
 
     // Appointment Handlers
-    const cancelAppointment = (appointmentId) => {
-        setAppointments(appointments.map(apt =>
-            apt.id === appointmentId ? { ...apt, status: 'Cancelled' } : apt
-        ));
+    const cancelAppointment = async (appointmentId) => {
+        try {
+            setAppointmentsError(null);
+            const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({ status: 'CANCELLED' })
+            });
+
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to cancel appointment');
+            }
+
+            await loadAppointments();
+        } catch (err) {
+            console.error('Failed to cancel appointment', err);
+            setAppointmentsError(err.message || 'Failed to cancel appointment');
+        }
     };
 
     const rescheduleAppointment = (appointmentId) => {
@@ -615,11 +648,24 @@ const UserDashboard = () => {
     };
 
     // Delete Booking Handler
-    const handleDeleteBooking = (bookingId) => {
-        if (window.confirm('Are you sure you want to delete this booking from your history?')) {
-            setBookingHistory(bookingHistory.filter(booking => booking.id !== bookingId));
+    const handleDeleteBooking = async (bookingId) => {
+        if (!window.confirm('Are you sure you want to delete this booking from your history?')) {
+            return;
+        }
 
-            // Add to recent activities
+        try {
+            const response = await fetch(`${API_BASE_URL}/appointments/${bookingId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to delete booking');
+            }
+
+            await loadAppointments();
+
             const deletedBooking = bookingHistory.find(b => b.id === bookingId);
             if (deletedBooking) {
                 const newActivity = {
@@ -631,6 +677,9 @@ const UserDashboard = () => {
                 };
                 setRecentActivities(prev => [newActivity, ...prev]);
             }
+        } catch (err) {
+            console.error('Delete booking error:', err);
+            setAppointmentsError(err.message || 'Failed to delete booking');
         }
     };
 
@@ -696,108 +745,113 @@ const UserDashboard = () => {
     // Booking Modal Component
     const BookingModal = () => {
         const [bookingForm, setBookingForm] = useState({
-            name: profileData.firstName + ' ' + profileData.lastName,
-            email: profileData.email,
-            phone: profileData.phone,
             service: '',
-            date: '',
-            time: ''
+            appointmentDate: '',
+            appointmentTime: '',
+            notes: ''
         });
         const [selectedDate, setSelectedDate] = useState(null);
         const [selectedTime, setSelectedTime] = useState(null);
         const [errors, setErrors] = useState({});
+        const [bookingError, setBookingError] = useState('');
+        const [isSubmitting, setIsSubmitting] = useState(false);
 
-        const handleBookingSubmit = () => {
+        const resetModalForm = () => {
+            setBookingForm({
+                service: '',
+                appointmentDate: '',
+                appointmentTime: '',
+                notes: ''
+            });
+            setSelectedDate(null);
+            setSelectedTime(null);
+            setErrors({});
+            setBookingError('');
+        };
+
+        const handleCloseModal = () => {
+            resetModalForm();
+            setShowBookingModal(false);
+        };
+
+        const handleBookingSubmit = async () => {
             const newErrors = {};
-
-            if (!bookingForm.name.trim()) {
-                newErrors.name = 'Full name is required';
-            }
-            if (!bookingForm.email.trim()) {
-                newErrors.email = 'Email is required';
-            }
-            if (!bookingForm.phone.trim() || bookingForm.phone.trim() === '+91' || bookingForm.phone.length <= 4) {
-                newErrors.phone = 'Phone number is required';
-            }
             if (!bookingForm.service) {
                 newErrors.service = 'Please select a service';
             }
-            if (!bookingForm.date) {
-                newErrors.date = 'Please select a date';
+            if (!bookingForm.appointmentDate) {
+                newErrors.appointmentDate = 'Please select a date';
             }
-            if (!bookingForm.time) {
-                newErrors.time = 'Please select a time';
+            if (!bookingForm.appointmentTime) {
+                newErrors.appointmentTime = 'Please select a time';
             }
 
             setErrors(newErrors);
+            if (Object.keys(newErrors).length > 0) {
+                return;
+            }
 
-            if (Object.keys(newErrors).length === 0) {
-                const selectedService = serviceOptions.find((service) => service.id === bookingForm.service);
-                const priceValue = Number.isFinite(Number(selectedService?.price)) ? Number(selectedService.price) : NaN;
-                const amountText = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$100';
-                const serviceLabel = selectedService?.name || 'Service';
+            setIsSubmitting(true);
+            setBookingError('');
 
-                const newAppointment = {
-                    id: appointments.length + 1,
-                    service: serviceLabel,
-                    provider: 'Tech Solutions Inc.', // Default provider
-                    date: bookingForm.date,
-                    time: bookingForm.time,
-                    status: 'Upcoming',
-                    amount: amountText,
-                    duration: '1 hour'
-                };
+            const selectedService = serviceOptions.find(service => service.id === bookingForm.service);
 
-                // Add to appointments list
-                setAppointments(prev => [...prev, newAppointment]);
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        serviceId: bookingForm.service,
+                        appointmentDate: bookingForm.appointmentDate,
+                        appointmentTime: bookingForm.appointmentTime,
+                        notes: bookingForm.notes.trim()
+                    })
+                });
 
-                // Add to recent activities
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Unable to book appointment');
+                }
+
+                await loadAppointments();
+
                 const newActivity = {
                     id: recentActivities.length + 1,
-                    action: `Booked ${serviceLabel}`,
+                    action: `Booked ${selectedService?.name || 'a service'}`,
                     time: 'Just now',
                     status: 'booking',
                     icon: Calendar
                 };
                 setRecentActivities(prev => [newActivity, ...prev]);
 
-                // Reset form and close modal
-                setBookingForm({
-                    name: profileData.firstName + ' ' + profileData.lastName,
-                    email: profileData.email,
-                    phone: profileData.phone,
-                    service: '',
-                    date: '',
-                    time: ''
-                });
-                setSelectedDate(null);
-                setSelectedTime(null);
-                setErrors({});
+                resetModalForm();
                 setShowBookingModal(false);
+                setBookingSuccess(true);
+                setTimeout(() => setBookingSuccess(false), 3000);
                 setJustBooked(true);
-                // Delay success notification to ensure modal closes first
-                setTimeout(() => {
-                    setBookingSuccess(true);
-                    setTimeout(() => {
-                        setBookingSuccess(false);
-                        setJustBooked(false);
-                    }, 3000);
-                }, 100);
+                setTimeout(() => setJustBooked(false), 3000);
+            } catch (err) {
+                console.error('Booking error:', err);
+                setBookingError(err.message || 'Failed to book appointment');
+            } finally {
+                setIsSubmitting(false);
             }
         };
 
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                    {/* Modal Header */}
                     <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900">Book New Service</h3>
-                                <p className="text-gray-600 mt-1">Schedule your next appointment</p>
+                                <p className="text-gray-600 mt-1">Schedule your next appointment — it will appear immediately in your dashboard.</p>
                             </div>
                             <button
-                                onClick={() => setShowBookingModal(false)}
+                                onClick={handleCloseModal}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                             >
                                 <X size={24} />
@@ -805,138 +859,134 @@ const UserDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Modal Body */}
-                    <div className="p-6">
-                        <div className="space-y-6">
+                    <div className="p-6 space-y-6">
+                        {bookingError && (
+                            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {bookingError}
+                            </div>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
                                 <input
                                     type="text"
-                                    value={bookingForm.name}
-                                    onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                    placeholder="John Doe"
+                                    value={`${profileData.firstName || ''} ${profileData.lastName || ''}`.trim()}
+                                    readOnly
+                                    className="w-full border border-gray-300 rounded-2xl px-4 py-3 bg-gray-50 text-gray-700"
                                 />
-                                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        value={bookingForm.email}
-                                        onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                        placeholder="john@example.com"
-                                    />
-                                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Phone</label>
-                                    <input
-                                        type="tel"
-                                        value={bookingForm.phone}
-                                        onChange={(e) => {
-                                            let value = e.target.value;
-                                            if (!value.startsWith('+91 ')) {
-                                                value = '+91 ' + value.replace(/^\+91\s*/, '');
-                                            }
-                                            value = '+91 ' + value.slice(4).replace(/\D/g, '').slice(0, 10);
-                                            setBookingForm({ ...bookingForm, phone: value });
-                                        }}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                        placeholder="+91 1234567890"
-                                    />
-                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                                </div>
-                            </div>
-
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Service</label>
-                                {serviceLoading ? (
-                                    <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
-                                        Loading services...
-                                    </div>
-                                ) : serviceError ? (
-                                    <div className="w-full px-4 py-3 rounded-lg border border-red-300 bg-red-50 text-red-700">
-                                        {serviceError}
-                                    </div>
-                                ) : serviceOptions.length === 0 ? (
-                                    <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-yellow-50 text-gray-700">
-                                        No active services are available right now. Please check back later.
-                                    </div>
-                                ) : (
-                                    <select
-                                        value={bookingForm.service}
-                                        onChange={(e) => setBookingForm({ ...bookingForm, service: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                    >
-                                        <option value="">Select a service</option>
-                                        {serviceOptions.map((service) => {
-                                            const priceValue = Number(service.price);
-                                            const priceLabel = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$0.00';
-                                            return (
-                                                <option key={service.id} value={service.id}>
-                                                    {service.name} - {priceLabel}
-                                                    {service.category ? ` (${service.category})` : ''}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
-                                )}
-                                {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
+                                <label className="block text-gray-700 font-semibold mb-2">Email</label>
+                                <input
+                                    type="email"
+                                    value={profileData.email || ''}
+                                    readOnly
+                                    className="w-full border border-gray-300 rounded-2xl px-4 py-3 bg-gray-50 text-gray-700"
+                                />
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block font-medium mb-2">Select Date</label>
-                                    <DatePicker
-                                        selected={selectedDate}
-                                        onChange={(date) => {
-                                            setSelectedDate(date);
-                                            setBookingForm({
-                                                ...bookingForm,
-                                                date: date ? date.toISOString().split('T')[0] : ''
-                                            });
-                                        }}
-                                        dateFormat="yyyy-MM-dd"
-                                        className="border p-3 rounded w-full"
-                                        minDate={new Date()}
-                                    />
-                                    {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block font-medium mb-2">Select Time</label>
-                                    <DatePicker
-                                        selected={selectedTime}
-                                        onChange={(time) => {
-                                            setSelectedTime(time);
-                                            setBookingForm({
-                                                ...bookingForm,
-                                                time: time ? time.toLocaleTimeString('en-US', {
-                                                    hour: 'numeric',
-                                                    minute: '2-digit',
-                                                    hour12: true
-                                                }) : ''
-                                            });
-                                        }}
-                                        showTimeSelect
-                                        showTimeSelectOnly
-                                        timeIntervals={30}
-                                        timeCaption="Time"
-                                        dateFormat="h:mm aa"
-                                        className="border p-3 rounded w-full"
-                                    />
-                                    {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
-                                </div>
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Phone</label>
+                                <input
+                                    type="tel"
+                                    value={profileData.phone || profileData.mobile || ''}
+                                    readOnly
+                                    className="w-full border border-gray-300 rounded-2xl px-4 py-3 bg-gray-50 text-gray-700"
+                                />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">Service</label>
+                            {serviceLoading ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-500">
+                                    Loading services...
+                                </div>
+                            ) : serviceError ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-red-300 bg-red-50 text-red-700">
+                                    {serviceError}
+                                </div>
+                            ) : serviceOptions.length === 0 ? (
+                                <div className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-yellow-50 text-gray-700">
+                                    No active services are available right now. Please check back later.
+                                </div>
+                            ) : (
+                                <select
+                                    value={bookingForm.service}
+                                    onChange={(e) => setBookingForm(prev => ({ ...prev, service: e.target.value }))}
+                                    className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600 bg-white"
+                                >
+                                    <option value="">Select a service</option>
+                                    {serviceOptions.map((service) => {
+                                        const priceValue = Number(service.price);
+                                        const priceLabel = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$0.00';
+                                        return (
+                                            <option key={service.id} value={service.id}>
+                                                {service.name} - {priceLabel}
+                                                {service.category ? ` (${service.category})` : ''}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            )}
+                            {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Select Date</label>
+                                <DatePicker
+                                    selected={selectedDate}
+                                    onChange={(date) => {
+                                        setSelectedDate(date);
+                                        setBookingForm(prev => ({
+                                            ...prev,
+                                            appointmentDate: date ? date.toISOString().split('T')[0] : ''
+                                        }));
+                                    }}
+                                    dateFormat="yyyy-MM-dd"
+                                    minDate={new Date()}
+                                    className="border border-gray-300 rounded-2xl px-4 py-3 w-full text-gray-700"
+                                />
+                                {errors.appointmentDate && <p className="text-red-500 text-sm mt-1">{errors.appointmentDate}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Select Time</label>
+                                <DatePicker
+                                    selected={selectedTime}
+                                    onChange={(time) => {
+                                        setSelectedTime(time);
+                                        setBookingForm(prev => ({
+                                            ...prev,
+                                            appointmentTime: time ? time.toLocaleTimeString('en-US', {
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            }) : ''
+                                        }));
+                                    }}
+                                    showTimeSelect
+                                    showTimeSelectOnly
+                                    timeIntervals={30}
+                                    timeCaption="Time"
+                                    dateFormat="h:mm aa"
+                                    className="border border-gray-300 rounded-2xl px-4 py-3 w-full text-gray-700"
+                                />
+                                {errors.appointmentTime && <p className="text-red-500 text-sm mt-1">{errors.appointmentTime}</p>}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-2">Notes</label>
+                            <textarea
+                                rows={3}
+                                value={bookingForm.notes}
+                                onChange={(e) => setBookingForm(prev => ({ ...prev, notes: e.target.value }))}
+                                className="w-full border border-gray-300 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-600 bg-gray-50 text-gray-700 resize-none"
+                                placeholder="Let us know if you have any preparatory questions or context."
+                            />
                         </div>
                     </div>
 
-                    {/* Modal Footer */}
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-gray-500">
@@ -944,17 +994,18 @@ const UserDashboard = () => {
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button
-                                    onClick={() => setShowBookingModal(false)}
+                                    onClick={handleCloseModal}
                                     className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleBookingSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    disabled={isSubmitting || serviceLoading || serviceOptions.length === 0}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                    <CheckCircle size={18} className="inline mr-2" />
-                                    Book Appointment
+                                    {isSubmitting && <span className="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+                                    {isSubmitting ? 'Booking...' : 'Book Appointment'}
                                 </button>
                             </div>
                         </div>
@@ -963,18 +1014,19 @@ const UserDashboard = () => {
             </div>
         );
     };
-
     // Reschedule Modal Component
     const RescheduleModal = () => {
         const [rescheduleForm, setRescheduleForm] = useState({
-            date: selectedAppointment?.date || '',
-            time: selectedAppointment?.time || ''
+            date: selectedAppointment?.appointmentDate || '',
+            time: selectedAppointment?.appointmentTime || ''
         });
-        const [selectedDate, setSelectedDate] = useState(selectedAppointment?.date ? new Date(selectedAppointment.date) : null);
+        const [selectedDate, setSelectedDate] = useState(selectedAppointment?.appointmentDate ? new Date(selectedAppointment.appointmentDate) : null);
         const [selectedTime, setSelectedTime] = useState(null);
         const [errors, setErrors] = useState({});
+        const [isRescheduling, setIsRescheduling] = useState(false);
+        const [rescheduleError, setRescheduleError] = useState('');
 
-        const handleRescheduleSubmit = () => {
+        const handleRescheduleSubmit = async () => {
             const newErrors = {};
 
             if (!rescheduleForm.date) {
@@ -985,18 +1037,33 @@ const UserDashboard = () => {
             }
 
             setErrors(newErrors);
+            if (Object.keys(newErrors).length > 0) {
+                return;
+            }
 
-            if (Object.keys(newErrors).length === 0) {
-                // Update the appointment
-                setAppointments(appointments.map(apt =>
-                    apt.id === selectedAppointment.id ? {
-                        ...apt,
+            setIsRescheduling(true);
+            setRescheduleError('');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments/${selectedAppointment.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
                         date: rescheduleForm.date,
                         time: rescheduleForm.time
-                    } : apt
-                ));
+                    })
+                });
 
-                // Add to recent activities
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to reschedule appointment');
+                }
+
+                await loadAppointments();
+
                 const newActivity = {
                     id: recentActivities.length + 1,
                     action: `Rescheduled ${selectedAppointment.service}`,
@@ -1006,7 +1073,6 @@ const UserDashboard = () => {
                 };
                 setRecentActivities(prev => [newActivity, ...prev]);
 
-                // Reset form and close modal
                 setRescheduleForm({
                     date: '',
                     time: ''
@@ -1016,13 +1082,13 @@ const UserDashboard = () => {
                 setErrors({});
                 setShowRescheduleModal(false);
                 setSelectedAppointment(null);
-                // Show success notification
-                setTimeout(() => {
-                    setRescheduleSuccess(true);
-                    setTimeout(() => {
-                        setRescheduleSuccess(false);
-                    }, 3000);
-                }, 100);
+                setRescheduleSuccess(true);
+                setTimeout(() => setRescheduleSuccess(false), 3000);
+            } catch (err) {
+                console.error('Reschedule error:', err);
+                setRescheduleError(err.message || 'Failed to reschedule appointment');
+            } finally {
+                setIsRescheduling(false);
             }
         };
 
@@ -1064,6 +1130,11 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         </div>
+                        {rescheduleError && (
+                            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+                                {rescheduleError}
+                            </div>
+                        )}
 
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1131,10 +1202,16 @@ const UserDashboard = () => {
                                 </button>
                                 <button
                                     onClick={handleRescheduleSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    disabled={isRescheduling}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                    <Calendar size={18} className="inline mr-2" />
-                                    Reschedule Appointment
+                                    {isRescheduling && <span className="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+                                    {isRescheduling ? 'Rescheduling...' : (
+                                        <>
+                                            <Calendar size={18} className="inline mr-2" />
+                                            Reschedule Appointment
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -1152,8 +1229,10 @@ const UserDashboard = () => {
             comment: ''
         });
         const [errors, setErrors] = useState({});
+        const [ratingError, setRatingError] = useState('');
+        const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
-        const handleRatingSubmit = () => {
+        const handleRatingSubmit = async () => {
             const newErrors = {};
 
             if (!ratingForm.rating || ratingForm.rating < 1 || ratingForm.rating > 5) {
@@ -1161,18 +1240,33 @@ const UserDashboard = () => {
             }
 
             setErrors(newErrors);
+            if (Object.keys(newErrors).length > 0) {
+                return;
+            }
 
-            if (Object.keys(newErrors).length === 0) {
-                // Update the appointment with rating
-                setAppointments(appointments.map(apt =>
-                    apt.id === selectedAppointment.id ? {
-                        ...apt,
+            setIsSubmittingRating(true);
+            setRatingError('');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/appointments/${selectedAppointment.id}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
                         rating: ratingForm.rating,
-                        comment: ratingForm.comment
-                    } : apt
-                ));
+                        comment: ratingForm.comment.trim()
+                    })
+                });
 
-                // Add to recent activities
+                const payload = await response.json();
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to submit rating');
+                }
+
+                await loadAppointments();
+
                 const newActivity = {
                     id: recentActivities.length + 1,
                     action: `Rated ${selectedAppointment.service} ${ratingForm.rating} stars`,
@@ -1182,7 +1276,6 @@ const UserDashboard = () => {
                 };
                 setRecentActivities(prev => [newActivity, ...prev]);
 
-                // Reset form and close modal
                 setRatingForm({
                     rating: 0,
                     comment: ''
@@ -1192,6 +1285,11 @@ const UserDashboard = () => {
                 setErrors({});
                 setShowRatingModal(false);
                 setSelectedAppointment(null);
+            } catch (err) {
+                console.error('Rating submission failed:', err);
+                setRatingError(err.message || 'Failed to submit rating');
+            } finally {
+                setIsSubmittingRating(false);
             }
         };
 
@@ -1234,6 +1332,12 @@ const UserDashboard = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {ratingError && (
+                            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+                                {ratingError}
+                            </div>
+                        )}
 
                         <div className="space-y-6">
                             {/* Rating Stars */}
@@ -1297,10 +1401,16 @@ const UserDashboard = () => {
                                 </button>
                                 <button
                                     onClick={handleRatingSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                    disabled={isSubmittingRating}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                    <Star size={18} className="inline mr-2" />
-                                    Submit Rating
+                                    {isSubmittingRating && <span className="inline-block w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+                                    {isSubmittingRating ? 'Submitting...' : (
+                                        <>
+                                            <Star size={18} className="inline mr-2" />
+                                            Submit Rating
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -1692,7 +1802,7 @@ const UserDashboard = () => {
             setShowFilterModal(false);
         };
 
-        const handleClearFilters = () => {
+        const handleClearFilters = async () => {
             setFilterForm({
                 status: 'all',
                 dateFrom: '',
@@ -1701,13 +1811,7 @@ const UserDashboard = () => {
                 amountMax: '',
                 rating: 'all'
             });
-            setBookingHistory([
-                { id: 1, service: 'Web Development', provider: 'Tech Solutions Inc.', date: '2024-01-10', amount: '$500', status: 'Completed', rating: 5 },
-                { id: 2, service: 'Graphic Design', provider: 'Creative Studio', date: '2023-12-28', amount: '$300', status: 'Completed', rating: 4 },
-                { id: 3, service: 'SEO Optimization', provider: 'Digital Growth', date: '2023-12-15', amount: '$450', status: 'Completed', rating: 5 },
-                { id: 4, service: 'Content Writing', provider: 'Wordsmith Pro', date: '2023-12-05', amount: '$250', status: 'Completed', rating: 4 },
-                { id: 5, service: 'Social Media Management', provider: 'Social Boost', date: '2023-11-20', amount: '$400', status: 'Completed', rating: 3 }
-            ]);
+            await loadAppointments();
             setShowFilterModal(false);
         };
 
@@ -2175,6 +2279,7 @@ const UserDashboard = () => {
     const renderContent = () => {
         switch (activeItem) {
             case 'Dashboard':
+                const upcomingAppointments = appointments.filter(apt => apt.status === 'Upcoming');
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
@@ -2442,40 +2547,55 @@ const UserDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <h3 className="text-xl font-bold text-gray-800 mb-6">Upcoming Appointments</h3>
                                 <div className="space-y-4">
-                                    {appointments.filter(apt => apt.status === 'Upcoming').map((appointment) => (
-                                        <div
-                                            key={appointment.id}
-                                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group"
-                                        >
-                                            <div>
-                                                <p className="font-medium text-gray-800 group-hover:text-violet-700">{appointment.service}</p>
-                                                <p className="text-sm text-gray-600">{appointment.provider}</p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <Calendar size={12} className="text-gray-500" />
-                                                    <span className="text-xs text-gray-500">{appointment.date} at {appointment.time}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-lg font-bold text-gray-900 group-hover:text-violet-600">
-                                                    {appointment.amount}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <button
-                                                        onClick={() => rescheduleAppointment(appointment.id)}
-                                                        className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
-                                                    >
-                                                        Reschedule
-                                                    </button>
-                                                    <button
-                                                        onClick={() => cancelAppointment(appointment.id)}
-                                                        className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </div>
+                                    {appointmentsLoading ? (
+                                        <div className="flex justify-center py-12">
+                                            <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
                                         </div>
-                                    ))}
+                                    ) : appointmentsError ? (
+                                        <div className="text-sm text-red-600 px-4 py-8 rounded-2xl border border-red-200 bg-red-50">
+                                            {appointmentsError}
+                                        </div>
+                                    ) : upcomingAppointments.length === 0 ? (
+                                        <div className="text-center py-10 text-gray-500">
+                                            <p className="text-lg font-semibold">No upcoming appointments yet</p>
+                                            <p className="text-sm">Book a service and it will appear here automatically.</p>
+                                        </div>
+                                    ) : (
+                                        upcomingAppointments.map((appointment) => (
+                                            <div
+                                                key={appointment.id}
+                                                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 transform hover:scale-105 group"
+                                            >
+                                                <div>
+                                                    <p className="font-medium text-gray-800 group-hover:text-violet-700">{appointment.service}</p>
+                                                    <p className="text-sm text-gray-600">{appointment.provider}</p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <Calendar size={12} className="text-gray-500" />
+                                                        <span className="text-xs text-gray-500">{appointment.date} at {appointment.time}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-lg font-bold text-gray-900 group-hover:text-violet-600">
+                                                        {appointment.amount}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <button
+                                                            onClick={() => rescheduleAppointment(appointment.id)}
+                                                            className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
+                                                        >
+                                                            Reschedule
+                                                        </button>
+                                                        <button
+                                                            onClick={() => cancelAppointment(appointment.id)}
+                                                            className="text-xs text-red-600 hover:text-red-800 cursor-pointer"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -2651,7 +2771,42 @@ const UserDashboard = () => {
 
                         {/* Appointments List */}
                         <div className="space-y-4">
-                            {filteredAppointments.length > 0 ? (
+                            {appointmentsLoading ? (
+                                <div className="flex justify-center py-12">
+                                    <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : appointmentsError ? (
+                                <div className="rounded-2xl border border-red-200 bg-red-50 px-6 py-8 text-sm text-red-700 text-center">
+                                    {appointmentsError}
+                                </div>
+                            ) : appointments.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Search className="text-gray-400" size={24} />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No appointments yet</h3>
+                                    <p className="text-gray-600 mb-4">Book a service and it will appear in this list.</p>
+                                    <button
+                                        onClick={() => {
+                                            if (!justBooked) {
+                                                setShowBookingModal(true);
+                                            }
+                                        }}
+                                        className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+                                    >
+                                        <Plus size={16} className="mr-2" />
+                                        Book New Service
+                                    </button>
+                                </div>
+                            ) : filteredAppointments.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Search className="text-gray-400" size={24} />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No appointments found</h3>
+                                    <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+                                </div>
+                            ) : (
                                 filteredAppointments.map((appointment) => (
                                     <div key={appointment.id} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                         <div className="flex flex-col lg:flex-row lg:items-center justify-between">
@@ -2671,7 +2826,7 @@ const UserDashboard = () => {
                                                         : appointment.status === 'Completed'
                                                             ? 'bg-emerald-100 text-emerald-800'
                                                             : 'bg-red-100 text-red-800'
-                                                        }`}>
+                                                    }`}>
                                                         {appointment.status}
                                                     </span>
                                                     <span className="text-sm text-gray-600">
@@ -2717,14 +2872,6 @@ const UserDashboard = () => {
                                         </div>
                                     </div>
                                 ))
-                            ) : (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Search className="text-gray-400" size={24} />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No appointments found</h3>
-                                    <p className="text-gray-600">Try adjusting your search or filter criteria</p>
-                                </div>
                             )}
                         </div>
                     </div>
