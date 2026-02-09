@@ -73,6 +73,12 @@ const emptyProfileTemplate = {
     updatedAt: ''
 };
 
+const getRoleLabel = (role = '') => {
+    if (!role) return 'Role not assigned';
+    const normalized = role.toString().toLowerCase();
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+};
+
 const formatProfileData = (record = {}) => {
     const firstName = record.firstName || '';
     const lastName = record.lastName || '';
@@ -3375,6 +3381,7 @@ const UserDashboard = () => {
                                 >
                                     <div className="text-right hidden sm:block">
                                         <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
+                                        <p className="text-xs text-gray-500">{getRoleLabel(profileData.role)}</p>
                                     </div>
                                     <div className="relative">
                                         {imagePreview ? (
@@ -3403,6 +3410,7 @@ const UserDashboard = () => {
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
                                             <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{getRoleLabel(profileData.role)}</p>
                                             <p className="text-xs text-gray-500 mt-1">{profileData.email}</p>
                                         </div>
 
