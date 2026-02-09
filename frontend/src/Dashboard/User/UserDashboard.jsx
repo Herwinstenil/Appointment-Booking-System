@@ -3267,7 +3267,7 @@ const UserDashboard = () => {
                                             { icon: FileText, label: 'Download Invoices', color: 'text-blue-600' },
                                             { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600' },
                                             { icon: Download, label: 'Export Data', color: 'text-purple-600' },
-                                            { icon: Settings, label: 'Settings', color: 'text-amber-600' }
+                                            
                                         ].map((action, index) => {
                                             const ActionIcon = action.icon;
                                             return (
