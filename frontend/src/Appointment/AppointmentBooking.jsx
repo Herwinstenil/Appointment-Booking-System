@@ -16,6 +16,9 @@ export default function AppointmentBooking() {
     const [services, setServices] = useState([]);
     const [servicesLoading, setServicesLoading] = useState(true);
     const [servicesError, setServicesError] = useState('');
+    const [userProfile, setUserProfile] = useState(null);
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [profileError, setProfileError] = useState('');
     const [formData, setFormData] = useState({
         serviceId: '',
         date: '',
@@ -80,6 +83,57 @@ export default function AppointmentBooking() {
         };
     }, [isLoggedIn, API_BASE_URL, getAuthHeaders]);
 
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setProfileLoading(false);
+            setProfileError('Login required to load profile details');
+            return;
+        }
+
+        let isMounted = true;
+
+        const fetchProfile = async () => {
+            setProfileLoading(true);
+            setProfileError('');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/profile`, {
+                    headers: getAuthHeaders()
+                });
+                const payload = await response.json();
+
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Unable to load profile');
+                }
+
+                const profile = payload.data?.user;
+                if (!profile) {
+                    throw new Error('Profile data missing');
+                }
+
+                if (isMounted) {
+                    setUserProfile(profile);
+                }
+            } catch (error) {
+                console.error('Error fetching profile:', error);
+                if (isMounted) {
+                    setProfileError(error.message || 'Failed to load profile');
+                    setUserProfile(null);
+                }
+            } finally {
+                if (isMounted) {
+                    setProfileLoading(false);
+                }
+            }
+        };
+
+        fetchProfile();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isLoggedIn, API_BASE_URL, getAuthHeaders]);
+
     const handleSubmit = async () => {
         const newErrors = {};
         if (!formData.serviceId) newErrors.serviceId = 'Please select a service';
@@ -89,13 +143,24 @@ export default function AppointmentBooking() {
         if (Object.keys(newErrors).length === 0) {
             setIsLoading(true);
             try {
+                if (!userProfile) {
+                    alert('Profile details are required to book an appointment. Please refresh or update your profile.');
+                    setIsLoading(false);
+                    return;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/appointments`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...getAuthHeaders()
                     },
-                    body: JSON.stringify(formData)
+                    body: JSON.stringify({
+                        ...formData,
+                        customerName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim(),
+                        customerEmail: userProfile.email,
+                        customerPhone: userProfile.phone || userProfile.mobile
+                    })
                 });
 
                 const data = await response.json();
@@ -136,6 +201,50 @@ export default function AppointmentBooking() {
                     <p className="text-gray-600 text-center mb-8">Fill in the details and we'll get back to you</p>
 
                     <div className="space-y-6">
+                        {profileLoading ? (
+                            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                                Fetching your profile details...
+                            </div>
+                        ) : profileError ? (
+                            <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {profileError}
+                            </div>
+                        ) : userProfile ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-gray-600 text-sm mb-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={`${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim()}
+                                        readOnly
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-600 text-sm mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        value={userProfile.email || ''}
+                                        readOnly
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-600 text-sm mb-1">Phone</label>
+                                    <input
+                                        type="tel"
+                                        value={userProfile.phone || userProfile.mobile || ''}
+                                        readOnly
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 text-gray-700"
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                No profile data available. Please update your profile from the dashboard first.
+                            </div>
+                        )}
+
                         <div>
                             <label className="block text-gray-700 font-semibold mb-2">Service</label>
                             {servicesLoading ? (
