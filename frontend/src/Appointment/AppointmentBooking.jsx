@@ -324,17 +324,6 @@ export default function AppointmentBooking() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-6 space-y-3">
-                            <h3 className="text-lg font-semibold text-gray-800">Additional details</h3>
-                            <textarea
-                                value={formData.notes}
-                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                rows={4}
-                                placeholder="Let us know if you have any specific requests or questions"
-                                className="w-full rounded-2xl border border-gray-300 px-4 py-3 resize-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
-                            />
-                        </div>
-
                         <div className="flex justify-end">
                             <button
                                 onClick={handleSubmit}
