@@ -2977,7 +2977,6 @@ const UserDashboard = () => {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-2xl font-bold mb-2">{profileData.firstName} {profileData.lastName}</h3>
-                                    <p className="text-violet-100 mb-1">Premium Customer</p>
                                     <p className="text-violet-100 text-sm opacity-90">{profileData.email}</p>
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="flex items-center gap-1 text-sm">
