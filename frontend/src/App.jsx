@@ -4,7 +4,7 @@ import './App.css'
 import Landing from './Landing/Landing.jsx'
 import Login from './User Page/Login.jsx'
 import Signin from './User Page/Signin.jsx'
-import AppointmentBooking from './Appointment/AppointmentBooking.jsx'
+
 import AdminDashboard from './Dashboard/Admin/AdminDashboard.jsx'
 import ClientDashboard from './Dashboard/Client/ClientDashboard.jsx'
 import UserDashboard from './Dashboard/User/UserDashboard.jsx'
