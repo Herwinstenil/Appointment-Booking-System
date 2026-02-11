@@ -256,7 +256,7 @@ export default function AppointmentLanding() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="text-xs uppercase font-semibold text-gray-500">Select Date</label>
+                <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Date</label>
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date) => {
