@@ -165,7 +165,6 @@ const UserDashboard = () => {
             status: mapStatusLabel(raw.status),
             statusRaw: raw.status,
             amount: formatCurrency(raw.amount ?? raw.service?.price),
-            duration: raw.duration || raw.service?.duration || '1 hour',
             rating: raw.rating || 0,
             comment: raw.comment || '',
             notes: raw.notes || '',
@@ -1469,10 +1468,6 @@ const UserDashboard = () => {
                                 <div>
                                     <p className="text-sm text-gray-500">Amount</p>
                                     <p className="font-medium text-gray-900 text-violet-600">{selectedAppointment?.amount}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Duration</p>
-                                    <p className="font-medium text-gray-900">{selectedAppointment?.duration}</p>
                                 </div>
                             </div>
                             <div className="mt-4">
@@ -2817,7 +2812,7 @@ const UserDashboard = () => {
                                                     </div>
                                                     <div>
                                                         <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
-                                                        <p className="text-sm text-gray-600">{appointment.provider} • {appointment.duration}</p>
+                                                        <p className="text-sm text-gray-600">{appointment.provider}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4 mb-4">

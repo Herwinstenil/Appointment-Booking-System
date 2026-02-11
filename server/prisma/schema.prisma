@@ -75,7 +75,6 @@ model Appointment {
   clientId  String?
   date      DateTime
   time      String
-  duration  String
   amount    Float
   status    Status   @default(PENDING)
   notes     String?

@@ -36,7 +36,6 @@ const buildAppointmentPayload = (appointment) => {
     statusLabel: mapStatusLabel(appointment.status),
     createdAt: appointment.createdAt,
     amount: appointment.amount,
-    duration: appointment.duration || appointment.service?.duration || null,
     notes: appointment.notes || null,
     rating: appointment.rating || null,
     service: appointment.service ? {
@@ -140,7 +139,6 @@ router.post('/', authenticateToken, async (req, res) => {
         serviceId,
         date: parsedDate,
         time: appointmentTime,
-        duration: service.duration || '1 hour',
         amount: service.price,
         status: 'PENDING',
         notes: notes ? notes.trim() : null
@@ -317,7 +315,6 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
     const {
       date,
       time,
-      duration,
       notes,
       status
     } = req.body;
@@ -401,7 +398,6 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
       data: {
         date: date ? new Date(date) : undefined,
         time: time || undefined,
-        duration: duration || undefined,
         notes: notes !== undefined ? notes : undefined,
         status: status ? status.toUpperCase() : undefined
       },
