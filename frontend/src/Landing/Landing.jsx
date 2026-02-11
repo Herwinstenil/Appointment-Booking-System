@@ -275,7 +275,7 @@ export default function AppointmentLanding() {
                 )}
               </div>
               <div>
-                <label className="text-xs uppercase font-semibold text-gray-500">Select Time</label>
+                <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Time</label>
                 <DatePicker
                   selected={selectedTime}
                   onChange={(time) => {
