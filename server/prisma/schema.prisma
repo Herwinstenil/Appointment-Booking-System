@@ -72,7 +72,7 @@ model Appointment {
   id        String   @id @default(cuid())
   userId    String
   serviceId String
-  clientId  String?
+  clientNo  Int
   date      DateTime
   time      String
   amount    Float
@@ -86,7 +86,7 @@ model Appointment {
   // Relations
   user    User    @relation("UserAppointments", fields: [userId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
-  client  User?   @relation("ClientAppointments", fields: [clientId], references: [id])
+  client  User?   @relation("ClientAppointments", fields: [clientNo], references: [clientNo])
 }
 
 enum Role {

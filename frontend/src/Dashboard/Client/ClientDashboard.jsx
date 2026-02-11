@@ -62,6 +62,57 @@ const formatCurrency = (value) => {
     return `$${number.toFixed(2)}`;
 };
 
+const STATUS_LABELS = {
+    PENDING: 'Pending',
+    CONFIRMED: 'Confirmed',
+    COMPLETED: 'Completed',
+    CANCELLED: 'Cancelled'
+};
+
+const getStatusLabel = (statusRaw = '') => {
+    const normalized = statusRaw?.toString().toUpperCase();
+    return STATUS_LABELS[normalized] || statusRaw?.charAt(0).toUpperCase() + statusRaw?.slice(1).toLowerCase() || 'Pending';
+};
+
+const getStatusBadgeClass = (statusRaw = '') => {
+    const normalized = statusRaw?.toString().toUpperCase();
+    switch (normalized) {
+        case 'CONFIRMED':
+            return 'bg-emerald-100 text-emerald-800';
+        case 'COMPLETED':
+            return 'bg-blue-100 text-blue-800';
+        case 'CANCELLED':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-amber-100 text-amber-800';
+    }
+};
+
+const formatBookingDate = (value) => {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleDateString();
+};
+
+const buildClientBooking = (record) => {
+    const clientName = [record.user?.firstName, record.user?.lastName].filter(Boolean).join(' ') ||
+        record.user?.username || 'Client';
+    const rawDate = record.appointmentDate || record.date;
+    return {
+        id: record.id,
+        client: clientName,
+        service: record.service?.name || record.serviceName || 'Service',
+        date: rawDate ? formatBookingDate(rawDate) : '',
+        time: record.appointmentTime || record.time || '',
+        amount: formatCurrency(record.amount ?? record.service?.price ?? 0),
+        status: getStatusLabel(record.status),
+        statusRaw: record.status,
+        clientNo: record.clientNo || record.service?.clientNo || null,
+        statusClass: getStatusBadgeClass(record.status)
+    };
+};
+
 const normalizeServiceForUI = (service = {}) => {
     const parsedPrice = typeof service.price === 'number' ? service.price : Number(service.price);
     const priceValue = Number.isNaN(parsedPrice) ? 0 : parsedPrice;
@@ -120,6 +171,24 @@ const ClientDashboard = () => {
         }
     }, [API_BASE_URL, getAuthHeaders]);
 
+    const fetchBookingsList = useCallback(async () => {
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = getAuthHeaders();
+
+        const response = await fetch(`${baseUrl}/appointments/client`, {
+            headers
+        });
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+            throw new Error(payload.message || 'Unable to load bookings');
+        }
+
+        const normalized = (payload.data?.appointments || []).map(buildClientBooking);
+        setBookings(normalized);
+        return normalized;
+    }, [API_BASE_URL, getAuthHeaders]);
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -130,11 +199,8 @@ const ClientDashboard = () => {
                 const headers = getAuthHeaders();
                 const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
 
-                const [statsResponse, appointmentsResponse, revenueResponse] = await Promise.all([
+                const [statsResponse, revenueResponse] = await Promise.all([
                     fetch(`${baseUrl}/client/dashboard/stats`, {
-                        headers
-                    }),
-                    fetch(`${baseUrl}/client/appointments`, {
                         headers
                     }),
                     fetch(`${baseUrl}/client/revenue`, {
@@ -143,15 +209,13 @@ const ClientDashboard = () => {
                 ]);
 
                 if (!statsResponse.ok) throw new Error('Failed to fetch dashboard stats');
-                if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
                 if (!revenueResponse.ok) throw new Error('Failed to fetch revenue');
 
                 await statsResponse.json();
-                const appointmentsData = await appointmentsResponse.json();
                 const revenueData = await revenueResponse.json();
 
-                setBookings(appointmentsData.data?.appointments || []);
                 setRevenue(revenueData.data?.revenue || []);
+                await fetchBookingsList();
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching dashboard data:', err);
@@ -161,12 +225,11 @@ const ClientDashboard = () => {
         };
 
         fetchDashboardData();
-    }, [getAuthHeaders, API_BASE_URL]);
+    }, [getAuthHeaders, API_BASE_URL, fetchBookingsList]);
 
     useEffect(() => {
         fetchServicesList();
     }, [fetchServicesList]);
-
     const resetServiceMutation = () => {
         setServiceMutation(createServiceMutationState());
     };
@@ -252,6 +315,9 @@ const ClientDashboard = () => {
 
     // Booking Management State
     const [bookings, setBookings] = useState([]);
+    const [confirmingBookingId, setConfirmingBookingId] = useState(null);
+    const [cancellingBookingId, setCancellingBookingId] = useState(null);
+    const [bookingActionError, setBookingActionError] = useState('');
 
     // Revenue State
     const [revenue, setRevenue] = useState([]);
@@ -666,8 +732,7 @@ const ClientDashboard = () => {
         booking.status.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
         booking.date.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
         booking.time.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.amount.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.duration.toLowerCase().includes(bookingSearchTerm.toLowerCase())
+        booking.amount.toLowerCase().includes(bookingSearchTerm.toLowerCase())
     );
 
     // Service Management Handlers
@@ -716,10 +781,72 @@ const ClientDashboard = () => {
     };
 
     // Booking Management Handlers
-    const updateBookingStatus = (bookingId, status) => {
-        setBookings(bookings.map(booking =>
-            booking.id === bookingId ? { ...booking, status } : booking
-        ));
+    const handleConfirmBooking = async (bookingId) => {
+        if (!bookingId) return;
+        setConfirmingBookingId(bookingId);
+        setBookingActionError('');
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/appointments/${bookingId}/confirm`, {
+                method: 'PATCH',
+                headers
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to confirm appointment');
+            }
+
+            const confirmed = buildClientBooking(payload.data.appointment);
+            setBookings(prev => prev.map(b => b.id === confirmed.id ? confirmed : b));
+            await fetchBookingsList();
+            window.dispatchEvent(new CustomEvent('appointmentConfirmed', { detail: payload.data.appointment }));
+        } catch (error) {
+            console.error('Confirm booking failed:', error);
+            setBookingActionError(error.message || 'Unable to confirm booking');
+        } finally {
+            setConfirmingBookingId(null);
+        }
+    };
+
+    const handleCancelBooking = async (bookingId) => {
+        if (!bookingId) return;
+        setCancellingBookingId(bookingId);
+        setBookingActionError('');
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/client/appointments/${bookingId}/status`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ status: 'CANCELLED' })
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to cancel appointment');
+            }
+
+            const updated = buildClientBooking(payload.data.appointment);
+            setBookings(prev => prev.map(b => b.id === updated.id ? updated : b));
+            await fetchBookingsList();
+        } catch (error) {
+            console.error('Cancel booking failed:', error);
+            setBookingActionError(error.message || 'Unable to cancel booking');
+        } finally {
+            setCancellingBookingId(null);
+        }
     };
 
     // Availability Handlers
@@ -857,15 +984,17 @@ const ClientDashboard = () => {
         setBookingErrors({});
 
         // Create new booking
+        const normalizedStatusRaw = newBookingData.status || 'PENDING';
         const newBooking = {
             id: bookings.length + 1,
             client: newBookingData.client.trim(),
             service: newBookingData.service,
             date: newBookingData.date,
             time: newBookingData.time,
-            duration: newBookingData.duration,
-            amount: `$${newBookingData.amount}`,
-            status: newBookingData.status
+            amount: formatCurrency(Number(newBookingData.amount) || 0),
+            status: getStatusLabel(normalizedStatusRaw),
+            statusRaw: normalizedStatusRaw,
+            statusClass: getStatusBadgeClass(normalizedStatusRaw)
         };
 
         // Add to bookings array
@@ -1044,7 +1173,7 @@ const ClientDashboard = () => {
             service: booking.service,
             date: booking.date,
             time: booking.time,
-            duration: booking.duration,
+            duration: booking.duration || '',
             amount: booking.amount.replace('$', ''),
             status: booking.status
         });
@@ -2205,15 +2334,20 @@ const ClientDashboard = () => {
                         </div>
 
                         {/* Bookings Table */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-600">{bookings.length} bookings</span>
+                            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm text-gray-600">{bookings.length} bookings</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                                {bookingActionError && (
+                                    <div className="px-6 py-3 bg-red-50 text-sm text-red-700 border-b border-red-200">
+                                        {bookingActionError}
+                                    </div>
+                                )}
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
@@ -2240,8 +2374,12 @@ const ClientDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="text-sm text-gray-900">{booking.service}</div>
-                                                    <div className="text-sm text-gray-500">{booking.duration}</div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-sm font-semibold text-gray-900">{booking.service}</div>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.statusClass}`}>
+                                                            {booking.status}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="text-sm text-gray-900">{booking.date}</div>
@@ -2263,16 +2401,18 @@ const ClientDashboard = () => {
                                                         {booking.status === 'Pending' && (
                                                             <>
                                                                 <button
-                                                                    onClick={() => updateBookingStatus(booking.id, 'Confirmed')}
-                                                                    className="px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors cursor-pointer"
+                                                                    onClick={() => handleConfirmBooking(booking.id)}
+                                                                    disabled={confirmingBookingId === booking.id}
+                                                                    className="px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                                                                 >
-                                                                    Confirm
+                                                                    {confirmingBookingId === booking.id ? 'Confirming...' : 'Confirm'}
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => updateBookingStatus(booking.id, 'Cancelled')}
-                                                                    className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                                                                    onClick={() => handleCancelBooking(booking.id)}
+                                                                    disabled={cancellingBookingId === booking.id}
+                                                                    className="px-3 py-1 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                                                                 >
-                                                                    Cancel
+                                                                    {cancellingBookingId === booking.id ? 'Cancelling...' : 'Cancel'}
                                                                 </button>
                                                             </>
                                                         )}
@@ -3620,10 +3760,6 @@ const ClientDashboard = () => {
                                     <div className="bg-gray-50 p-4 rounded-xl">
                                         <p className="text-sm text-gray-600">Time</p>
                                         <p className="text-lg font-semibold text-gray-900">{selectedBooking.time}</p>
-                                    </div>
-                                    <div className="bg-gray-50 p-4 rounded-xl">
-                                        <p className="text-sm text-gray-600">Duration</p>
-                                        <p className="text-lg font-semibold text-gray-900">{selectedBooking.duration}</p>
                                     </div>
                                     <div className="bg-gray-50 p-4 rounded-xl">
                                         <p className="text-sm text-gray-600">Amount</p>

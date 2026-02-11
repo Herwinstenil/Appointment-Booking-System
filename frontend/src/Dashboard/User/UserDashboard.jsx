@@ -130,17 +130,47 @@ const UserDashboard = () => {
     const [serviceLoading, setServiceLoading] = useState(false);
     const [serviceError, setServiceError] = useState('');
 
-    const STATUS_LABELS = {
+const STATUS_LABELS = {
         PENDING: 'Upcoming',
         CONFIRMED: 'Confirmed',
         COMPLETED: 'Completed',
         CANCELLED: 'Cancelled'
-    };
+};
 
-    const mapStatusLabel = (status = '') => {
+const mapStatusLabel = (status = '') => {
         const key = status?.toString().toUpperCase();
         return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Upcoming';
-    };
+};
+
+const getStatusBadgeLabel = (statusRaw = '') => {
+    const normalized = statusRaw?.toString().toUpperCase();
+    switch (normalized) {
+        case 'PENDING':
+            return 'Pending';
+        case 'CONFIRMED':
+            return 'Confirmed';
+        case 'COMPLETED':
+            return 'Completed';
+        case 'CANCELLED':
+            return 'Cancelled';
+        default:
+            return statusRaw?.charAt(0).toUpperCase() + statusRaw?.slice(1).toLowerCase() || 'Pending';
+    }
+};
+
+const getStatusBadgeClass = (statusRaw = '') => {
+    const normalized = statusRaw?.toString().toUpperCase();
+    switch (normalized) {
+        case 'CONFIRMED':
+            return 'bg-emerald-100 text-emerald-800';
+        case 'COMPLETED':
+            return 'bg-blue-100 text-blue-800';
+        case 'CANCELLED':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-amber-100 text-amber-800';
+    }
+};
 
     const formatCurrency = (value) => {
         const amount = Number(value);
@@ -164,6 +194,8 @@ const UserDashboard = () => {
             appointmentTime,
             status: mapStatusLabel(raw.status),
             statusRaw: raw.status,
+            statusBadge: getStatusBadgeLabel(raw.status),
+            statusBadgeClass: getStatusBadgeClass(raw.status),
             amount: formatCurrency(raw.amount ?? raw.service?.price),
             rating: raw.rating || 0,
             comment: raw.comment || '',
@@ -179,7 +211,7 @@ const UserDashboard = () => {
         setAppointmentsError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/appointments`, {
+            const response = await fetch(`${API_BASE_URL}/appointments/user`, {
                 headers: getAuthHeaders()
             });
             const payload = await response.json();
@@ -346,6 +378,17 @@ const UserDashboard = () => {
     // Fetch appointments when the component mounts
     useEffect(() => {
         loadAppointments();
+    }, [loadAppointments]);
+
+    useEffect(() => {
+        const handleAppointmentConfirmed = () => {
+            loadAppointments();
+        };
+
+        window.addEventListener('appointmentConfirmed', handleAppointmentConfirmed);
+        return () => {
+            window.removeEventListener('appointmentConfirmed', handleAppointmentConfirmed);
+        };
     }, [loadAppointments]);
 
     // Appointments filtering state
@@ -2806,23 +2849,23 @@ const UserDashboard = () => {
                                     <div key={appointment.id} className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                         <div className="flex flex-col lg:flex-row lg:items-center justify-between">
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-4 mb-4">
-                                                    <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
-                                                        <Calendar size={24} />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
-                                                        <p className="text-sm text-gray-600">{appointment.provider}</p>
-                                                    </div>
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-fuchsia-600 rounded-xl flex items-center justify-center text-white">
+                                                <Calendar size={24} />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="text-lg font-semibold text-gray-800">{appointment.service}</h3>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${appointment.statusBadgeClass}`}>
+                                                        {appointment.statusBadge}
+                                                    </span>
                                                 </div>
+                                                <p className="text-sm text-gray-600">{appointment.provider}</p>
+                                            </div>
+                                        </div>
                                                 <div className="flex items-center gap-4 mb-4">
-                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.status === 'Upcoming'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : appointment.status === 'Completed'
-                                                            ? 'bg-emerald-100 text-emerald-800'
-                                                            : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                        {appointment.status}
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${appointment.statusBadgeClass}`}>
+                                                        {appointment.statusBadge}
                                                     </span>
                                                     <span className="text-sm text-gray-600">
                                                         <Calendar size={14} className="inline mr-1" />

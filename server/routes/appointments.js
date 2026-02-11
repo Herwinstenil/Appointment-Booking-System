@@ -21,13 +21,55 @@ const mapStatusLabel = (status = '') => {
   return STATUS_LABELS[normalized] || normalized.charAt(0) + normalized.slice(1).toLowerCase();
 };
 
+const appointmentInclude = {
+  service: true,
+  client: true,
+  user: true
+};
+
+const applyAppointmentFilters = (where = {}, query = {}) => {
+  const { status, dateFrom, dateTo, serviceId } = query || {};
+  const nextWhere = { ...where };
+
+  if (status) {
+    nextWhere.status = status.toUpperCase();
+  }
+
+  if (dateFrom || dateTo) {
+    nextWhere.date = {
+      ...(nextWhere.date || {})
+    };
+    if (dateFrom) nextWhere.date.gte = new Date(dateFrom);
+    if (dateTo) nextWhere.date.lte = new Date(dateTo);
+  }
+
+  if (serviceId) {
+    nextWhere.serviceId = serviceId;
+  }
+
+  return nextWhere;
+};
+
+const fetchAppointments = async (where = {}, query = {}) => {
+  const finalWhere = applyAppointmentFilters(where, query);
+  const appointments = await prisma.appointment.findMany({
+    where: finalWhere,
+    include: appointmentInclude,
+    orderBy: [
+      { date: 'desc' },
+      { time: 'desc' }
+    ]
+  });
+
+  return appointments.map(buildAppointmentPayload);
+};
+
 const buildAppointmentPayload = (appointment) => {
   const appointmentDate = appointment.date ? appointment.date.toISOString() : null;
   return {
     id: appointment.id,
     userId: appointment.userId,
-    clientId: appointment.clientId,
-    clientNo: appointment.user?.clientNo || appointment.client?.clientNo || null,
+    clientNo: appointment.clientNo || appointment.service?.clientNo || null,
     serviceId: appointment.serviceId,
     serviceName: appointment.service?.name || appointment.serviceName || 'Service',
     appointmentDate,
@@ -96,7 +138,8 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     const service = await prisma.service.findUnique({
-      where: { id: serviceId }
+      where: { id: serviceId },
+      include: { client: true }
     });
 
     if (!service) {
@@ -135,7 +178,7 @@ router.post('/', authenticateToken, async (req, res) => {
     const appointment = await prisma.appointment.create({
       data: {
         userId: req.user.id,
-        clientId: req.user.id,
+        clientNo: service.client?.clientNo || null,
         serviceId,
         date: parsedDate,
         time: appointmentTime,
@@ -143,11 +186,7 @@ router.post('/', authenticateToken, async (req, res) => {
         status: 'PENDING',
         notes: notes ? notes.trim() : null
       },
-      include: {
-        service: true,
-        client: true,
-        user: true
-      }
+      include: appointmentInclude
     });
 
     res.status(201).json({
@@ -170,13 +209,6 @@ router.post('/', authenticateToken, async (req, res) => {
 // Get appointments for the authenticated user
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const {
-      status,
-      dateFrom,
-      dateTo,
-      serviceId
-    } = req.query;
-
     const where = {};
 
     if (req.user.role === 'USER') {
@@ -184,38 +216,11 @@ router.get('/', authenticateToken, async (req, res) => {
     } else if (req.user.role === 'CLIENT') {
       where.OR = [
         { userId: req.user.id },
-        { clientId: req.user.id }
+        { clientNo: req.user.clientNo }
       ];
     }
 
-    if (status) {
-      where.status = status.toUpperCase();
-    }
-
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) where.date.gte = new Date(dateFrom);
-      if (dateTo) where.date.lte = new Date(dateTo);
-    }
-
-    if (serviceId) {
-      where.serviceId = serviceId;
-    }
-
-    const appointments = await prisma.appointment.findMany({
-      where,
-      include: {
-        service: true,
-        client: true,
-        user: true
-      },
-      orderBy: [
-        { date: 'desc' },
-        { time: 'desc' }
-      ]
-    });
-
-    const payload = appointments.map(buildAppointmentPayload);
+    const payload = await fetchAppointments(where, req.query);
 
     res.json({
       success: true,
@@ -229,6 +234,128 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get appointments'
+    });
+  }
+});
+
+// Get appointments scoped to the authenticated user explicitly
+router.get('/user', authenticateToken, async (req, res) => {
+  try {
+    const payload = await fetchAppointments({ userId: req.user.id }, req.query);
+
+    res.json({
+      success: true,
+      data: {
+        appointments: payload
+      }
+    });
+  } catch (error) {
+    console.error('Get user appointments error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user appointments'
+    });
+  }
+});
+
+// Get appointments scoped to the client/service owner
+router.get('/client', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing client number'
+      });
+    }
+
+    const payload = await fetchAppointments({
+      service: {
+        clientNo
+      }
+    }, req.query);
+
+    res.json({
+      success: true,
+      data: {
+        appointments: payload
+      }
+    });
+  } catch (error) {
+    console.error('Get client appointments error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get client appointments'
+    });
+  }
+});
+
+// Confirm appointment (client only)
+router.patch('/:appointmentId/confirm', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const clientNo = req.user?.clientNo;
+
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing'
+      });
+    }
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        service: {
+          select: {
+            id: true,
+            clientNo: true
+          }
+        },
+        client: true,
+        user: true
+      }
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    if (appointment.service?.clientNo !== clientNo) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to confirm this booking'
+      });
+    }
+
+    if (appointment.status === 'CONFIRMED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Appointment already confirmed'
+      });
+    }
+
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { status: 'CONFIRMED' },
+      include: appointmentInclude
+    });
+
+    res.json({
+      success: true,
+      message: 'Appointment confirmed',
+      data: {
+        appointment: buildAppointmentPayload(updatedAppointment)
+      }
+    });
+  } catch (error) {
+    console.error('Confirm appointment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to confirm appointment'
     });
   }
 });
@@ -285,7 +412,7 @@ router.get('/:appointmentId', authenticateToken, async (req, res) => {
     // Check if user has permission to view this appointment
     const canView = req.user.role === 'ADMIN' ||
       appointment.userId === req.user.id ||
-      appointment.clientId === req.user.id;
+      appointment.clientNo === req.user.clientNo;
 
     if (!canView) {
       return res.status(403).json({
@@ -334,7 +461,7 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
     // Check permissions
     const canUpdate = req.user.role === 'ADMIN' ||
       appointment.userId === req.user.id ||
-      (req.user.role === 'CLIENT' && appointment.clientId === req.user.id);
+      (req.user.role === 'CLIENT' && appointment.clientNo === req.user.clientNo);
 
     if (!canUpdate) {
       return res.status(403).json({
@@ -485,7 +612,7 @@ router.post('/:appointmentId/rate', authenticateToken, async (req, res) => {
     // Check if user can rate this appointment
     const canRate = req.user.role === 'ADMIN' ||
       appointment.userId === req.user.id ||
-      appointment.clientId === req.user.id;
+      appointment.clientNo === req.user.clientNo;
 
     if (!canRate) {
       return res.status(403).json({

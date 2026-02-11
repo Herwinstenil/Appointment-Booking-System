@@ -7,10 +7,35 @@ const router = express.Router();
 const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
 const prisma = new PrismaClient({ adapter });
 
+const mapClientProfile = (user) => {
+  if (!user) return null;
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || '';
+  return {
+    id: user.id,
+    username: user.username,
+    name: fullName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    mobile: user.mobile,
+    company: user.company,
+    position: user.position,
+    bio: user.bio,
+    address: user.address,
+    timezone: user.timezone,
+    website: user.website,
+    avatarUrl: user.avatarUrl,
+    status: user.isActive ? 'active' : 'inactive',
+    role: user.role,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    lastLogin: user.lastLogin
+  };
+};
+
 // Get client dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
-    const clientId = req.user.id;
     const clientNo = req.user?.clientNo;
     if (!clientNo) {
       return res.status(400).json({
@@ -37,20 +62,14 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
       // Total appointments (where client is involved)
       prisma.appointment.count({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ]
+          clientNo
         }
       }),
 
       // Completed appointments
       prisma.appointment.count({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ],
+          clientNo,
           status: 'COMPLETED'
         }
       }),
@@ -58,10 +77,7 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
       // Pending appointments
       prisma.appointment.count({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ],
+          clientNo,
           status: 'PENDING'
         }
       }),
@@ -69,10 +85,7 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
       // Cancelled appointments
       prisma.appointment.count({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ],
+          clientNo,
           status: 'CANCELLED'
         }
       }),
@@ -93,10 +106,7 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
       // Total revenue from completed appointments
       prisma.appointment.aggregate({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ],
+          clientNo,
           status: 'COMPLETED'
         },
         _sum: {
@@ -107,10 +117,7 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
       // Recent appointments
       prisma.appointment.count({
         where: {
-          OR: [
-            { userId: clientId },
-            { clientId: clientId }
-          ],
+          clientNo,
           createdAt: {
             gte: startDate
           }
@@ -172,13 +179,17 @@ router.get('/appointments', authenticateToken, authorizeRoles('CLIENT'), async (
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot load bookings'
+      });
+    }
 
-    // Build where clause - client can see appointments where they are the client or the service provider
+    // Build where clause with clientNo
     const where = {
-      OR: [
-        { userId: req.user.id },
-        { clientId: req.user.id }
-      ]
+      clientNo
     };
 
     // Additional filters
@@ -347,6 +358,150 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     res.status(500).json({
       success: false,
       message: 'Failed to get revenue data'
+    });
+  }
+});
+
+// Get client profile
+router.get('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const client = await prisma.user.findFirst({
+      where: {
+        id: req.user.id,
+        role: 'CLIENT',
+        isActive: true
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        mobile: true,
+        firstName: true,
+        lastName: true,
+        company: true,
+        position: true,
+        bio: true,
+        address: true,
+        timezone: true,
+        website: true,
+        avatarUrl: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        lastLogin: true
+      }
+    });
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active client profile not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { client: mapClientProfile(client) }
+    });
+  } catch (error) {
+    console.error('Get client profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get client profile'
+    });
+  }
+});
+
+// Update client profile
+router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const client = await prisma.user.findFirst({
+      where: {
+        id: req.user.id,
+        role: 'CLIENT',
+        isActive: true
+      },
+      select: { id: true }
+    });
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Active client profile not found'
+      });
+    }
+
+    const {
+      firstName,
+      lastName,
+      company,
+      position,
+      timezone,
+      website,
+      address,
+      bio,
+      mobile,
+      avatarUrl
+    } = req.body;
+
+    const updates = Object.fromEntries(
+      Object.entries({
+        firstName,
+        lastName,
+        company,
+        position,
+        timezone,
+        website,
+        address,
+        bio,
+        mobile,
+        avatarUrl
+      }).filter(([, value]) => value !== undefined)
+    );
+
+    if (!Object.keys(updates).length) {
+      return res.status(400).json({
+        success: false,
+        message: 'No profile fields provided'
+      });
+    }
+
+    const updatedClient = await prisma.user.update({
+      where: { id: req.user.id },
+      data: updates,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        mobile: true,
+        firstName: true,
+        lastName: true,
+        company: true,
+        position: true,
+        bio: true,
+        address: true,
+        timezone: true,
+        website: true,
+        avatarUrl: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        lastLogin: true
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: { client: mapClientProfile(updatedClient) }
+    });
+  } catch (error) {
+    console.error('Update client profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update profile'
     });
   }
 });
