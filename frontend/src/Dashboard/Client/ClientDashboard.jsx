@@ -3404,10 +3404,12 @@ const ClientDashboard = () => {
                                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
-                                        <p className="text-xs text-gray-500">{profileData.position || 'Client'}</p>
-                                    </div>
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {profileData.role ? profileData.role.charAt(0) + profileData.role.slice(1).toLowerCase() : 'Client'}
+                                            </p>
+                                        </div>
                                     <div className="relative">
                                         {imagePreview ? (
                                             <img
