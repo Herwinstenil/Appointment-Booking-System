@@ -850,6 +850,10 @@ const ClientDashboard = () => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 setImagePreview(e.target.result);
+                setProfileData((prev) => ({
+                    ...prev,
+                    avatarUrl: e.target.result
+                }));
             };
             reader.readAsDataURL(file);
         }
