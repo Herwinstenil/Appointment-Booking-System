@@ -28,7 +28,6 @@ model User {
   lastSuspiciousLoginAt DateTime?
   position  String?
   website   String?
-  timezone  String?
   isActive  Boolean  @default(true)
   lastLogin DateTime?
   createdAt DateTime @default(now())

@@ -16,27 +16,26 @@ const prisma = new PrismaClient({ adapter });
 const mapClientProfile = (user) => {
   if (!user) return null;
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username || '';
-  return {
-    id: user.id,
-    username: user.username,
-    name: fullName,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    mobile: user.mobile,
-    company: user.company,
-    position: user.position,
-    bio: user.bio,
-    address: user.address,
-    timezone: user.timezone,
-    website: user.website,
-    avatarUrl: user.avatarUrl,
-    status: user.isActive ? 'active' : 'inactive',
-    role: user.role,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    lastLogin: user.lastLogin
-  };
+    return {
+      id: user.id,
+      username: user.username,
+      name: fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      mobile: user.mobile,
+      company: user.company,
+      position: user.position,
+      bio: user.bio,
+      address: user.address,
+      website: user.website,
+      avatarUrl: user.avatarUrl,
+      status: user.isActive ? 'active' : 'inactive',
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      lastLogin: user.lastLogin
+    };
 };
 
 // Get client dashboard stats
@@ -377,26 +376,25 @@ router.get('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
         role: 'CLIENT',
         isActive: true
       },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        firstName: true,
-        lastName: true,
-        company: true,
-        position: true,
-        bio: true,
-        address: true,
-        timezone: true,
-        website: true,
-        avatarUrl: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        lastLogin: true
-      }
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          firstName: true,
+          lastName: true,
+          company: true,
+          position: true,
+          bio: true,
+          address: true,
+          website: true,
+          avatarUrl: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          lastLogin: true
+        }
     });
 
     if (!client) {
@@ -443,7 +441,6 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
       lastName,
       company,
       position,
-      timezone,
       website,
       address,
       bio,
@@ -457,7 +454,6 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
         lastName,
         company,
         position,
-        timezone,
         website,
         address,
         bio,
@@ -476,26 +472,25 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     const updatedClient = await prisma.user.update({
       where: { id: req.user.id },
       data: updates,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        firstName: true,
-        lastName: true,
-        company: true,
-        position: true,
-        bio: true,
-        address: true,
-        timezone: true,
-        website: true,
-        avatarUrl: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        lastLogin: true
-      }
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          firstName: true,
+          lastName: true,
+          company: true,
+          position: true,
+          bio: true,
+          address: true,
+          website: true,
+          avatarUrl: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          lastLogin: true
+        }
     });
 
     res.json({

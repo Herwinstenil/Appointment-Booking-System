@@ -74,7 +74,6 @@ const CLIENT_PROFILE_DEFAULT = {
     address: '',
     bio: '',
     website: '',
-    timezone: '',
     avatarUrl: '',
     role: 'CLIENT'
 };
@@ -103,6 +102,18 @@ const formatWebsiteUrl = (url) => {
     return `https://${trimmed}`;
 };
 
+const normalizePhoneDigits = (value) => {
+    if (!value) return '';
+    const digits = value.toString().replace(/\D/g, '');
+    if (!digits) return '';
+    return digits.length > 10 ? digits.slice(-10) : digits;
+};
+
+const formatIndianPhoneNumber = (value) => {
+    const digits = normalizePhoneDigits(value);
+    return digits ? `+91 ${digits}` : '';
+};
+
 const formatIndianTime = () => {
     try {
         return new Intl.DateTimeFormat('en-US', {
@@ -122,7 +133,7 @@ const normalizeClientProfile = (client = {}) => {
         firstName: client.firstName || '',
         lastName: client.lastName || '',
         email: client.email || '',
-        phone: client.mobile || '',
+        phone: normalizePhoneDigits(client.mobile),
         company: client.company || '',
         position: client.position || '',
         joinDate: formatDateLabel(client.createdAt),
@@ -130,7 +141,6 @@ const normalizeClientProfile = (client = {}) => {
         address: client.address || '',
         bio: client.bio || '',
         website: client.website || '',
-        timezone: client.timezone || '',
         avatarUrl: client.avatarUrl || '',
         role: client.role || 'CLIENT'
     };
@@ -366,10 +376,7 @@ const ClientDashboard = () => {
     }, [profileData.firstName, profileData.lastName]);
 
     const profileWebsiteUrl = formatWebsiteUrl(profileData.website);
-    const timezoneDisplayLabel = useMemo(() => {
-        const baseLabel = profileData.timezone || 'Indian Standard Time';
-        return `${baseLabel} · ${indianTime} IST`;
-    }, [profileData.timezone, indianTime]);
+    const timezoneDisplayLabel = useMemo(() => `Indian Standard Time · ${indianTime} IST`, [indianTime]);
 
     const loadProfile = useCallback(async () => {
         setProfileLoading(true);
@@ -411,16 +418,16 @@ const ClientDashboard = () => {
         setProfileSaveError(null);
         setProfileSaving(true);
         try {
+            const formattedPhone = formatIndianPhoneNumber(profileData.phone);
             const updates = {
                 firstName: profileData.firstName,
                 lastName: profileData.lastName,
                 company: profileData.company,
                 position: profileData.position,
-                timezone: profileData.timezone,
                 website: profileData.website,
                 address: profileData.address,
                 bio: profileData.bio,
-                mobile: profileData.phone,
+                mobile: formattedPhone || undefined,
                 avatarUrl: profileData.avatarUrl
             };
 
@@ -3022,6 +3029,9 @@ const ClientDashboard = () => {
                                         {(profileData.position || 'Client') + (profileData.company ? ` • ${profileData.company}` : '')}
                                     </p>
                                     <p className="text-emerald-100 text-sm opacity-90">{profileData.email || 'Email unavailable'}</p>
+                                    <p className="text-emerald-100 text-sm opacity-90">
+                                        {formatIndianPhoneNumber(profileData.phone) || 'Phone not set'}
+                                    </p>
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="flex items-center gap-1 text-sm">
                                             <Globe size={14} />
@@ -3083,12 +3093,11 @@ const ClientDashboard = () => {
                                                     { label: 'Phone', key: 'phone', icon: Phone },
                                                     { label: 'Company', key: 'company', icon: Users },
                                                     { label: 'Position', key: 'position', icon: Settings },
-                                                    { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true },
-                                                    { label: 'Timezone', key: 'timezone', icon: Globe, readOnly: true }
+                                                    { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true }
                                                 ].map((field) => {
                                                     const FieldIcon = field.icon;
-                                                    const readonlyDisplay = field.key === 'timezone'
-                                                        ? timezoneDisplayLabel
+                                                    const readonlyDisplay = field.key === 'phone'
+                                                        ? formatIndianPhoneNumber(profileData.phone) || 'N/A'
                                                         : (profileData[field.key] || 'N/A');
 
                                                     return (
@@ -3104,7 +3113,7 @@ const ClientDashboard = () => {
                                                                     onChange={(e) => {
                                                                         let value = e.target.value;
                                                                         if (field.key === 'phone') {
-                                                                            value = value.replace(/[^+\d()\s-]/g, '');
+                                                                            value = normalizePhoneDigits(value);
                                                                         }
                                                                         setProfileData(prev => ({ ...prev, [field.key]: value }));
                                                                     }}

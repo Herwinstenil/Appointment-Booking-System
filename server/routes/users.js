@@ -16,23 +16,22 @@ router.get('/profile', authenticateToken, async (req, res) => {
         role: 'USER',
         isActive: true
       },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        address: true,
-        bio: true,
-        avatarUrl: true,
-        timezone: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true
-      }
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          bio: true,
+          avatarUrl: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true
+        }
     });
 
     if (!user) {
@@ -54,7 +53,6 @@ router.get('/profile', authenticateToken, async (req, res) => {
       role: (user.role || 'USER').toLowerCase(),
       status: user.isActive ? 'active' : 'inactive',
       avatar: user.avatarUrl || '',
-      timezone: user.timezone || '',
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
@@ -86,7 +84,6 @@ router.put('/profile', authenticateToken, async (req, res) => {
       company,
       position,
       website,
-      timezone,
       avatarUrl
     } = req.body;
 
@@ -103,38 +100,36 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
-      data: {
-        firstName: firstName || null,
-        lastName: lastName || null,
-        mobile: mobile || undefined,
-        address: address || null,
-        bio: bio || null,
-        company: company || null,
-        position: position || null,
-        website: website || null,
-        timezone: timezone || null,
-        avatarUrl: avatarUrl || undefined
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        address: true,
-        bio: true,
-        company: true,
-        position: true,
-        website: true,
-        timezone: true,
-        avatarUrl: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true
-      }
+        data: {
+          firstName: firstName || null,
+          lastName: lastName || null,
+          mobile: mobile || undefined,
+          address: address || null,
+          bio: bio || null,
+          company: company || null,
+          position: position || null,
+          website: website || null,
+          avatarUrl: avatarUrl || undefined
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          bio: true,
+          company: true,
+          position: true,
+          website: true,
+          avatarUrl: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true
+        }
     });
 
     res.json({
@@ -159,31 +154,30 @@ router.get('/:userId', authenticateToken, authorizeOwnerOrAdmin, async (req, res
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        address: true,
-        bio: true,
-        company: true,
-        position: true,
-        website: true,
-        timezone: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            appointments: true,
-            services: true
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          bio: true,
+          company: true,
+          position: true,
+          website: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              appointments: true,
+              services: true
+            }
           }
         }
-      }
     });
 
     if (!user) {
@@ -221,8 +215,7 @@ router.put('/:userId', authenticateToken, authorizeRoles('ADMIN'), async (req, r
       bio,
       company,
       position,
-      website,
-      timezone
+      website
     } = req.body;
 
     // Validate role if provided
@@ -259,28 +252,26 @@ router.put('/:userId', authenticateToken, authorizeRoles('ADMIN'), async (req, r
         bio: bio || undefined,
         company: company || undefined,
         position: position || undefined,
-        website: website || undefined,
-        timezone: timezone || undefined
+        website: website || undefined
       },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        mobile: true,
-        role: true,
-        firstName: true,
-        lastName: true,
-        address: true,
-        bio: true,
-        company: true,
-        position: true,
-        website: true,
-        timezone: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true
-      }
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          mobile: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          address: true,
+          bio: true,
+          company: true,
+          position: true,
+          website: true,
+          isActive: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true
+        }
     });
 
     res.json({
