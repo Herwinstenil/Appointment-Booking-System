@@ -103,6 +103,20 @@ const formatWebsiteUrl = (url) => {
     return `https://${trimmed}`;
 };
 
+const formatIndianTime = () => {
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Kolkata',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).format(new Date());
+    } catch (error) {
+        console.error('Indian time formatting error:', error);
+        return '';
+    }
+};
+
 const normalizeClientProfile = (client = {}) => {
     return {
         firstName: client.firstName || '',
@@ -328,6 +342,7 @@ const ClientDashboard = () => {
     const [profileSaveError, setProfileSaveError] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportError, setExportError] = useState(null);
+    const [indianTime, setIndianTime] = useState(() => formatIndianTime());
 
     const profileInitials = useMemo(() => {
         const first = profileData.firstName?.[0] ?? '';
@@ -351,6 +366,10 @@ const ClientDashboard = () => {
     }, [profileData.firstName, profileData.lastName]);
 
     const profileWebsiteUrl = formatWebsiteUrl(profileData.website);
+    const timezoneDisplayLabel = useMemo(() => {
+        const baseLabel = profileData.timezone || 'Indian Standard Time';
+        return `${baseLabel} · ${indianTime} IST`;
+    }, [profileData.timezone, indianTime]);
 
     const loadProfile = useCallback(async () => {
         setProfileLoading(true);
@@ -380,6 +399,13 @@ const ClientDashboard = () => {
     useEffect(() => {
         loadProfile();
     }, [loadProfile]);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setIndianTime(formatIndianTime());
+        }, 60 * 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const handleSaveProfile = async () => {
         setProfileSaveError(null);
@@ -2999,7 +3025,7 @@ const ClientDashboard = () => {
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="flex items-center gap-1 text-sm">
                                             <Globe size={14} />
-                                            {profileData.timezone || 'Timezone not set'}
+                                            {timezoneDisplayLabel}
                                         </span>
                                         <span className="flex items-center gap-1 text-sm">
                                             <Calendar size={14} />
@@ -3061,6 +3087,10 @@ const ClientDashboard = () => {
                                                     { label: 'Timezone', key: 'timezone', icon: Globe, readOnly: true }
                                                 ].map((field) => {
                                                     const FieldIcon = field.icon;
+                                                    const readonlyDisplay = field.key === 'timezone'
+                                                        ? timezoneDisplayLabel
+                                                        : (profileData[field.key] || 'N/A');
+
                                                     return (
                                                         <div key={field.key} className="group">
                                                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -3071,18 +3101,18 @@ const ClientDashboard = () => {
                                                                 <input
                                                                     type="text"
                                                                     value={profileData[field.key]}
-                                                                     onChange={(e) => {
-                                                                         let value = e.target.value;
-                                                                         if (field.key === 'phone') {
-                                                                             value = value.replace(/[^+\\d()\\s-]/g, '');
-                                                                         }
-                                                                         setProfileData(prev => ({ ...prev, [field.key]: value }));
-                                                                     }}
+                                                                    onChange={(e) => {
+                                                                        let value = e.target.value;
+                                                                        if (field.key === 'phone') {
+                                                                            value = value.replace(/[^+\d()\s-]/g, '');
+                                                                        }
+                                                                        setProfileData(prev => ({ ...prev, [field.key]: value }));
+                                                                    }}
                                                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                                                 />
                                                             ) : (
                                                                 <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-emerald-100 transition-all duration-300">
-                                                                    <p className="text-gray-900">{profileData[field.key] || 'N/A'}</p>
+                                                                    <p className="text-gray-900">{readonlyDisplay}</p>
                                                                 </div>
                                                             )}
                                                         </div>
