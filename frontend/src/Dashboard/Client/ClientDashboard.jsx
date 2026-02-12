@@ -3436,7 +3436,12 @@ const ClientDashboard = () => {
                                 {showUserDropdown && (
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                                <p className="text-xs text-gray-500">
+                                                    {profileData.position || 'Client'}
+                                                </p>
+                                            </div>
                                             <p className="text-xs text-gray-500 mt-1">{profileData.email || 'Email unavailable'}</p>
                                         </div>
 
