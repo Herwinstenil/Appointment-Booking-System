@@ -3093,13 +3093,25 @@ const ClientDashboard = () => {
                                                     { label: 'Phone', key: 'phone', icon: Phone },
                                                     { label: 'Company', key: 'company', icon: Users },
                                                     { label: 'Position', key: 'position', icon: Settings },
-                                                    { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true }
+                                                    { label: 'Join Date', key: 'joinDate', icon: Calendar, readOnly: true },
+                                                    { label: 'Website', key: 'website', icon: Globe }
                                                 ].map((field) => {
                                                     const FieldIcon = field.icon;
-                                                    const readonlyDisplay = field.key === 'phone'
-                                                        ? formatIndianPhoneNumber(profileData.phone) || 'N/A'
-                                                        : (profileData[field.key] || 'N/A');
+                                                    let readonlyDisplay = profileData[field.key] || 'N/A';
+                                                    if (field.key === 'phone') {
+                                                        readonlyDisplay = formatIndianPhoneNumber(profileData.phone) || 'N/A';
+                                                    }
+                                                    if (field.key === 'website') {
+                                                        readonlyDisplay = profileWebsiteUrl ? (
+                                                            <a href={profileWebsiteUrl} className="text-emerald-600 hover:text-emerald-700">
+                                                                {profileData.website}
+                                                            </a>
+                                                        ) : (
+                                                            'Not provided'
+                                                        );
+                                                    }
 
+                                                    const inputType = field.key === 'website' ? 'url' : 'text';
                                                     return (
                                                         <div key={field.key} className="group">
                                                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
@@ -3107,9 +3119,9 @@ const ClientDashboard = () => {
                                                                 {field.label}
                                                             </label>
                                                             {isEditing && !field.readOnly ? (
-                                                                <input
-                                                                    type="text"
-                                                                    value={profileData[field.key]}
+                                                            <input
+                                                                type={inputType}
+                                                                value={profileData[field.key]}
                                                                     onChange={(e) => {
                                                                         let value = e.target.value;
                                                                         if (field.key === 'phone') {
@@ -3129,31 +3141,6 @@ const ClientDashboard = () => {
                                                 })}
                                             </div>
 
-                                            {/* Website Field */}
-                                            <div className="mt-6 group">
-                                                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                                    <Globe size={16} className="text-emerald-500" />
-                                                    Website
-                                                </label>
-                                                {isEditing ? (
-                                                    <input
-                                                        type="url"
-                                                        value={profileData.website}
-                                                        onChange={(e) => setProfileData(prev => ({ ...prev, website: e.target.value }))}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
-                                                    />
-                                                ) : (
-                                                    <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-emerald-100 transition-all duration-300">
-                                                        {profileWebsiteUrl ? (
-                                                            <a href={profileWebsiteUrl} className="text-emerald-600 hover:text-emerald-700">
-                                                                {profileData.website}
-                                                            </a>
-                                                        ) : (
-                                                            <p className="text-gray-500">Not provided</p>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
 
                                             {/* Address Field */}
                                             <div className="mt-6 group">
