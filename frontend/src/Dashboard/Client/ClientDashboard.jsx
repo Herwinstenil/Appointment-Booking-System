@@ -62,6 +62,66 @@ const formatCurrency = (value) => {
     return `$${number.toFixed(2)}`;
 };
 
+const CLIENT_PROFILE_DEFAULT = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: '',
+    joinDate: '',
+    lastLogin: '',
+    address: '',
+    bio: '',
+    website: '',
+    timezone: '',
+    avatarUrl: '',
+    role: 'CLIENT'
+};
+
+const formatDateLabel = (value, options = { month: 'short', day: 'numeric', year: 'numeric' }) => {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toLocaleDateString('en-US', options);
+};
+
+const formatDateTimeLabel = (value) => {
+    if (!value) return 'Never logged in';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return 'Never logged in';
+    return parsed.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+};
+
+const formatWebsiteUrl = (url) => {
+    if (!url) return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+    }
+    return `https://${trimmed}`;
+};
+
+const normalizeClientProfile = (client = {}) => {
+    return {
+        firstName: client.firstName || '',
+        lastName: client.lastName || '',
+        email: client.email || '',
+        phone: client.mobile || '',
+        company: client.company || '',
+        position: client.position || '',
+        joinDate: formatDateLabel(client.createdAt),
+        lastLogin: client.lastLogin ? formatDateTimeLabel(client.lastLogin) : 'Never logged in',
+        address: client.address || '',
+        bio: client.bio || '',
+        website: client.website || '',
+        timezone: client.timezone || '',
+        avatarUrl: client.avatarUrl || '',
+        role: client.role || 'CLIENT'
+    };
+};
+
 const STATUS_LABELS = {
     PENDING: 'Pending',
     CONFIRMED: 'Confirmed',
@@ -138,6 +198,8 @@ const createServiceMutationState = () => ({
 const ClientDashboard = () => {
     const navigate = useNavigate();
     const { getAuthHeaders, API_BASE_URL } = useAuth();
+    const baseApiUrl = API_BASE_URL || 'http://localhost:5000/api';
+    const clientProfileEndpoint = `${baseApiUrl}/client/profile`;
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -258,24 +320,119 @@ const ClientDashboard = () => {
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [originalProfileData, setOriginalProfileData] = useState(() => ({ ...CLIENT_PROFILE_DEFAULT }));
+    const [profileData, setProfileData] = useState(() => ({ ...CLIENT_PROFILE_DEFAULT }));
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [profileError, setProfileError] = useState(null);
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileSaveError, setProfileSaveError] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportError, setExportError] = useState(null);
 
-    // Store original data for cancel functionality
-    const [originalProfileData, setOriginalProfileData] = useState({
-        firstName: 'John',
-        lastName: 'Client',
-        email: 'client@example.com',
-        phone: '+1 (555) 123-4567',
-        company: 'Tech Solutions Inc.',
-        position: 'Service Provider',
-        joinDate: '2023-03-15',
-        lastLogin: '2024-01-15 09:45 AM',
-        address: '123 Business Ave, Suite 500, San Francisco, CA 94107',
-        bio: 'Professional service provider specializing in web development and digital solutions. Committed to delivering high-quality services to clients.',
-        website: 'www.techsolutions.com',
-        timezone: 'PST (Pacific Standard Time)'
-    });
+    const profileInitials = useMemo(() => {
+        const first = profileData.firstName?.[0] ?? '';
+        const last = profileData.lastName?.[0] ?? '';
+        const computed = `${first}${last}`.trim();
+        if (computed) {
+            return computed.toUpperCase();
+        }
+        if (profileData.firstName?.[0]) {
+            return profileData.firstName[0].toUpperCase();
+        }
+        if (profileData.lastName?.[0]) {
+            return profileData.lastName[0].toUpperCase();
+        }
+        return 'CL';
+    }, [profileData.firstName, profileData.lastName]);
 
-    const [profileData, setProfileData] = useState({ ...originalProfileData });
+    const profileFullName = useMemo(() => {
+        const nameParts = [profileData.firstName, profileData.lastName].filter(Boolean);
+        return nameParts.join(' ') || 'Client';
+    }, [profileData.firstName, profileData.lastName]);
+
+    const profileWebsiteUrl = formatWebsiteUrl(profileData.website);
+
+    const loadProfile = useCallback(async () => {
+        setProfileLoading(true);
+        setProfileError(null);
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(clientProfileEndpoint, { headers });
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Unable to load profile data');
+            }
+
+            const profile = normalizeClientProfile(data.data.client);
+            setProfileData(profile);
+            setOriginalProfileData(profile);
+            setImagePreview(profile.avatarUrl || null);
+            setProfileImage(null);
+        } catch (error) {
+            console.error('Load client profile error:', error);
+            setProfileError(error.message || 'Failed to load profile information');
+        } finally {
+            setProfileLoading(false);
+        }
+    }, [clientProfileEndpoint, getAuthHeaders]);
+
+    useEffect(() => {
+        loadProfile();
+    }, [loadProfile]);
+
+    const handleSaveProfile = async () => {
+        setProfileSaveError(null);
+        setProfileSaving(true);
+        try {
+            const updates = {
+                firstName: profileData.firstName,
+                lastName: profileData.lastName,
+                company: profileData.company,
+                position: profileData.position,
+                timezone: profileData.timezone,
+                website: profileData.website,
+                address: profileData.address,
+                bio: profileData.bio,
+                mobile: profileData.phone,
+                avatarUrl: profileData.avatarUrl
+            };
+
+            const payload = Object.fromEntries(
+                Object.entries(updates).filter(([, value]) => value !== undefined)
+            );
+
+            const headers = {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            };
+
+            const response = await fetch(clientProfileEndpoint, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Unable to save profile changes');
+            }
+
+            const updatedProfile = normalizeClientProfile(data.data.client);
+            setProfileData(updatedProfile);
+            setOriginalProfileData(updatedProfile);
+            setImagePreview(updatedProfile.avatarUrl || null);
+            setProfileImage(null);
+            setSaveSuccess(true);
+            setIsEditing(false);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (error) {
+            console.error('Save client profile error:', error);
+            setProfileSaveError(error.message || 'Failed to save profile changes');
+        } finally {
+            setProfileSaving(false);
+        }
+    };
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -672,22 +829,18 @@ const ClientDashboard = () => {
         }));
     };
 
-    const handleSaveProfile = () => {
-        console.log('Saving profile data:', profileData);
-        setIsEditing(false);
-        setOriginalProfileData({ ...profileData });
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-    };
-
     const handleCancelEdit = () => {
         setProfileData({ ...originalProfileData });
+        setImagePreview(originalProfileData.avatarUrl || null);
+        setProfileImage(null);
         setIsEditing(false);
+        setProfileSaveError(null);
     };
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
         setIsEditing(true);
+        setProfileSaveError(null);
     };
 
     const handleImageUpload = (event) => {
@@ -2752,6 +2905,12 @@ const ClientDashboard = () => {
                                     Client Profile
                                 </h2>
                                 <p className="text-gray-600 text-lg">Manage your personal information and account settings</p>
+                                {profileLoading && (
+                                    <p className="text-sm text-gray-500 mt-2">Loading profile information…</p>
+                                )}
+                                {!profileLoading && profileError && (
+                                    <p className="text-sm text-red-500 mt-2">{profileError}</p>
+                                )}
                             </div>
                             <div className="flex items-center space-x-4">
                                 {saveSuccess && (
@@ -2765,29 +2924,35 @@ const ClientDashboard = () => {
                                     <div className="flex items-center space-x-3">
                                         <button
                                             onClick={handleCancelEdit}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-gray-300 text-white bg-red-500 cursor-pointer"
+                                            disabled={profileSaving}
+                                            className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform shadow-lg border-2 border-gray-300 text-white bg-red-500 ${profileSaving ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
                                         >
                                             <XCircle size={20} />
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleSaveProfile}
-                                            className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 cursor-pointer"
+                                            disabled={profileSaving}
+                                            className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 ${profileSaving ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
                                         >
                                             <Save size={20} />
-                                            Save Changes
+                                            {profileSaving ? 'Saving...' : 'Save Changes'}
                                         </button>
                                     </div>
                                 ) : (
                                     <button
                                         onClick={handleStartEditing}
-                                        className="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 cursor-pointer"
+                                        disabled={profileLoading}
+                                        className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/25 ${profileLoading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105 cursor-pointer'}`}
                                     >
                                         <Edit3 size={20} />
                                         Edit Profile
                                     </button>
                                 )}
                             </div>
+                            {profileSaveError && (
+                                <p className="text-sm text-red-500 mt-2">{profileSaveError}</p>
+                            )}
                         </div>
 
                         {/* Profile Overview Card */}
@@ -2802,7 +2967,7 @@ const ClientDashboard = () => {
                                         />
                                     ) : (
                                         <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-3xl font-bold backdrop-blur-sm border-2 border-white/30">
-                                            {profileData.firstName[0]}{profileData.lastName[0]}
+                                            {profileInitials}
                                         </div>
                                     )}
                                     {isEditing && (
@@ -2822,17 +2987,19 @@ const ClientDashboard = () => {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-2xl font-bold mb-2">{profileData.firstName} {profileData.lastName}</h3>
-                                    <p className="text-emerald-100 mb-1">{profileData.position} • {profileData.company}</p>
-                                    <p className="text-emerald-100 text-sm opacity-90">{profileData.email}</p>
+                                    <h3 className="text-2xl font-bold mb-2">{profileFullName}</h3>
+                                    <p className="text-emerald-100 mb-1">
+                                        {(profileData.position || 'Client') + (profileData.company ? ` • ${profileData.company}` : '')}
+                                    </p>
+                                    <p className="text-emerald-100 text-sm opacity-90">{profileData.email || 'Email unavailable'}</p>
                                     <div className="flex items-center gap-4 mt-2">
                                         <span className="flex items-center gap-1 text-sm">
                                             <Globe size={14} />
-                                            {profileData.timezone}
+                                            {profileData.timezone || 'Timezone not set'}
                                         </span>
                                         <span className="flex items-center gap-1 text-sm">
                                             <Calendar size={14} />
-                                            Member since {profileData.joinDate}
+                                            Member since {profileData.joinDate || 'N/A'}
                                         </span>
                                     </div>
                                 </div>
@@ -2882,7 +3049,7 @@ const ClientDashboard = () => {
                                                 {[
                                                     { label: 'First Name', key: 'firstName', icon: User },
                                                     { label: 'Last Name', key: 'lastName', icon: User },
-                                                    { label: 'Email', key: 'email', icon: Mail },
+                                                    { label: 'Email', key: 'email', icon: Mail, readOnly: true },
                                                     { label: 'Phone', key: 'phone', icon: Phone },
                                                     { label: 'Company', key: 'company', icon: Users },
                                                     { label: 'Position', key: 'position', icon: Settings },
@@ -2900,28 +3067,18 @@ const ClientDashboard = () => {
                                                                 <input
                                                                     type="text"
                                                                     value={profileData[field.key]}
-                                                                    onChange={(e) => {
-                                                                        let value = e.target.value;
-                                                                        if (field.key === 'phone') {
-                                                                            // Enforce +91 prefix and allow only 10 digits after space
-                                                                            if (value.startsWith('+91 ')) {
-                                                                                const digits = value.slice(4).replace(/\D/g, ''); // Remove non-digits after +91
-                                                                                if (digits.length <= 10) {
-                                                                                    value = '+91 ' + digits;
-                                                                                } else {
-                                                                                    value = '+91 ' + digits.slice(0, 10);
-                                                                                }
-                                                                            } else {
-                                                                                value = '+91 ';
-                                                                            }
-                                                                        }
-                                                                        setProfileData(prev => ({ ...prev, [field.key]: value }));
-                                                                    }}
+                                                                     onChange={(e) => {
+                                                                         let value = e.target.value;
+                                                                         if (field.key === 'phone') {
+                                                                             value = value.replace(/[^+\\d()\\s-]/g, '');
+                                                                         }
+                                                                         setProfileData(prev => ({ ...prev, [field.key]: value }));
+                                                                     }}
                                                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                                                 />
                                                             ) : (
                                                                 <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-emerald-100 transition-all duration-300">
-                                                                    <p className="text-gray-900">{profileData[field.key]}</p>
+                                                                    <p className="text-gray-900">{profileData[field.key] || 'N/A'}</p>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -2944,9 +3101,13 @@ const ClientDashboard = () => {
                                                     />
                                                 ) : (
                                                     <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-emerald-100 transition-all duration-300">
-                                                        <a href={`https://${profileData.website}`} className="text-emerald-600 hover:text-emerald-700">
-                                                            {profileData.website}
-                                                        </a>
+                                                        {profileWebsiteUrl ? (
+                                                            <a href={profileWebsiteUrl} className="text-emerald-600 hover:text-emerald-700">
+                                                                {profileData.website}
+                                                            </a>
+                                                        ) : (
+                                                            <p className="text-gray-500">Not provided</p>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -3240,8 +3401,8 @@ const ClientDashboard = () => {
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
-                                        <p className="text-xs text-gray-500">Service Provider</p>
+                                        <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                        <p className="text-xs text-gray-500">{profileData.position || 'Client'}</p>
                                     </div>
                                     <div className="relative">
                                         {imagePreview ? (
@@ -3252,7 +3413,7 @@ const ClientDashboard = () => {
                                             />
                                         ) : (
                                             <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-200">
-                                                {profileData.firstName[0]}{profileData.lastName[0]}
+                                                {profileInitials}
                                             </div>
                                         )}
                                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -3269,8 +3430,8 @@ const ClientDashboard = () => {
                                 {showUserDropdown && (
                                     <div className="absolute right-0 top-16 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 animate-dropdown">
                                         <div className="px-4 py-3 border-b border-gray-100">
-                                            <p className="text-sm font-semibold text-gray-800">{profileData.firstName} {profileData.lastName}</p>
-                                            <p className="text-xs text-gray-500 mt-1">{profileData.email}</p>
+                                            <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                            <p className="text-xs text-gray-500 mt-1">{profileData.email || 'Email unavailable'}</p>
                                         </div>
 
                                         <div>
