@@ -107,7 +107,7 @@ const formatProfileData = (record = {}) => {
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { logout, user, getAuthHeaders, API_BASE_URL, activateRole } = useAuth();
+    const { logout, user, getAuthHeaders, API_BASE_URL, activateRole, getSession } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -115,6 +115,64 @@ const UserDashboard = () => {
     useEffect(() => {
         activateRole('USER');
     }, [activateRole]);
+
+    const socketBaseUrl = useMemo(() => {
+        const base = API_BASE_URL || 'http://localhost:5000/api';
+        return base.replace(/\/api\/?$/, '');
+    }, [API_BASE_URL]);
+
+    const upsertAppointmentRecord = useCallback((updated) => {
+        if (!updated) {
+            return;
+        }
+
+        setAppointments(prev => {
+            const next = [...prev];
+            const index = next.findIndex(item => item.id === updated.id);
+            if (index === -1) {
+                next.unshift(updated);
+                return next;
+            }
+            next[index] = updated;
+            return next;
+        });
+
+        setBookingHistory(prev => {
+            const filtered = prev.filter(entry => entry.id !== updated.id);
+            if (['Confirmed', 'Completed'].includes(updated.status)) {
+                return [...filtered, updated];
+            }
+            return filtered;
+        });
+    }, []);
+
+    const userSessionToken = getSession('USER')?.token;
+
+    useEffect(() => {
+        if (!userSessionToken) return;
+        const source = new EventSource(`${socketBaseUrl}/api/appointments/stream?token=${encodeURIComponent(userSessionToken)}`);
+
+        const handleRealtimeUpdate = (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                if (!payload?.appointment) return;
+                const normalized = normalizeAppointment(payload.appointment);
+                upsertAppointmentRecord(normalized);
+            } catch (error) {
+                console.error('Realtime appointment parse error:', error);
+            }
+        };
+
+        source.addEventListener('appointment:status-updated', handleRealtimeUpdate);
+        source.addEventListener('appointment:booked', handleRealtimeUpdate);
+        source.onerror = (err) => console.error('Appointment stream error:', err);
+
+        return () => {
+            source.removeEventListener('appointment:status-updated', handleRealtimeUpdate);
+            source.removeEventListener('appointment:booked', handleRealtimeUpdate);
+            source.close();
+        };
+    }, [socketBaseUrl, userSessionToken, upsertAppointmentRecord]);
 
     // Chart state
     const [chartType, setChartType] = useState('area');

@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
@@ -26,6 +27,84 @@ const appointmentInclude = {
   client: true,
   user: true
 };
+
+const buildStreamPayload = (type, appointment) => ({
+  type,
+  target: {
+    userId: appointment.userId,
+    clientNo: appointment.clientNo || appointment.service?.clientNo || null
+  },
+  appointment
+});
+
+const setupSseConnection = (req, res, user) => {
+  const publisher = req.app.get('appointmentPublisher');
+  if (!publisher) {
+    res.status(500).json({
+      success: false,
+      message: 'Event stream unavailable'
+    });
+    return;
+  }
+
+  req.socket?.setTimeout(0);
+  req.socket?.setKeepAlive(true);
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (res.flushHeaders) {
+    res.flushHeaders();
+  }
+  res.write(`retry: 5000\n\n`);
+
+  const sendEvent = (payload) => {
+    res.write(`event: ${payload.type}\ndata: ${JSON.stringify(payload)}\n\n`);
+  };
+
+  const listener = (payload) => {
+    if (!payload || !payload.target) return;
+
+    const isUserHit = payload.target.userId && payload.target.userId === user.id;
+    const isClientHit = payload.target.clientNo && user.role === 'CLIENT' && payload.target.clientNo === user.clientNo;
+
+    if (!isUserHit && !isClientHit) return;
+    sendEvent(payload);
+  };
+
+  publisher.on('appointment:event', listener);
+  req.on('close', () => {
+    publisher.off('appointment:event', listener);
+    res.end();
+  });
+};
+
+// SSE stream for live appointment events
+router.get('/stream', async (req, res) => {
+  const token = req.query.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+  if (!token) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication token required for stream'
+    });
+    return;
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    setupSseConnection(req, res, user);
+  } catch (error) {
+    console.error('Stream authentication failed:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid or expired token'
+    });
+  }
+});
 
 const applyAppointmentFilters = (where = {}, query = {}) => {
   const { status, dateFrom, dateTo, serviceId } = query || {};
@@ -189,11 +268,17 @@ router.post('/', authenticateToken, authorizeRoles('USER'), async (req, res) => 
       include: appointmentInclude
     });
 
+    const appointmentPayload = buildAppointmentPayload(appointment);
+    const publisher = req.app.get('appointmentPublisher');
+    if (publisher) {
+      publisher.emit('appointment:event', buildStreamPayload('appointment:booked', appointmentPayload));
+    }
+
     res.status(201).json({
       success: true,
       message: 'Appointment booked successfully',
       data: {
-        appointment: buildAppointmentPayload(appointment)
+        appointment: appointmentPayload
       }
     });
 
@@ -344,11 +429,17 @@ router.patch('/:appointmentId/confirm', authenticateToken, authorizeRoles('CLIEN
       include: appointmentInclude
     });
 
+    const updatedPayload = buildAppointmentPayload(updatedAppointment);
+    const publisher = req.app.get('appointmentPublisher');
+    if (publisher) {
+      publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', updatedPayload));
+    }
+
     res.json({
       success: true,
       message: 'Appointment confirmed',
       data: {
-        appointment: buildAppointmentPayload(updatedAppointment)
+        appointment: updatedPayload
       }
     });
   } catch (error) {

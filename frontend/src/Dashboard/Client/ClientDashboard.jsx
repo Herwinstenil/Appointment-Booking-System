@@ -193,7 +193,8 @@ const buildClientBooking = (record) => {
         status: getStatusLabel(record.status),
         statusRaw: record.status,
         clientNo: record.clientNo || record.service?.clientNo || null,
-        statusClass: getStatusBadgeClass(record.status)
+        statusClass: getStatusBadgeClass(record.status),
+        createdAt: record.createdAt
     };
 };
 
@@ -221,7 +222,7 @@ const createServiceMutationState = () => ({
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const { getAuthHeaders, API_BASE_URL, activateRole } = useAuth();
+    const { getAuthHeaders, API_BASE_URL, activateRole, getSession } = useAuth();
     const baseApiUrl = API_BASE_URL || 'http://localhost:5000/api';
     const clientProfileEndpoint = `${baseApiUrl}/client/profile`;
     const [activeItem, setActiveItem] = useState('Dashboard');
@@ -231,6 +232,11 @@ const ClientDashboard = () => {
     useEffect(() => {
         activateRole('CLIENT');
     }, [activateRole]);
+
+    const socketBaseUrl = useMemo(() => {
+        const base = API_BASE_URL || 'http://localhost:5000/api';
+        return base.replace(/\/api\/?$/, '');
+    }, [API_BASE_URL]);
 
     // Loading and error states
     const [loading, setLoading] = useState(true);
@@ -303,8 +309,11 @@ const ClientDashboard = () => {
 
                 await statsResponse.json();
                 const revenueData = await revenueResponse.json();
+                const payload = revenueData.data || {};
 
-                setRevenue(revenueData.data?.revenue || []);
+                setRevenue(payload.revenueData || payload.revenue || []);
+                setRevenueByServiceStats(payload.revenueByService || []);
+                setRevenueTotals(payload.totalStats || {});
                 await fetchBookingsList();
             } catch (err) {
                 setError(err.message);
@@ -320,6 +329,55 @@ const ClientDashboard = () => {
     useEffect(() => {
         fetchServicesList();
     }, [fetchServicesList]);
+
+    // Booking Management State
+    const [bookings, setBookings] = useState([]);
+    const upsertBookingRecord = useCallback((payload) => {
+        if (!payload) {
+            return;
+        }
+        const normalized = buildClientBooking(payload);
+        setBookings(prev => {
+            const next = [...prev];
+            const index = next.findIndex(item => item.id === normalized.id);
+            if (index === -1) {
+                next.unshift(normalized);
+                return next;
+            }
+            next[index] = normalized;
+            return next;
+        });
+    }, []);
+    const [confirmingBookingId, setConfirmingBookingId] = useState(null);
+    const [cancellingBookingId, setCancellingBookingId] = useState(null);
+    const [bookingActionError, setBookingActionError] = useState('');
+
+    const clientSessionToken = getSession('CLIENT')?.token;
+
+    useEffect(() => {
+        if (!clientSessionToken) return;
+        const source = new EventSource(`${socketBaseUrl}/api/appointments/stream?token=${encodeURIComponent(clientSessionToken)}`);
+
+        const handleRealtime = (event) => {
+            try {
+                const payload = JSON.parse(event.data);
+                if (!payload?.appointment) return;
+                upsertBookingRecord(payload.appointment);
+            } catch (error) {
+                console.error('Client booking stream parse error:', error);
+            }
+        };
+
+        source.addEventListener('appointment:status-updated', handleRealtime);
+        source.addEventListener('appointment:booked', handleRealtime);
+        source.onerror = (error) => console.error('Client booking stream error:', error);
+
+        return () => {
+            source.removeEventListener('appointment:status-updated', handleRealtime);
+            source.removeEventListener('appointment:booked', handleRealtime);
+            source.close();
+        };
+    }, [socketBaseUrl, clientSessionToken, upsertBookingRecord]);
     const resetServiceMutation = () => {
         setServiceMutation(createServiceMutationState());
     };
@@ -507,14 +565,10 @@ const ClientDashboard = () => {
     const [servicesError, setServicesError] = useState(null);
     const [serviceMutation, setServiceMutation] = useState(createServiceMutationState);
 
-    // Booking Management State
-    const [bookings, setBookings] = useState([]);
-    const [confirmingBookingId, setConfirmingBookingId] = useState(null);
-    const [cancellingBookingId, setCancellingBookingId] = useState(null);
-    const [bookingActionError, setBookingActionError] = useState('');
-
     // Revenue State
     const [revenue, setRevenue] = useState([]);
+    const [revenueByServiceStats, setRevenueByServiceStats] = useState([]);
+    const [revenueTotals, setRevenueTotals] = useState({ totalRevenue: 0, totalAppointments: 0 });
 
     // Bookings State
     const [bookingsData, setBookingsData] = useState([]);
@@ -567,164 +621,173 @@ const ClientDashboard = () => {
         return labels;
     };
 
-    // Function to generate revenue trend data based on time range
-    const getRevenueTrend = (range) => {
-        const labels = getDateLabels(range);
-        const baseRevenue = 85000;
-        const data = [];
+    const REVISION_POINTS = {
+        daily: 7,
+        weekly: 8,
+        monthly: 12,
+        yearly: 12
+    };
 
-        for (let i = 0; i < labels.length; i++) {
-            const variation = (Math.random() - 0.5) * 0.3; // -15% to +15% variation
-            const revenue = Math.round(baseRevenue * (1 + variation + (i * 0.05))); // Slight upward trend
-            const prevRevenue = i > 0 ? data[i - 1].revenue : baseRevenue;
-            const growth = ((revenue - prevRevenue) / prevRevenue * 100);
-
-            data.push({
-                label: labels[i],
-                revenue: revenue,
-                growth: Math.round(growth * 10) / 10
-            });
+    const formatRevenuePeriod = (value, range) => {
+        if (!value) return 'N/A';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) {
+            return String(value);
         }
-
-        return data;
+        if (range === 'yearly') return parsed.getFullYear().toString();
+        if (range === 'monthly') return parsed.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
-    // Function to generate revenue metrics based on time range
-    const getRevenueMetrics = (range) => {
-        const baseMetrics = {
-            totalRevenue: 1254300,
-            monthlyRevenue: 98750,
-            growthPercentage: 12.5,
-            activeClients: 2847,
-            averageBookingValue: 156,
-            topService: 'Web Development',
-            newBookings: 342,
-            completionRate: 94.2,
-            clientSatisfaction: 4.9
-        };
-
-        // Adjust metrics based on time range
-        const multiplier = {
-            daily: 0.03, // Daily values are smaller
-            weekly: 0.12,
-            monthly: 1,
-            yearly: 12
-        };
-
-        return {
-            ...baseMetrics,
-            totalRevenue: Math.round(baseMetrics.totalRevenue * multiplier[range]),
-            monthlyRevenue: Math.round(baseMetrics.monthlyRevenue * multiplier[range]),
-            newBookings: Math.round(baseMetrics.newBookings * multiplier[range]),
-            activeClients: Math.round(baseMetrics.activeClients * multiplier[range])
-        };
-    };
-
-    // Function to generate revenue by service data
-    const getRevenueByService = (range) => {
-        const baseData = [
-            { service: 'Web Development', amount: 450000, percentage: 35.9, growth: 15.2, color: 'bg-emerald-500' },
-            { service: 'Mobile App Development', amount: 320000, percentage: 25.5, growth: 8.7, color: 'bg-blue-500' },
-            { service: 'UI/UX Design', amount: 280000, percentage: 22.3, growth: 3.2, color: 'bg-green-500' },
-            { service: 'Add-ons', amount: 203000, percentage: 16.2, growth: 12.8, color: 'bg-purple-500' }
-        ];
-
-        // Adjust amounts based on time range
-        const multiplier = {
-            daily: 0.03,
-            weekly: 0.12,
-            monthly: 1,
-            yearly: 12
-        };
-
-        return baseData.map(service => ({
-            ...service,
-            amount: Math.round(service.amount * multiplier[range])
+    const revenueTrend = useMemo(() => {
+        if (!revenue.length) return [];
+        const sorted = [...revenue].sort((a, b) => {
+            const dateA = new Date(a.period || a.createdAt || a.date);
+            const dateB = new Date(b.period || b.createdAt || b.date);
+            return dateA - dateB;
+        });
+        const limit = REVISION_POINTS[timeRange] || REVISION_POINTS.monthly;
+        const window = sorted.slice(-limit);
+        return window.map((entry) => ({
+            label: formatRevenuePeriod(entry.period || entry.date || entry.createdAt, timeRange),
+            revenue: Number(entry.revenue || entry.amount || 0)
         }));
-    };
+    }, [revenue, timeRange]);
 
-    // Function to generate recent transactions
-    const getRecentTransactions = (range) => {
-        const baseTransactions = [
-            { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
-            { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
-            { id: 3, client: 'Mike Davis', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'pending', avatar: 'MD' },
-            { id: 4, client: 'Emma Wilson', service: 'Consultation', amount: 200, date: 'Yesterday', status: 'completed', avatar: 'EW' }
-        ];
+    const revenueByService = useMemo(() => {
+        if (!revenueByServiceStats.length) return [];
+        const palette = ['bg-emerald-500', 'bg-blue-500', 'bg-sky-500', 'bg-purple-500', 'bg-indigo-500'];
+        const total = revenueByServiceStats.reduce((sum, entry) => sum + Number(entry.revenue || entry.amount || 0), 0) || 1;
+        return revenueByServiceStats
+            .map((service, index) => {
+                const amount = Number(service.revenue || service.amount || 0);
+                const percentage = Math.round((amount / total) * 100);
+                const averageShare = 100 / Math.max(revenueByServiceStats.length, 1);
+                const growth = Math.round((percentage - averageShare) * 10) / 10;
+                return {
+                    service: service.service_name || service.name || 'Service',
+                    amount,
+                    percentage,
+                    growth,
+                    color: palette[index % palette.length]
+                };
+            })
+            .sort((a, b) => b.amount - a.amount);
+    }, [revenueByServiceStats]);
 
-        // Adjust dates based on time range
-        const dateLabels = {
-            daily: ['Today', 'Today', 'Yesterday', 'Yesterday'],
-            weekly: ['This Week', 'This Week', 'Last Week', 'Last Week'],
-            monthly: ['2024-01-15', '2024-01-14', '2024-01-13', '2024-01-12'],
-            yearly: ['2024', '2024', '2023', '2023']
-        };
-
-        return baseTransactions.map((transaction, index) => ({
-            ...transaction,
-            date: dateLabels[range][index] || transaction.date
-        }));
-    };
-
-    // Function to generate performance metrics
-    const getPerformanceMetrics = (range) => {
-        const baseMetrics = [
-            { name: 'Response Time', value: '1.8 hours', change: '-0.4h', positive: true },
-            { name: 'Booking Rate', value: '82%', change: '+7.1%', positive: true },
-            { name: 'Client Rating', value: '4.9/5', change: '+0.1', positive: true },
-            { name: 'Repeat Clients', value: '68%', change: '+2.3%', positive: true }
-        ];
-
-        // Adjust values based on time range
-        const adjustments = {
-            daily: { responseTime: '1.2 hours', bookingRate: '85%', clientRating: '4.9/5', repeatClients: '72%' },
-            weekly: { responseTime: '1.5 hours', bookingRate: '83%', clientRating: '4.8/5', repeatClients: '70%' },
-            monthly: { responseTime: '1.8 hours', bookingRate: '82%', clientRating: '4.9/5', repeatClients: '68%' },
-            yearly: { responseTime: '2.2 hours', bookingRate: '78%', clientRating: '4.7/5', repeatClients: '65%' }
-        };
-
-        return baseMetrics.map(metric => {
-            const keyMap = {
-                'Response Time': 'responseTime',
-                'Booking Rate': 'bookingRate',
-                'Client Rating': 'clientRating',
-                'Repeat Clients': 'repeatClients'
-            };
-
-            const key = keyMap[metric.name];
+    const recentTransactions = useMemo(() => {
+        const sorted = [...bookings].sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.date || a.appointmentDate || 0);
+            const dateB = new Date(b.createdAt || b.date || b.appointmentDate || 0);
+            return dateB - dateA;
+        });
+        return sorted.slice(0, 5).map((booking) => {
+            const initials = (booking.client || 'Client')
+                .split(' ')
+                .map(name => name[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase();
+            const rawAmount = typeof booking.amount === 'string'
+                ? Number(booking.amount.replace(/[^0-9.-]+/g, '')) || 0
+                : booking.amount || 0;
             return {
-                ...metric,
-                value: adjustments[range][key] || metric.value
+                id: booking.id,
+                client: booking.client,
+                service: booking.service,
+                amount: rawAmount,
+                date: booking.date || '',
+                avatar: initials,
+                status: booking.status?.toLowerCase().includes('completed') ? 'completed' : 'pending'
             };
         });
-    };
+    }, [bookings]);
 
-    // Calculate real metrics from fetched data
-    const revenueMetrics = useMemo(() => {
-        const totalRevenue = revenue.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const performanceMetrics = useMemo(() => {
         const totalBookings = bookings.length;
-        const completedBookings = bookings.filter(b => b.status === 'Completed').length;
+        const confirmedBookings = bookings.filter(b => b.status?.toLowerCase() === 'confirmed').length;
+        const bookingRate = totalBookings ? Math.round((confirmedBookings / totalBookings) * 100) : 0;
+        const ratings = bookings.filter(b => typeof b.rating === 'number');
+        const averageRating = ratings.length
+            ? Math.round((ratings.reduce((sum, b) => sum + b.rating, 0) / ratings.length) * 10) / 10
+            : 0;
+        const repeatClients = new Set(bookings.map(b => b.client)).size;
+        const responseTimes = bookings
+            .map((booking) => {
+                const start = new Date(booking.createdAt || booking.date || booking.appointmentDate || 0);
+                const end = new Date(booking.date || booking.appointmentDate || booking.createdAt || 0);
+                if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+                    return null;
+                }
+                return (end - start) / 3600000;
+            })
+            .filter(time => time !== null && time !== undefined);
+        const averageResponse = responseTimes.length
+            ? responseTimes.reduce((sum, value) => sum + value, 0) / responseTimes.length
+            : 0;
+
+        return [
+            {
+                name: 'Response Time',
+                value: `${averageResponse.toFixed(1)} hrs`,
+                change: 'N/A',
+                positive: averageResponse <= 3
+            },
+            {
+                name: 'Booking Rate',
+                value: `${bookingRate}%`,
+                change: 'N/A',
+                positive: bookingRate >= 70
+            },
+            {
+                name: 'Client Rating',
+                value: `${averageRating.toFixed(1)}/5`,
+                change: 'N/A',
+                positive: averageRating >= 4
+            },
+            {
+                name: 'Repeat Clients',
+                value: `${repeatClients}`,
+                change: 'N/A',
+                positive: true
+            }
+        ];
+    }, [bookings]);
+
+    const revenueMetrics = useMemo(() => {
+        const totalRevenue = revenueTotals.totalRevenue ?? revenue.reduce((sum, item) => sum + Number(item.revenue || item.amount || 0), 0);
+        const monthlyRevenue = totalRevenue;
+        const totalBookings = bookings.length;
+        const completedBookings = bookings.filter(b => ['confirmed', 'completed'].includes(b.status?.toLowerCase())).length;
         const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
         const averageBookingValue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
+        const growthPercentage = revenueTrend.length > 1
+            ? Math.round(((revenueTrend[revenueTrend.length - 1].revenue - revenueTrend[0].revenue)
+                / Math.max(revenueTrend[0].revenue, 1)) * 100)
+            : 0;
+        const activeClients = users.filter(u => u.status === 'Active').length;
+        const sortedServices = [...revenueByServiceStats].sort((a, b) => Number(b.revenue || b.amount || 0) - Number(a.revenue || a.amount || 0));
+        const topServiceEntry = sortedServices[0];
+        const topService = topServiceEntry
+            ? (topServiceEntry.service_name || topServiceEntry.name || 'Service')
+            : (services.length > 0 ? services[0].name : 'N/A');
+        const ratings = bookings.filter(b => typeof b.rating === 'number');
+        const clientSatisfaction = ratings.length
+            ? Math.round((ratings.reduce((sum, b) => sum + b.rating, 0) / ratings.length) * 10) / 10
+            : 0;
 
         return {
             totalRevenue,
-            monthlyRevenue: totalRevenue, // For simplicity, using total as monthly
-            growthPercentage: 12.5, // Mock growth for now
-            activeClients: users.filter(u => u.status === 'Active').length,
+            monthlyRevenue,
+            growthPercentage,
+            activeClients,
             averageBookingValue,
-            topService: services.length > 0 ? services[0].name : 'N/A',
+            topService,
             newBookings: totalBookings,
             completionRate,
-            clientSatisfaction: 4.9
+            clientSatisfaction
         };
-    }, [services, bookings, revenue, users]);
-
-    // Dynamic data based on time range - memoized to prevent unnecessary re-generation
-    const revenueTrend = useMemo(() => getRevenueTrend(timeRange), [timeRange]);
-    const revenueByService = useMemo(() => getRevenueByService(timeRange), [timeRange]);
-    const recentTransactions = useMemo(() => getRecentTransactions(timeRange), [timeRange]);
-    const performanceMetrics = useMemo(() => getPerformanceMetrics(timeRange), [timeRange]);
+    }, [services, bookings, revenue, users, revenueTotals, revenueTrend, revenueByServiceStats]);
 
     // Modal States
     const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false);
@@ -1897,8 +1960,9 @@ const ClientDashboard = () => {
                                         // Bar Chart
                                         <div className="h-full flex items-end justify-between space-x-2">
                                             {(() => {
-                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
-                                                return revenueTrend.map((data, index) => (
+                                            const revenueValues = revenueTrend.map(d => d.revenue);
+                                            const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                            return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
                                                             className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
@@ -1916,8 +1980,9 @@ const ClientDashboard = () => {
                                         // Line/Area Chart
                                         <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
                                             {(() => {
-                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
-                                                const points = revenueTrend.map((data, index) => {
+                                            const revenueValues = revenueTrend.map(d => d.revenue);
+                                            const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                            const points = revenueTrend.map((data, index) => {
                                                     const x = (index / (revenueTrend.length - 1)) * 400;
                                                     const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
                                                     return `${x},${y}`;

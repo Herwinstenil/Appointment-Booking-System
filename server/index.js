@@ -1,10 +1,12 @@
 require('dotenv').config();
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const { EventEmitter } = require('events');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const appointmentRoutes = require('./routes/appointments');
@@ -13,6 +15,10 @@ const clientRoutes = require('./routes/client');
 const serviceRoutes = require('./routes/services');
 
 const app = express();
+const appointmentPublisher = new EventEmitter();
+appointmentPublisher.setMaxListeners(0);
+app.set('appointmentPublisher', appointmentPublisher);
+const httpServer = http.createServer(app);
 
 // Prisma 7.x: Use adapter for database connection
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -131,30 +137,32 @@ app.use((error, req, res, next) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+const shutdown = async (signal) => {
+  try {
+    console.log(`${signal} received, shutting down gracefully`);
+    appointmentPublisher.removeAllListeners();
+    await prisma.$disconnect();
+    await new Promise((resolve) => httpServer.close(resolve));
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+  } finally {
+    process.exit(0);
+  }
+};
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 // Start server
 const startServer = async () => {
   try {
-    // Test database connection with Prisma 7
     await prisma.$connect();
     console.log('✅ Database connected successfully');
     
-    // Test query to verify connection
     const result = await prisma.$queryRaw`SELECT version()`;
     console.log(`📊 Database version: ${result[0].version}`);
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
       console.log(`🧪 DB test: http://localhost:${PORT}/api/db-test`);
