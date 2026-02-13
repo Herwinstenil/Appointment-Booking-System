@@ -516,16 +516,56 @@ router.get('/google/callback', (req, res, next) => {
 
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
-router.get('/facebook/callback', passport.authenticate('facebook', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
-  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(buildRedirectUrl(req.user, token));
+router.get('/facebook/callback', (req, res, next) => {
+  passport.authenticate('facebook', { session: false }, async (err, user) => {
+    if (err) {
+      console.error('Facebook authentication error:', err.message);
+      if (err.data) {
+        console.error('Facebook error payload:', err.data);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    try {
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(buildRedirectUrl(user, token));
+    } catch (error) {
+      console.error('Facebook callback error:', error);
+      res.status(500).json({ success: false, message: 'Authentication failed' });
+    }
+  })(req, res, next);
 });
 
 router.get('/twitter', passport.authenticate('twitter'));
 
-router.get('/twitter/callback', passport.authenticate('twitter', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
-  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+router.get('/twitter/callback', (req, res, next) => {
+  passport.authenticate('twitter', { session: false }, async (err, user) => {
+    if (err) {
+      console.error('Twitter authentication error:', err.message);
+      if (err.data) {
+        console.error('Twitter error payload:', err.data);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    try {
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(buildRedirectUrl(user, token));
+    } catch (error) {
+      console.error('Twitter callback error:', error);
+      res.status(500).json({ success: false, message: 'Authentication failed' });
+    }
+  })(req, res, next);
 });
 
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
@@ -557,9 +597,29 @@ router.get('/github/callback', (req, res, next) => {
 
 router.get('/instagram', passport.authenticate('instagram'));
 
-router.get('/instagram/callback', passport.authenticate('instagram', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
-  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(buildRedirectUrl(req.user, token));
+router.get('/instagram/callback', (req, res, next) => {
+  passport.authenticate('instagram', { session: false }, async (err, user) => {
+    if (err) {
+      console.error('Instagram authentication error:', err.message);
+      if (err.data) {
+        console.error('Instagram error payload:', err.data);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    try {
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(buildRedirectUrl(user, token));
+    } catch (error) {
+      console.error('Instagram callback error:', error);
+      res.status(500).json({ success: false, message: 'Authentication failed' });
+    }
+  })(req, res, next);
 });
 
 module.exports = router;
