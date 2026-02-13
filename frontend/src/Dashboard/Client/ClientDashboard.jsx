@@ -221,12 +221,16 @@ const createServiceMutationState = () => ({
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const { getAuthHeaders, API_BASE_URL } = useAuth();
+    const { getAuthHeaders, API_BASE_URL, activateRole } = useAuth();
     const baseApiUrl = API_BASE_URL || 'http://localhost:5000/api';
     const clientProfileEndpoint = `${baseApiUrl}/client/profile`;
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    useEffect(() => {
+        activateRole('CLIENT');
+    }, [activateRole]);
 
     // Loading and error states
     const [loading, setLoading] = useState(true);
@@ -235,7 +239,7 @@ const ClientDashboard = () => {
     const fetchServicesList = useCallback(async () => {
         setServicesLoading(true);
         setServicesError(null);
-        const headers = getAuthHeaders();
+        const headers = getAuthHeaders('CLIENT');
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
 
         try {
@@ -259,7 +263,7 @@ const ClientDashboard = () => {
 
     const fetchBookingsList = useCallback(async () => {
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
-        const headers = getAuthHeaders();
+        const headers = getAuthHeaders('CLIENT');
 
         const response = await fetch(`${baseUrl}/appointments/client`, {
             headers
@@ -282,7 +286,7 @@ const ClientDashboard = () => {
                 setLoading(true);
                 setError(null);
 
-                const headers = getAuthHeaders();
+                const headers = getAuthHeaders('CLIENT');
                 const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
 
                 const [statsResponse, revenueResponse] = await Promise.all([
@@ -382,7 +386,7 @@ const ClientDashboard = () => {
         setProfileLoading(true);
         setProfileError(null);
         try {
-            const headers = getAuthHeaders();
+            const headers = getAuthHeaders('CLIENT');
             const response = await fetch(clientProfileEndpoint, { headers });
             const data = await response.json();
 
@@ -436,7 +440,7 @@ const ClientDashboard = () => {
             );
 
             const headers = {
-                ...getAuthHeaders(),
+                ...getAuthHeaders('CLIENT'),
                 'Content-Type': 'application/json'
             };
 
@@ -941,7 +945,7 @@ const ClientDashboard = () => {
 
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
         const headers = {
-            ...getAuthHeaders(),
+            ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
         };
 
@@ -978,7 +982,7 @@ const ClientDashboard = () => {
 
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
         const headers = {
-            ...getAuthHeaders(),
+            ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
         };
 
@@ -1012,7 +1016,7 @@ const ClientDashboard = () => {
 
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
         const headers = {
-            ...getAuthHeaders(),
+            ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
         };
 
@@ -1238,7 +1242,7 @@ const ClientDashboard = () => {
 
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
         const headers = {
-            ...getAuthHeaders(),
+            ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
         };
 
@@ -1520,7 +1524,7 @@ const ClientDashboard = () => {
         setDeleteConfirm(false);
 
         const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
-        const headers = getAuthHeaders();
+        const headers = getAuthHeaders('CLIENT');
 
         setServiceMutation({
             type: 'delete',

@@ -1,8 +1,57 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import i18n from '../i18n/index.js';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
+
+const ROLE_SESSION_STORAGE_KEY = 'appointment_role_sessions';
+
+const readStoredSessions = () => {
+    if (typeof window === 'undefined') {
+        return {};
+    }
+    try {
+        const stored = localStorage.getItem(ROLE_SESSION_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.error('Failed to parse stored sessions:', error);
+        return {};
+    }
+};
+
+const persistSessions = (sessions) => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+    try {
+        localStorage.setItem(ROLE_SESSION_STORAGE_KEY, JSON.stringify(sessions));
+    } catch (error) {
+        console.error('Failed to persist sessions:', error);
+    }
+};
+
+const getInitialAuthState = () => {
+    if (typeof window === 'undefined') {
+        return { sessions: {}, userRole: null };
+    }
+
+    const sessions = readStoredSessions();
+    const storedRole = localStorage.getItem('userRole');
+    const resolvedRole = storedRole && sessions[storedRole] ? storedRole : Object.keys(sessions)[0] || null;
+    return { sessions, userRole: resolvedRole };
+};
+
+const updateActiveRoleStorage = (role) => {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    if (role) {
+        localStorage.setItem('userRole', role);
+    } else {
+        localStorage.removeItem('userRole');
+    }
+};
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -14,77 +63,84 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState(null);
-    const [user, setUser] = useState(null);
+    const initialAuth = getInitialAuthState();
+    const [sessions, setSessions] = useState(initialAuth.sessions);
+    const [userRole, setUserRole] = useState(initialAuth.userRole);
+    const [isLoggedIn, setIsLoggedIn] = useState(Boolean(initialAuth.userRole && initialAuth.sessions[initialAuth.userRole]?.token));
+    const [user, setUser] = useState(initialAuth.userRole ? initialAuth.sessions[initialAuth.userRole]?.user : null);
     const [loading, setLoading] = useState(true);
 
     const API_BASE_URL = 'http://localhost:5000/api';
 
-    const applyLanguage = (lang) => {
+    const applyLanguage = useCallback((lang) => {
         if (!lang) return;
         i18n.changeLanguage(lang);
         localStorage.setItem('language', lang);
-    };
+    }, []);
 
-    // Check for social login callback on mount
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const userParam = urlParams.get('user');
-
-        if (token && userParam) {
-            try {
-                const user = JSON.parse(decodeURIComponent(userParam));
-                localStorage.setItem('token', token);
-                localStorage.setItem('userRole', user.role);
-                localStorage.setItem('user', JSON.stringify(user));
-                setIsLoggedIn(true);
-                setUserRole(user.role);
-                setUser(user);
-                applyLanguage(user.language || 'en');
-                applyLanguage(user.language || 'en');
-                applyLanguage(user.language || 'en');
-                window.history.replaceState({}, document.title, window.location.pathname);
-                const role = user.role;
-                if (role === 'USER') {
-                    navigate('/dashboard/user');
-                } else if (role === 'ADMIN') {
-                    navigate('/dashboard/admin');
-                } else if (role === 'CLIENT') {
-                    navigate('/dashboard/client');
-                }
-            } catch (error) {
-                console.error('Error parsing social login data:', error);
-            }
-        }
-    }, [navigate]);
-
-    // Apply stored language at mount
     useEffect(() => {
         const storedLang = localStorage.getItem('language');
         if (storedLang) {
             applyLanguage(storedLang);
         }
-    }, []);
-
-    // Check for existing auth state on mount
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('userRole');
-        const userData = localStorage.getItem('user');
-        const parsedUser = userData ? JSON.parse(userData) : null;
-
-        if (token && role && parsedUser) {
-            setIsLoggedIn(true);
-            setUserRole(role);
-            setUser(parsedUser);
-            applyLanguage(parsedUser.language || localStorage.getItem('language') || 'en');
-        }
         setLoading(false);
-    }, []);
+    }, [applyLanguage]);
 
-    const login = async (email, password) => {
+    useEffect(() => {
+        const activeSession = userRole ? sessions[userRole] : null;
+        setUser(activeSession?.user || null);
+        setIsLoggedIn(Boolean(activeSession?.token));
+        if (activeSession?.user?.language) {
+            applyLanguage(activeSession.user.language);
+        }
+    }, [sessions, userRole, applyLanguage]);
+
+    const storeRoleSession = useCallback((role, token, userPayload) => {
+        if (!role || !token) return;
+        const normalized = role.toUpperCase();
+        setSessions(prev => {
+            const next = { ...prev, [normalized]: { token, user: userPayload } };
+            persistSessions(next);
+            return next;
+        });
+        setUserRole(normalized);
+        updateActiveRoleStorage(normalized);
+        if (userPayload?.language) {
+            applyLanguage(userPayload.language);
+        }
+    }, [applyLanguage]);
+
+    const activateRole = useCallback((role) => {
+        if (!role) return;
+        const normalized = role.toUpperCase();
+        if (!sessions[normalized]) {
+            return;
+        }
+        setUserRole(normalized);
+        updateActiveRoleStorage(normalized);
+        const roleUser = sessions[normalized].user;
+        if (roleUser?.language) {
+            applyLanguage(roleUser.language);
+        }
+    }, [sessions, applyLanguage]);
+
+    const getAuthHeaders = useCallback((role = userRole) => {
+        const normalized = role?.toUpperCase();
+        if (!normalized) return {};
+        const session = sessions[normalized];
+        if (!session?.token) return {};
+        return { 'Authorization': `Bearer ${session.token}` };
+    }, [sessions, userRole]);
+
+    const getSession = useCallback((role = userRole) => {
+        const normalized = role?.toUpperCase();
+        if (!normalized) return null;
+        return sessions[normalized] || null;
+    }, [sessions, userRole]);
+
+    const availableRoles = useMemo(() => Object.keys(sessions), [sessions]);
+
+    const login = useCallback(async (email, password) => {
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
@@ -98,23 +154,18 @@ export const AuthProvider = ({ children }) => {
 
             if (data.success) {
                 const { user, token } = data.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('userRole', user.role);
-                localStorage.setItem('user', JSON.stringify(user));
-                setIsLoggedIn(true);
-                setUserRole(user.role);
-                setUser(user);
+                storeRoleSession(user.role, token, user);
                 return { success: true };
-            } else {
-                return { success: false, message: data.message };
             }
+
+            return { success: false, message: data.message };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    };
+    }, [API_BASE_URL, storeRoleSession]);
 
-    const register = async (userData) => {
+    const register = useCallback(async (userData) => {
         try {
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
@@ -128,23 +179,18 @@ export const AuthProvider = ({ children }) => {
 
             if (data.success) {
                 const { user, token } = data.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('userRole', user.role);
-                localStorage.setItem('user', JSON.stringify(user));
-                setIsLoggedIn(true);
-                setUserRole(user.role);
-                setUser(user);
+                storeRoleSession(user.role, token, user);
                 return { success: true };
-            } else {
-                return { success: false, message: data.message };
             }
+
+            return { success: false, message: data.message };
         } catch (error) {
             console.error('Register error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    };
+    }, [API_BASE_URL, storeRoleSession]);
 
-    const resetPassword = async (email, newPassword) => {
+    const resetPassword = useCallback(async (email, newPassword) => {
         try {
             const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
                 method: 'POST',
@@ -157,20 +203,26 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
 
             if (data.success) {
-                // After resetting password, auto-login with the new password
                 return await login(email, newPassword);
-            } else {
-                return { success: false, message: data.message };
             }
+
+            return { success: false, message: data.message };
         } catch (error) {
             console.error('Reset password error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    };
+    }, [API_BASE_URL, login]);
 
-    const logout = async () => {
+    const logout = useCallback(async (targetRole) => {
+        const normalizedRole = (targetRole || userRole)?.toUpperCase();
+        if (!normalizedRole) {
+            return;
+        }
+
+        const session = sessions[normalizedRole];
+        const token = session?.token;
+
         try {
-            const token = localStorage.getItem('token');
             if (token) {
                 await fetch(`${API_BASE_URL}/auth/logout`, {
                     method: 'POST',
@@ -183,40 +235,94 @@ export const AuthProvider = ({ children }) => {
             console.error('Logout error:', error);
         }
 
-        // Clear local state regardless of API call success
-        setIsLoggedIn(false);
-        setUserRole(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('user');
-        localStorage.removeItem('language');
-    };
+        const fallbackRoles = Object.keys(sessions).filter(role => role !== normalizedRole);
+        const fallback = fallbackRoles[0] || null;
 
-    const updateUser = (updates) => {
-        setUser(prev => {
-            const next = { ...(prev || {}), ...updates };
-            localStorage.setItem('user', JSON.stringify(next));
-            if (updates.role) {
-                setUserRole(updates.role);
-                localStorage.setItem('userRole', updates.role);
+        setSessions(prev => {
+            if (!prev[normalizedRole]) {
+                return prev;
             }
-            if (updates.language) {
-                applyLanguage(updates.language);
-            }
+            const next = { ...prev };
+            delete next[normalizedRole];
+            persistSessions(next);
             return next;
         });
-    };
 
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return token ? { 'Authorization': `Bearer ${token}` } : {};
-    };
+        if (fallback) {
+            setUserRole(fallback);
+            updateActiveRoleStorage(fallback);
+        } else {
+            setUserRole(null);
+            updateActiveRoleStorage(null);
+        }
+    }, [API_BASE_URL, sessions, userRole]);
 
-    const socialLogin = (provider) => {
+    const updateUser = useCallback((updates) => {
+        if (!userRole) {
+            return;
+        }
+
+        setSessions(prev => {
+            const current = prev[userRole];
+            if (!current) {
+                return prev;
+            }
+
+            const normalizedNewRole = updates.role?.toUpperCase();
+            const targetRole = normalizedNewRole && normalizedNewRole !== userRole ? normalizedNewRole : userRole;
+            const updatedUser = { ...current.user, ...updates };
+
+            const nextSessions = { ...prev };
+            if (normalizedNewRole && normalizedNewRole !== userRole) {
+                delete nextSessions[userRole];
+            }
+
+            nextSessions[targetRole] = {
+                token: current.token,
+                user: updatedUser
+            };
+
+            persistSessions(nextSessions);
+            return nextSessions;
+        });
+
+        if (updates.language) {
+            applyLanguage(updates.language);
+        }
+
+        if (updates.role) {
+            const normalizedRole = updates.role.toUpperCase();
+            setUserRole(normalizedRole);
+            updateActiveRoleStorage(normalizedRole);
+        }
+    }, [userRole, applyLanguage]);
+
+    const socialLogin = useCallback((provider) => {
         window.location.href = `${API_BASE_URL}/auth/${provider}`;
-    };
+    }, [API_BASE_URL]);
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userParam = urlParams.get('user');
+
+        if (token && userParam) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userParam));
+                storeRoleSession(user.role, token, user);
+                window.history.replaceState({}, document.title, window.location.pathname);
+                if (user.role === 'USER') {
+                    navigate('/dashboard/user');
+                } else if (user.role === 'ADMIN') {
+                    navigate('/dashboard/admin');
+                } else if (user.role === 'CLIENT') {
+                    navigate('/dashboard/client');
+                }
+            } catch (error) {
+                console.error('Error parsing social login data:', error);
+            }
+        }
+    }, [navigate, storeRoleSession]);
 
     const value = {
         isLoggedIn,
@@ -230,7 +336,10 @@ export const AuthProvider = ({ children }) => {
         getAuthHeaders,
         socialLogin,
         updateUser,
-        API_BASE_URL
+        API_BASE_URL,
+        activateRole,
+        getSession,
+        availableRoles
     };
 
     return (

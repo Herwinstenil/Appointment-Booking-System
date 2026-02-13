@@ -109,7 +109,7 @@ const buildAppointmentPayload = (appointment) => {
 };
 
 // Create appointment
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, authorizeRoles('USER'), async (req, res) => {
   try {
     const { serviceId, appointmentDate, appointmentTime, notes } = req.body;
 

@@ -107,10 +107,14 @@ const formatProfileData = (record = {}) => {
 
 const UserDashboard = () => {
     const navigate = useNavigate();
-    const { logout, user, getAuthHeaders, API_BASE_URL } = useAuth();
+    const { logout, user, getAuthHeaders, API_BASE_URL, activateRole } = useAuth();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+    useEffect(() => {
+        activateRole('USER');
+    }, [activateRole]);
 
     // Chart state
     const [chartType, setChartType] = useState('area');

@@ -126,12 +126,16 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const AdminDashboard = () => {
-    const { getAuthHeaders, user: currentUser, updateUser } = useAuth();
+    const { getAuthHeaders, user: currentUser, updateUser, activateRole } = useAuth();
     const { t } = useTranslation();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showUserDropdown, setShowUserDropdown] = useState(false);
     const [showLanguageModal, setShowLanguageModal] = useState(false);
+
+    useEffect(() => {
+        activateRole('ADMIN');
+    }, [activateRole]);
     const [languageSearch, setLanguageSearch] = useState('');
     const [languageSaving, setLanguageSaving] = useState(false);
     const [languageError, setLanguageError] = useState(null);
