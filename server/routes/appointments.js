@@ -347,7 +347,7 @@ router.get('/user', authenticateToken, async (req, res) => {
 router.get('/client', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
     const clientNo = req.user?.clientNo;
-    if (!clientNo) {
+    if (clientNo === undefined || clientNo === null) {
       return res.status(400).json({
         success: false,
         message: 'Missing client number'
@@ -355,9 +355,14 @@ router.get('/client', authenticateToken, authorizeRoles('CLIENT'), async (req, r
     }
 
     const payload = await fetchAppointments({
-      service: {
-        clientNo
-      }
+      OR: [
+        { clientNo },
+        {
+          service: {
+            clientNo
+          }
+        }
+      ]
     }, req.query);
 
     res.json({

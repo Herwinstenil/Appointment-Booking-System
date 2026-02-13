@@ -288,10 +288,10 @@ const ClientDashboard = () => {
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
+            setLoading(true);
+            setError(null);
 
+            try {
                 const headers = getAuthHeaders('CLIENT');
                 const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
 
@@ -314,11 +314,16 @@ const ClientDashboard = () => {
                 setRevenue(payload.revenueData || payload.revenue || []);
                 setRevenueByServiceStats(payload.revenueByService || []);
                 setRevenueTotals(payload.totalStats || {});
-                await fetchBookingsList();
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching dashboard data:', err);
             } finally {
+                try {
+                    await fetchBookingsList();
+                } catch (bookingError) {
+                    console.error('Error fetching client bookings:', bookingError);
+                    setError(prev => prev || bookingError.message);
+                }
                 setLoading(false);
             }
         };
