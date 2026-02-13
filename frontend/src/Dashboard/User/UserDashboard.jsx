@@ -200,8 +200,22 @@ const STATUS_LABELS = {
 };
 
 const mapStatusLabel = (status = '') => {
-        const key = status?.toString().toUpperCase();
-        return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Upcoming';
+    const key = status?.toString().toUpperCase();
+    return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Upcoming';
+};
+
+const ACTIVE_APPOINTMENT_STATUSES = ['Upcoming', 'Confirmed'];
+
+const isActiveAppointmentStatus = (status = '') => {
+    const normalized = status?.toString();
+    return ACTIVE_APPOINTMENT_STATUSES.includes(normalized);
+};
+
+const normalizeStatusForTab = (status = '') => {
+    if (status === 'Confirmed') {
+        return 'Upcoming';
+    }
+    return status;
 };
 
 const getStatusBadgeLabel = (statusRaw = '') => {
@@ -464,7 +478,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
     const userStats = useMemo(() => {
         const totalBookings = bookingHistory.length;
         const completedBookings = bookingHistory.filter(b => b.status === 'Completed').length;
-        const upcomingBookings = appointments.filter(a => a.status === 'Upcoming').length;
+        const upcomingBookings = appointments.filter(a => isActiveAppointmentStatus(a.status)).length;
         const cancelledBookings = appointments.filter(a => a.status === 'Cancelled').length;
 
         // Calculate total spent from booking history
@@ -709,7 +723,8 @@ const getStatusBadgeClass = (statusRaw = '') => {
     // Filtered appointments based on search and tab
     const filteredAppointments = appointments.filter(appointment => {
         // Filter by tab
-        const matchesTab = activeAppointmentTab === 'All' || appointment.status === activeAppointmentTab;
+        const normalizedStatus = normalizeStatusForTab(appointment.status);
+        const matchesTab = activeAppointmentTab === 'All' || normalizedStatus === activeAppointmentTab;
 
         // Filter by search term
         const searchLower = searchTerm.toLowerCase();
@@ -2379,7 +2394,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
     const renderContent = () => {
         switch (activeItem) {
             case 'Dashboard':
-                const upcomingAppointments = appointments.filter(apt => apt.status === 'Upcoming');
+                const upcomingAppointments = appointments.filter(apt => isActiveAppointmentStatus(apt.status));
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
@@ -2815,7 +2830,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Upcoming</p>
-                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => a.status === 'Upcoming').length}</p>
+                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => isActiveAppointmentStatus(a.status)).length}</p>
                                     </div>
                                     <Calendar className="text-violet-500" size={32} />
                                 </div>
@@ -2861,7 +2876,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                         }`}
                                 >
                                     {tab} ({tab === 'All' ? appointments.length :
-                                        tab === 'Upcoming' ? appointments.filter(a => a.status === 'Upcoming').length :
+                                        tab === 'Upcoming' ? appointments.filter(a => isActiveAppointmentStatus(a.status)).length :
                                             tab === 'Completed' ? appointments.filter(a => a.status === 'Completed').length :
                                                 appointments.filter(a => a.status === 'Cancelled').length
                                     })
@@ -2944,7 +2959,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                                     <p className="text-2xl font-bold text-violet-600">{appointment.amount}</p>
                                                     <p className="text-sm text-gray-500">Total</p>
                                                 </div>
-                                                {appointment.status === 'Upcoming' && (
+                                                {isActiveAppointmentStatus(appointment.status) && (
                                                     <div className="flex gap-2 mt-2">
                                                         <button
                                                             onClick={() => rescheduleAppointment(appointment.id)}
