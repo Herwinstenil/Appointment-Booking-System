@@ -2633,12 +2633,7 @@ const ClientDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="text-sm font-semibold text-gray-900">{booking.service}</div>
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.statusClass}`}>
-                                                            {booking.status}
-                                                        </span>
-                                                    </div>
+                                                    <div className="text-sm font-semibold text-gray-900">{booking.service}</div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="text-sm text-gray-900">{booking.date}</div>
