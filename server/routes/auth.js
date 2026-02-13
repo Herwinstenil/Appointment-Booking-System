@@ -15,6 +15,19 @@ const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+const buildRedirectUrl = (user, token) => {
+  const minimalUser = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName
+  };
+
+  return `${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(minimalUser))}`;
+};
+
 // Passport strategies
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -476,21 +489,36 @@ router.post('/refresh', async (req, res) => {
 // Social login routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
-  try {
-    const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
-  } catch (error) {
-    console.error('Google callback error:', error);
-    res.status(500).json({ success: false, message: 'Authentication failed' });
-  }
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', { session: false }, async (err, user) => {
+    if (err) {
+      console.error('Google authentication error:', err.message);
+      if (err.data) {
+        console.error('Google error payload:', err.data);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    try {
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(buildRedirectUrl(user, token));
+    } catch (error) {
+      console.error('Google callback error:', error);
+      res.status(500).json({ success: false, message: 'Authentication failed' });
+    }
+  })(req, res, next);
 });
 
 router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
 router.get('/facebook/callback', passport.authenticate('facebook', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
   const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+  res.redirect(buildRedirectUrl(req.user, token));
 });
 
 router.get('/twitter', passport.authenticate('twitter'));
@@ -502,16 +530,36 @@ router.get('/twitter/callback', passport.authenticate('twitter', { failureRedire
 
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-router.get('/github/callback', passport.authenticate('github', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
-  const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+router.get('/github/callback', (req, res, next) => {
+  passport.authenticate('github', { session: false }, async (err, user) => {
+    if (err) {
+      console.error('GitHub authentication error:', err.message);
+      if (err.data) {
+        console.error('GitHub error payload:', err.data);
+      }
+
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
+    }
+
+    try {
+      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.redirect(buildRedirectUrl(user, token));
+    } catch (error) {
+      console.error('GitHub callback error:', error);
+      res.status(500).json({ success: false, message: 'Authentication failed' });
+    }
+  })(req, res, next);
 });
 
 router.get('/instagram', passport.authenticate('instagram'));
 
 router.get('/instagram/callback', passport.authenticate('instagram', { failureRedirect: `${process.env.FRONTEND_URL}/user/login` }), async (req, res) => {
   const token = jwt.sign({ userId: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  res.redirect(`${process.env.FRONTEND_URL}/?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+  res.redirect(buildRedirectUrl(req.user, token));
 });
 
 module.exports = router;
