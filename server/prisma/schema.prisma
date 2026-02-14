@@ -38,7 +38,6 @@ model User {
   // Social login IDs
   googleId    String? @unique
   facebookId  String? @unique
-  twitterId   String? @unique
   githubId    String? @unique
   instagramId String? @unique
 

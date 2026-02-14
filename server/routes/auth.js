@@ -7,7 +7,6 @@ const { PrismaPg } = require('@prisma/adapter-pg');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const TwitterStrategy = require('passport-twitter').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const InstagramStrategy = require('passport-instagram').Strategy;
 
@@ -87,28 +86,6 @@ passport.use(new FacebookStrategy({
           }
         });
       }
-    }
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
-
-passport.use(new TwitterStrategy({
-  consumerKey: process.env.TWITTER_CONSUMER_KEY,
-  consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-  callbackURL: '/api/auth/twitter/callback'
-}, async (token, tokenSecret, profile, done) => {
-  try {
-    let user = await prisma.user.findUnique({ where: { twitterId: profile.id } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          twitterId: profile.id,
-          username: profile.username,
-          firstName: profile.displayName
-        }
-      });
     }
     return done(null, user);
   } catch (error) {
@@ -536,33 +513,6 @@ router.get('/facebook/callback', (req, res, next) => {
       res.redirect(buildRedirectUrl(user, token));
     } catch (error) {
       console.error('Facebook callback error:', error);
-      res.status(500).json({ success: false, message: 'Authentication failed' });
-    }
-  })(req, res, next);
-});
-
-router.get('/twitter', passport.authenticate('twitter'));
-
-router.get('/twitter/callback', (req, res, next) => {
-  passport.authenticate('twitter', { session: false }, async (err, user) => {
-    if (err) {
-      console.error('Twitter authentication error:', err.message);
-      if (err.data) {
-        console.error('Twitter error payload:', err.data);
-      }
-
-      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
-    }
-
-    if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
-    }
-
-    try {
-      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(buildRedirectUrl(user, token));
-    } catch (error) {
-      console.error('Twitter callback error:', error);
       res.status(500).json({ success: false, message: 'Authentication failed' });
     }
   })(req, res, next);
