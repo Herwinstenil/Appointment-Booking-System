@@ -45,7 +45,6 @@ import {
     Globe,
     Key,
     Download as DownloadIcon,
-    CalendarDays,
     Clock4,
     Users,
     FolderOpen,
@@ -212,10 +211,7 @@ const isActiveAppointmentStatus = (status = '') => {
 };
 
 const normalizeStatusForTab = (status = '') => {
-    if (status === 'Confirmed') {
-        return 'Upcoming';
-    }
-    return status;
+    return status?.toString() || 'Upcoming';
 };
 
 const getStatusBadgeLabel = (statusRaw = '') => {
@@ -478,7 +474,8 @@ const getStatusBadgeClass = (statusRaw = '') => {
     const userStats = useMemo(() => {
         const totalBookings = bookingHistory.length;
         const completedBookings = bookingHistory.filter(b => b.status === 'Completed').length;
-        const upcomingBookings = appointments.filter(a => isActiveAppointmentStatus(a.status)).length;
+        const upcomingBookings = appointments.filter(a => a.status === 'Upcoming').length;
+        const confirmedBookings = appointments.filter(a => a.status === 'Confirmed').length;
         const cancelledBookings = appointments.filter(a => a.status === 'Cancelled').length;
 
         // Calculate total spent from booking history
@@ -509,6 +506,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
             totalBookings,
             completedBookings,
             upcomingBookings,
+            confirmedBookings,
             cancelledBookings,
             totalSpent: Math.round(totalSpent * 100) / 100, // Round to 2 decimal places
             averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal place
@@ -516,6 +514,13 @@ const getStatusBadgeClass = (statusRaw = '') => {
             loyaltyPoints
         };
     }, [appointments, bookingHistory]);
+
+    const appointmentStatusCounts = useMemo(() => ({
+        upcoming: appointments.filter(a => a.status === 'Upcoming').length,
+        confirmed: appointments.filter(a => a.status === 'Confirmed').length,
+        completed: appointments.filter(a => a.status === 'Completed').length,
+        cancelled: appointments.filter(a => a.status === 'Cancelled').length
+    }), [appointments]);
 
     // Monthly Spending Data
     const monthlySpending = [
@@ -2826,47 +2831,33 @@ const getStatusBadgeClass = (statusRaw = '') => {
 
                         {/* Appointment Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Upcoming</p>
-                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => isActiveAppointmentStatus(a.status)).length}</p>
+                            {[
+                                { label: 'Upcoming', value: appointmentStatusCounts.upcoming, icon: Calendar, iconClass: 'text-violet-500' },
+                                { label: 'Confirmed', value: appointmentStatusCounts.confirmed, icon: Shield, iconClass: 'text-cyan-500' },
+                                { label: 'Completed', value: appointmentStatusCounts.completed, icon: CheckCircle, iconClass: 'text-emerald-500' },
+                                { label: 'Cancelled', value: appointmentStatusCounts.cancelled, icon: XCircle, iconClass: 'text-red-500' }
+                            ].map((stat) => {
+                                const StatIcon = stat.icon;
+                                return (
+                                    <div
+                                        key={stat.label}
+                                        className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-gray-600 text-sm font-medium">{stat.label}</p>
+                                                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                                            </div>
+                                            <StatIcon className={stat.iconClass} size={32} />
+                                        </div>
                                     </div>
-                                    <Calendar className="text-violet-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Completed</p>
-                                        <p className="text-2xl font-bold text-gray-900">{appointments.filter(a => a.status === 'Completed').length}</p>
-                                    </div>
-                                    <CheckCircle className="text-emerald-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Total Spent</p>
-                                        <p className="text-2xl font-bold text-gray-900">${userStats.totalSpent}</p>
-                                    </div>
-                                    <DollarSign className="text-blue-500" size={32} />
-                                </div>
-                            </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
-                                        <p className="text-2xl font-bold text-gray-900">{userStats.averageRating}/5</p>
-                                    </div>
-                                    <Star className="text-amber-500" size={32} />
-                                </div>
-                            </div>
+                                );
+                            })}
                         </div>
 
                         {/* Appointments Tabs */}
                         <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
-                            {['All', 'Upcoming', 'Completed', 'Cancelled'].map((tab) => (
+                            {['All', 'Upcoming', 'Confirmed', 'Completed', 'Cancelled'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveAppointmentTab(tab)}
@@ -2876,9 +2867,10 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                         }`}
                                 >
                                     {tab} ({tab === 'All' ? appointments.length :
-                                        tab === 'Upcoming' ? appointments.filter(a => isActiveAppointmentStatus(a.status)).length :
-                                            tab === 'Completed' ? appointments.filter(a => a.status === 'Completed').length :
-                                                appointments.filter(a => a.status === 'Cancelled').length
+                                        tab === 'Upcoming' ? appointmentStatusCounts.upcoming :
+                                            tab === 'Confirmed' ? appointmentStatusCounts.confirmed :
+                                                tab === 'Completed' ? appointmentStatusCounts.completed :
+                                                    appointmentStatusCounts.cancelled
                                     })
                                 </button>
                             ))}
