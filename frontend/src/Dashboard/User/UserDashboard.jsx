@@ -240,7 +240,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
         case 'CONFIRMED':
             return 'bg-blue-100 text-blue-800';
         case 'COMPLETED':
-            return 'bg-blue-100 text-blue-800';
+            return 'bg-emerald-100 text-emerald-800';
         case 'CANCELLED':
             return 'bg-red-100 text-red-800';
         default:
@@ -1618,10 +1618,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                             </div>
                             <div className="mt-4">
                                 <p className="text-sm text-gray-500">Status</p>
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedAppointment?.status === 'Completed'
-                                    ? 'bg-emerald-100 text-emerald-800'
-                                    : 'bg-red-100 text-red-800'
-                                    }`}>
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBookingHistoryStatusClass(selectedAppointment?.status)}`}>
                                     {selectedAppointment?.status}
                                 </span>
                             </div>

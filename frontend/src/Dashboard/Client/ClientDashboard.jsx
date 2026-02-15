@@ -2727,11 +2727,13 @@ const ClientDashboard = () => {
                                                     <div className="text-sm text-gray-500">{booking.time}</div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Confirmed' || booking.status === 'Completed'
-                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                        : booking.status === 'Pending'
-                                                            ? 'bg-amber-100 text-amber-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Confirmed'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : booking.status === 'Completed'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : booking.status === 'Pending'
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {booking.status}
                                                     </span>
@@ -4117,7 +4119,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
                                     <p className="text-sm text-gray-600 mb-2">Status</p>
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedBooking.status === 'Confirmed' || selectedBooking.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : selectedBooking.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedBooking.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' : selectedBooking.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : selectedBooking.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>
                                         {selectedBooking.status}
                                     </span>
                                 </div>
