@@ -2246,7 +2246,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 },
                                 {
                                     title: 'Upcoming',
-                                    value: userStats.upcomingBookings,
+                                    value: appointments.filter(apt => apt.status === 'Confirmed').length,
                                     change: 'Next: Tomorrow',
                                     positive: true,
                                     icon: Clock,
