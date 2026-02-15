@@ -180,12 +180,18 @@ const formatBookingDate = (value) => {
 };
 
 const buildClientBooking = (record) => {
-    const clientName = [record.user?.firstName, record.user?.lastName].filter(Boolean).join(' ') ||
-        record.user?.username || 'Client';
+    const user = record.user || {};
+    const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+        user.username || user.email || 'Client';
     const rawDate = record.appointmentDate || record.date;
     return {
         id: record.id,
         client: clientName,
+        userName: clientName,
+        userEmail: user.email || '',
+        userAvatarUrl: user.avatarUrl || '',
+        userRole: user.role || '',
+        userId: user.id || null,
         service: record.service?.name || record.serviceName || 'Service',
         date: rawDate ? formatBookingDate(rawDate) : '',
         time: record.appointmentTime || record.time || '',
@@ -196,6 +202,70 @@ const buildClientBooking = (record) => {
         statusClass: getStatusBadgeClass(record.status),
         createdAt: record.createdAt
     };
+};
+
+const DEFAULT_INITIALS = 'CL';
+const INITIALS_BG_CLASSES = [
+    'bg-gradient-to-br from-emerald-500 to-teal-600'
+];
+
+const getInitialsFromName = (value = '', fallback = DEFAULT_INITIALS) => {
+    if (!value) {
+        return fallback;
+    }
+    const parts = value.toString().trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) {
+        return fallback;
+    }
+    if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+    }
+    const firstChar = parts[0][0];
+    const lastChar = parts[parts.length - 1][0];
+    return `${firstChar}${lastChar}`.toUpperCase();
+};
+
+const getInitialsBgClass = (seed = '') => {
+    if (!seed) {
+        return INITIALS_BG_CLASSES[0];
+    }
+    const normalized = seed
+        .toString()
+        .split('')
+        .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    return INITIALS_BG_CLASSES[normalized % INITIALS_BG_CLASSES.length];
+};
+
+const BookingAvatar = ({ name = '', avatarUrl = '', className = 'w-10 h-10' }) => {
+    const [imageFailed, setImageFailed] = useState(false);
+    const initials = useMemo(() => getInitialsFromName(name, DEFAULT_INITIALS), [name]);
+    const backgroundClass = useMemo(() => getInitialsBgClass(name), [name]);
+    const normalizedAvatarUrl = avatarUrl?.trim();
+
+    useEffect(() => {
+        setImageFailed(false);
+    }, [normalizedAvatarUrl]);
+
+    const shouldShowImage = Boolean(normalizedAvatarUrl) && !imageFailed;
+    const wrapperClasses = `relative flex-shrink-0 ${className}`;
+    const ariaLabel = name ? `${name} avatar` : 'Client avatar';
+
+    return (
+        <div className={wrapperClasses} aria-label={ariaLabel}>
+            <div className={`absolute inset-0 flex items-center justify-center rounded-full text-sm font-semibold tracking-wide text-white ${backgroundClass}`}>
+                {initials}
+            </div>
+            {shouldShowImage && (
+                <img
+                    src={normalizedAvatarUrl}
+                    alt={ariaLabel}
+                    loading="lazy"
+                    onError={() => setImageFailed(true)}
+                    className="absolute inset-0 h-full w-full rounded-full border border-white/30 object-cover shadow-sm transition-opacity duration-200"
+                />
+            )}
+        </div>
+    );
 };
 
 const normalizeServiceForUI = (service = {}) => {
@@ -687,12 +757,7 @@ const ClientDashboard = () => {
             return dateB - dateA;
         });
         return sorted.slice(0, 5).map((booking) => {
-            const initials = (booking.client || 'Client')
-                .split(' ')
-                .map(name => name[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
+            const initials = getInitialsFromName(booking.client, 'CL');
             const rawAmount = typeof booking.amount === 'string'
                 ? Number(booking.amount.replace(/[^0-9.-]+/g, '')) || 0
                 : booking.amount || 0;
@@ -988,14 +1053,22 @@ const ClientDashboard = () => {
         user.joinDate.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const filteredBookings = bookings.filter(booking =>
-        booking.client.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.service.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.status.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.date.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.time.toLowerCase().includes(bookingSearchTerm.toLowerCase()) ||
-        booking.amount.toLowerCase().includes(bookingSearchTerm.toLowerCase())
-    );
+    const filteredBookings = bookings.filter(booking => {
+        const normalizedTerm = bookingSearchTerm.toLowerCase();
+        const matches = (value) => {
+            const text = value?.toString() ?? '';
+            return text.toLowerCase().includes(normalizedTerm);
+        };
+        return (
+            matches(booking.client) ||
+            matches(booking.service) ||
+            matches(booking.status) ||
+            matches(booking.date) ||
+            matches(booking.time) ||
+            matches(booking.amount) ||
+            matches(booking.userEmail)
+        );
+    });
 
     // Service Management Handlers
     const toggleServiceStatus = async (serviceId) => {
@@ -2629,11 +2702,12 @@ const ClientDashboard = () => {
                                             <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center">
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                            {booking.client.split(' ').map(n => n[0]).join('')}
-                                                        </div>
+                                                        <BookingAvatar name={booking.client} avatarUrl={booking.userAvatarUrl} />
                                                         <div className="ml-4">
                                                             <div className="text-sm font-medium text-gray-900">{booking.client}</div>
+                                                            {booking.userEmail && (
+                                                                <div className="text-xs text-gray-500">{booking.userEmail}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </td>

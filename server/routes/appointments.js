@@ -181,6 +181,7 @@ const buildAppointmentPayload = (appointment) => {
       firstName: appointment.user.firstName,
       lastName: appointment.user.lastName,
       email: appointment.user.email,
+      avatarUrl: appointment.user.avatarUrl,
       clientNo: appointment.user.clientNo,
       role: appointment.user.role
     } : null
