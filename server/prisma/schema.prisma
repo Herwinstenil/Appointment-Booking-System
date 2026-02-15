@@ -39,7 +39,6 @@ model User {
   googleId    String? @unique
   facebookId  String? @unique
   githubId    String? @unique
-  instagramId String? @unique
 
   // Relations
   services               Service[] @relation("ClientServices")

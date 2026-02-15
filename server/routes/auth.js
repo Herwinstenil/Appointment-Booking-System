@@ -8,8 +8,6 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
-const InstagramStrategy = require('passport-instagram').Strategy;
-
 const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -117,28 +115,6 @@ passport.use(new GitHubStrategy({
           }
         });
       }
-    }
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
-
-passport.use(new InstagramStrategy({
-  clientID: process.env.INSTAGRAM_CLIENT_ID,
-  clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
-  callbackURL: '/api/auth/instagram/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await prisma.user.findUnique({ where: { instagramId: profile.id } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          instagramId: profile.id,
-          username: profile.username,
-          firstName: profile.displayName
-        }
-      });
     }
     return done(null, user);
   } catch (error) {
@@ -540,33 +516,6 @@ router.get('/github/callback', (req, res, next) => {
       res.redirect(buildRedirectUrl(user, token));
     } catch (error) {
       console.error('GitHub callback error:', error);
-      res.status(500).json({ success: false, message: 'Authentication failed' });
-    }
-  })(req, res, next);
-});
-
-router.get('/instagram', passport.authenticate('instagram'));
-
-router.get('/instagram/callback', (req, res, next) => {
-  passport.authenticate('instagram', { session: false }, async (err, user) => {
-    if (err) {
-      console.error('Instagram authentication error:', err.message);
-      if (err.data) {
-        console.error('Instagram error payload:', err.data);
-      }
-
-      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
-    }
-
-    if (!user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/user/login`);
-    }
-
-    try {
-      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-      res.redirect(buildRedirectUrl(user, token));
-    } catch (error) {
-      console.error('Instagram callback error:', error);
       res.status(500).json({ success: false, message: 'Authentication failed' });
     }
   })(req, res, next);

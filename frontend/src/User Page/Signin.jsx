@@ -5,8 +5,7 @@ import { useAuth } from '../Context/AuthContext.jsx';
 import { FcGoogle } from "react-icons/fc";
 import {
     FaFacebookF,
-    FaGithub as FaGithubIcon,
-    FaInstagram as FaInstagramIcon
+    FaGithub as FaGithubIcon
 } from 'react-icons/fa';
 
 export default function Signin() {
@@ -343,14 +342,6 @@ export default function Signin() {
                                 <FaGithubIcon className="w-5 h-5 text-white" />
                             </button>
 
-                            {/* Instagram Button */}
-                            <button
-                                onClick={() => handleSocialLogin('instagram')}
-                                className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 group"
-                                title="Sign in with Instagram"
-                            >
-                                <FaInstagramIcon className="w-5 h-5 text-white" />
-                            </button>
                         </div>
                     </div>
                     {/* Additional Links */}
