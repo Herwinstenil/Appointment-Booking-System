@@ -2890,7 +2890,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                                     <div className="flex items-center space-x-2">
                                                         <button
                                                             onClick={() => handleViewBooking(booking.id)}
-                                                            className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                                                            className="p-1 mx-4 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                                                         >
                                                             <ViewIcon size={16} />
                                                         </button>
