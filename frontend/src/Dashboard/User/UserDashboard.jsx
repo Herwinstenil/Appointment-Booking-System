@@ -833,7 +833,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         doc.setFontSize(12);
         doc.text(`Total Bookings: ${filteredBookingHistory.length}`, 20, finalY);
         doc.text(`Total Spent: $${filteredBookingHistory.reduce((sum, booking) => sum + parseFloat(booking.amount.replace('$', '')), 0).toFixed(2)}`, 20, finalY + 10);
-        doc.text(`Average Rating: ${(filteredBookingHistory.reduce((sum, booking) => sum + booking.rating, 0) / filteredBookingHistory.length).toFixed(1)}/5`, 20, finalY + 20);
+        doc.text(`Average Rating: ${userStats.averageRating}/5`, 20, finalY + 20);
 
         // Save the PDF
         doc.save(`booking_history_${profileData.firstName}_${profileData.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
