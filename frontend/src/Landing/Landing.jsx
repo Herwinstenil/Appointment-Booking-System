@@ -164,179 +164,6 @@ export default function AppointmentLanding() {
     }
   };
 
-  const BookingModal = () => {
-    const selectedService = availableServices.find((service) => service.id === bookingForm.serviceId);
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4 py-6">
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh] border border-gray-100">
-          <div className="p-6 border-b border-gray-100 flex items-start justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Book a Service</h2>
-              <p className="text-sm text-gray-500 mt-1">This booking is tied to your dashboard appointments.</p>
-            </div>
-            <button onClick={closeBookingModal} className="text-gray-500 hover:text-gray-900 transition">
-              <X size={22} />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-5">
-            {bookingError && (
-              <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {bookingError}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-xs uppercase font-semibold text-gray-500">Full Name</label>
-                <input
-                  type="text"
-                  value={`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
-                  readOnly
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
-                />
-              </div>
-              <div>
-                <label className="text-xs uppercase font-semibold text-gray-500">Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  readOnly
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
-                />
-              </div>
-              <div>
-                <label className="text-xs uppercase font-semibold text-gray-500">Phone</label>
-                <input
-                  type="text"
-                  value={user?.mobile || user?.phone || ''}
-                  readOnly
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs uppercase font-semibold text-gray-500">Service</label>
-              {servicesLoading ? (
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500">
-                  Loading services...
-                </div>
-              ) : servicesError ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 text-sm">
-                  {servicesError}
-                </div>
-              ) : availableServices.length === 0 ? (
-                <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-yellow-700">
-                  No available services right now.
-                </div>
-              ) : (
-                <select
-                  value={bookingForm.serviceId}
-                  onChange={(e) => setBookingForm((prev) => ({ ...prev, serviceId: e.target.value }))}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
-                >
-                  <option value="">Choose a service</option>
-                  {availableServices.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} · ${Number(service.price).toFixed(2)}{service.category ? ` (${service.category})` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {bookingErrors.serviceId && <p className="text-xs text-red-500 mt-1">{bookingErrors.serviceId}</p>}
-            </div>
-
-            {selectedService && (
-              <div className="rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-700">
-                {selectedService.description || 'You will be charged at checkout based on this service.'}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Date</label>
-                <DatePicker
-                  selected={selectedDate}
-                  onChange={(date) => {
-                    setSelectedDate(date);
-                    setBookingForm((prev) => ({
-                      ...prev,
-                      appointmentDate: date ? date.toISOString().split('T')[0] : ''
-                    }));
-                  }}
-                  dateFormat="yyyy-MM-dd"
-                  minDate={new Date()}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-700 focus:border-purple-500"
-                />
-                {bookingErrors.appointmentDate && (
-                  <p className="text-xs text-red-500 mt-1">{bookingErrors.appointmentDate}</p>
-                )}
-              </div>
-              <div>
-                <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Time</label>
-                <DatePicker
-                  selected={selectedTime}
-                  onChange={(time) => {
-                    setSelectedTime(time);
-                    setBookingForm((prev) => ({
-                      ...prev,
-                      appointmentTime: time
-                        ? time.toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })
-                        : ''
-                    }));
-                  }}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={30}
-                  timeCaption="Time"
-                  dateFormat="h:mm aa"
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-700 focus:border-purple-500"
-                />
-                {bookingErrors.appointmentTime && (
-                  <p className="text-xs text-red-500 mt-1">{bookingErrors.appointmentTime}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs uppercase font-semibold text-gray-500">Notes (optional)</label>
-              <textarea
-                rows={3}
-                value={bookingForm.notes}
-                onChange={(e) => setBookingForm((prev) => ({ ...prev, notes: e.target.value }))}
-                placeholder="Add notes or preferences for the team"
-                className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition"
-              />
-            </div>
-          </div>
-
-          <div className="px-6 pb-6 flex justify-end gap-3">
-            <button
-              className="px-6 py-3 rounded-2xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
-              onClick={closeBookingModal}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleBookingSubmit}
-              disabled={isSubmitting || servicesLoading || availableServices.length === 0}
-              className="px-6 py-3 rounded-2xl text-white bg-gradient-to-r from-purple-600 to-blue-600 disabled:opacity-60 hover:shadow-lg transition flex items-center gap-2"
-            >
-              {isSubmitting && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
-              {isSubmitting ? 'Booking...' : 'Confirm Appointment'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Navigation */}
@@ -526,7 +353,25 @@ export default function AppointmentLanding() {
         </div>
       </footer>
 
-      {bookingModalOpen && <BookingModal />}
+      {bookingModalOpen && (
+        <BookingModal
+          user={user}
+          availableServices={availableServices}
+          servicesLoading={servicesLoading}
+          servicesError={servicesError}
+          bookingForm={bookingForm}
+          bookingErrors={bookingErrors}
+          bookingError={bookingError}
+          selectedDate={selectedDate}
+          selectedTime={selectedTime}
+          setSelectedDate={setSelectedDate}
+          setSelectedTime={setSelectedTime}
+          setBookingForm={setBookingForm}
+          closeBookingModal={closeBookingModal}
+          handleBookingSubmit={handleBookingSubmit}
+          isSubmitting={isSubmitting}
+        />
+      )}
 
       <style>{`
         @keyframes fade-in {
@@ -547,3 +392,193 @@ export default function AppointmentLanding() {
     </div>
   );
 }
+
+const BookingModal = ({
+  user,
+  availableServices,
+  servicesLoading,
+  servicesError,
+  bookingForm,
+  bookingErrors,
+  bookingError,
+  selectedDate,
+  selectedTime,
+  setSelectedDate,
+  setSelectedTime,
+  setBookingForm,
+  closeBookingModal,
+  handleBookingSubmit,
+  isSubmitting
+}) => {
+  const selectedService = availableServices.find((service) => service.id === bookingForm.serviceId);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4 py-6">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-y-auto max-h-[90vh] border border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-start justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Book a Service</h2>
+            <p className="text-sm text-gray-500 mt-1">This booking is tied to your dashboard appointments.</p>
+          </div>
+          <button onClick={closeBookingModal} className="text-gray-500 hover:text-gray-900 transition">
+            <X size={22} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {bookingError && (
+            <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              {bookingError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs uppercase font-semibold text-gray-500">Full Name</label>
+              <input
+                type="text"
+                value={`${user?.firstName || ''} ${user?.lastName || ''}`.trim()}
+                readOnly
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase font-semibold text-gray-500">Email</label>
+              <input
+                type="email"
+                value={user?.email || ''}
+                readOnly
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
+              />
+            </div>
+            <div>
+              <label className="text-xs uppercase font-semibold text-gray-500">Phone</label>
+              <input
+                type="text"
+                value={user?.mobile || user?.phone || ''}
+                readOnly
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs uppercase font-semibold text-gray-500">Service</label>
+            {servicesLoading ? (
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-500">
+                Loading services...
+              </div>
+            ) : servicesError ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-600 text-sm">
+                {servicesError}
+              </div>
+            ) : availableServices.length === 0 ? (
+              <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-yellow-700">
+                No available services right now.
+              </div>
+            ) : (
+              <select
+                value={bookingForm.serviceId}
+                onChange={(e) => setBookingForm((prev) => ({ ...prev, serviceId: e.target.value }))}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition"
+              >
+                <option value="">Choose a service</option>
+                {availableServices.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.name} · ${Number(service.price).toFixed(2)}
+                    {service.category ? ` (${service.category})` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+            {bookingErrors.serviceId && <p className="text-xs text-red-500 mt-1">{bookingErrors.serviceId}</p>}
+          </div>
+
+          {selectedService && (
+            <div className="rounded-2xl border border-purple-100 bg-purple-50 px-4 py-3 text-sm text-purple-700">
+              {selectedService.description || 'You will be charged at checkout based on this service.'}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Date</label>
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => {
+                  setSelectedDate(date);
+                  setBookingForm((prev) => ({
+                    ...prev,
+                    appointmentDate: date ? date.toISOString().split('T')[0] : ''
+                  }));
+                }}
+                dateFormat="yyyy-MM-dd"
+                minDate={new Date()}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-700 focus:border-purple-500"
+              />
+              {bookingErrors.appointmentDate && (
+                <p className="text-xs text-red-500 mt-1">{bookingErrors.appointmentDate}</p>
+              )}
+            </div>
+            <div>
+              <label className="text-xs uppercase font-semibold mx-2 text-gray-500">Select Time</label>
+              <DatePicker
+                selected={selectedTime}
+                onChange={(time) => {
+                  setSelectedTime(time);
+                  setBookingForm((prev) => ({
+                    ...prev,
+                    appointmentTime: time
+                      ? time.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })
+                      : ''
+                  }));
+                }}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={30}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-gray-700 focus:border-purple-500"
+              />
+              {bookingErrors.appointmentTime && (
+                <p className="text-xs text-red-500 mt-1">{bookingErrors.appointmentTime}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs uppercase font-semibold text-gray-500">Notes (optional)</label>
+            <textarea
+              rows={3}
+              value={bookingForm.notes}
+              onChange={(e) => setBookingForm((prev) => ({ ...prev, notes: e.target.value }))}
+              placeholder="Add notes or preferences for the team"
+              className="w-full rounded-2xl border border-gray-200 px-4 py-3 bg-gray-50 text-gray-700 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition"
+            />
+          </div>
+        </div>
+
+        <div className="px-6 pb-6 flex justify-end gap-3">
+          <button
+            className="px-6 py-3 rounded-2xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+            onClick={closeBookingModal}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleBookingSubmit}
+            disabled={isSubmitting || servicesLoading || availableServices.length === 0}
+            className="px-6 py-3 rounded-2xl text-white bg-gradient-to-r from-purple-600 to-blue-600 disabled:opacity-60 hover:shadow-lg transition flex items-center gap-2"
+          >
+            {isSubmitting && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+            {isSubmitting ? 'Booking...' : 'Confirm Appointment'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
