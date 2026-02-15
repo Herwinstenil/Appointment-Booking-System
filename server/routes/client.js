@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const { buildAppointmentPayload, buildStreamPayload, appointmentInclude } = require('./appointments');
 
 const router = express.Router();
 const connectionString = process.env.DATABASE_URL;
@@ -554,23 +555,14 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: { status: status.toUpperCase() },
-      include: {
-        service: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        client: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true
-          }
-        }
-      }
+      include: appointmentInclude
     });
+
+    const publisher = req.app.get('appointmentPublisher');
+    if (publisher) {
+      const appointmentPayload = buildAppointmentPayload(updatedAppointment);
+      publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', appointmentPayload));
+    }
 
     res.json({
       success: true,

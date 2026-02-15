@@ -826,3 +826,6 @@ router.delete('/:appointmentId', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.appointmentInclude = appointmentInclude;
+module.exports.buildAppointmentPayload = buildAppointmentPayload;
+module.exports.buildStreamPayload = buildStreamPayload;
