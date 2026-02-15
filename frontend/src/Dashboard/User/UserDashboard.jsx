@@ -248,6 +248,23 @@ const getStatusBadgeClass = (statusRaw = '') => {
     }
 };
 
+const getBookingHistoryStatusClass = (status = '') => {
+    const normalized = status?.toString().toLowerCase();
+    switch (normalized) {
+        case 'confirmed':
+            return 'bg-blue-100 text-blue-800';
+        case 'pending':
+        case 'upcoming':
+            return 'bg-orange-100 text-orange-800';
+        case 'completed':
+            return 'bg-emerald-100 text-emerald-800';
+        case 'cancelled':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+};
+
     const formatCurrency = (value) => {
         const amount = Number(value);
         if (Number.isNaN(amount)) return '$0.00';
@@ -3107,12 +3124,9 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                                 </td>
                                                 <td className="px-6 py-4 text-sm font-semibold text-violet-600">{booking.amount}</td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${booking.status === 'Completed'
-                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                        : 'bg-red-100 text-red-800'
-                                                        }`}>
-                                                        {booking.status}
-                                                    </span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBookingHistoryStatusClass(booking.status)}`}>
+                                                    {booking.status}
+                                                </span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center">
