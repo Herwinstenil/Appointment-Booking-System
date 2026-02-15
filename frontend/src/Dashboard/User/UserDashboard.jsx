@@ -211,7 +211,14 @@ const isActiveAppointmentStatus = (status = '') => {
 };
 
 const normalizeStatusForTab = (status = '') => {
-    return status?.toString() || 'Upcoming';
+    const normalized = status?.toString().trim() || '';
+    if (normalized.toLowerCase() === 'upcoming') {
+        return 'Pending';
+    }
+    if (!normalized) {
+        return 'Pending';
+    }
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
 };
 
 const getStatusBadgeLabel = (statusRaw = '') => {
@@ -516,7 +523,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
     }, [appointments, bookingHistory]);
 
     const appointmentStatusCounts = useMemo(() => ({
-        upcoming: appointments.filter(a => a.status === 'Upcoming').length,
+        pending: appointments.filter(a => a.status === 'Upcoming').length,
         confirmed: appointments.filter(a => a.status === 'Confirmed').length,
         completed: appointments.filter(a => a.status === 'Completed').length,
         cancelled: appointments.filter(a => a.status === 'Cancelled').length
@@ -2832,7 +2839,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
                         {/* Appointment Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                             {[
-                                { label: 'Upcoming', value: appointmentStatusCounts.upcoming, icon: Calendar, iconClass: 'text-violet-500' },
+                                { label: 'Pending', value: appointmentStatusCounts.pending, icon: Calendar, iconClass: 'text-violet-500' },
                                 { label: 'Confirmed', value: appointmentStatusCounts.confirmed, icon: Shield, iconClass: 'text-cyan-500' },
                                 { label: 'Completed', value: appointmentStatusCounts.completed, icon: CheckCircle, iconClass: 'text-emerald-500' },
                                 { label: 'Cancelled', value: appointmentStatusCounts.cancelled, icon: XCircle, iconClass: 'text-red-500' }
@@ -2857,7 +2864,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
 
                         {/* Appointments Tabs */}
                         <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl mb-6">
-                            {['All', 'Upcoming', 'Confirmed', 'Completed', 'Cancelled'].map((tab) => (
+                            {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveAppointmentTab(tab)}
@@ -2867,7 +2874,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
                                         }`}
                                 >
                                     {tab} ({tab === 'All' ? appointments.length :
-                                        tab === 'Upcoming' ? appointmentStatusCounts.upcoming :
+                                        tab === 'Pending' ? appointmentStatusCounts.pending :
                                             tab === 'Confirmed' ? appointmentStatusCounts.confirmed :
                                                 tab === 'Completed' ? appointmentStatusCounts.completed :
                                                     appointmentStatusCounts.cancelled
