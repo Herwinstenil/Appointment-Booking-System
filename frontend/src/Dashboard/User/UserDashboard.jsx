@@ -275,7 +275,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         const appointmentDate = raw.appointmentDate || raw.date;
         const appointmentTime = raw.appointmentTime || raw.time || '';
         const parsedDate = appointmentDate ? new Date(appointmentDate) : null;
-        const providerName = raw.client?.company || [raw.client?.firstName, raw.client?.lastName].filter(Boolean).join(' ') || 'Service Team';
+    const providerName = [raw.client?.firstName, raw.client?.lastName].filter(Boolean).join(' ') || raw.client?.company || 'Service Team';
 
         return {
             id: raw.id,
