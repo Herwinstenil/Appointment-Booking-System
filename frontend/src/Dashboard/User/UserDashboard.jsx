@@ -2486,7 +2486,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 {
                                     title: 'Avg Rating',
                                     value: userStats.averageRating + '/5',
-                                    change: '+0.2 from last month',
+                                    change: 'Your average rating',
                                     positive: true,
                                     icon: Star,
                                     gradient: 'from-amber-500 to-orange-600',
