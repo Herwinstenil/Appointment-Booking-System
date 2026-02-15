@@ -138,10 +138,7 @@ const UserDashboard = () => {
 
         setBookingHistory(prev => {
             const filtered = prev.filter(entry => entry.id !== updated.id);
-            if (['Confirmed', 'Completed'].includes(updated.status)) {
-                return [...filtered, updated];
-            }
-            return filtered;
+            return [...filtered, updated];
         });
     }, []);
 
@@ -302,7 +299,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
             const records = payload.data?.appointments || [];
             const mapped = records.map(normalizeAppointment);
             setAppointments(mapped);
-            setBookingHistory(mapped.filter(entry => entry.status === 'Completed'));
+            setBookingHistory(mapped);
         } catch (err) {
             console.error('Failed to load appointments', err);
             setAppointments([]);
