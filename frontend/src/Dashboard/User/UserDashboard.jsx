@@ -238,7 +238,7 @@ const getStatusBadgeClass = (statusRaw = '') => {
     const normalized = statusRaw?.toString().toUpperCase();
     switch (normalized) {
         case 'CONFIRMED':
-            return 'bg-emerald-100 text-emerald-800';
+            return 'bg-blue-100 text-blue-800';
         case 'COMPLETED':
             return 'bg-blue-100 text-blue-800';
         case 'CANCELLED':
