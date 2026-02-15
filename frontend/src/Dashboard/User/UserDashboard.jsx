@@ -2187,7 +2187,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const renderContent = () => {
         switch (activeItem) {
             case 'Dashboard':
-                const upcomingAppointments = appointments.filter(apt => isActiveAppointmentStatus(apt.status));
+                const upcomingAppointments = appointments.filter(apt => apt.status === 'Confirmed');
                 return (
                     <div className="p-8 animate-fadeIn">
                         {/* Header Section */}
