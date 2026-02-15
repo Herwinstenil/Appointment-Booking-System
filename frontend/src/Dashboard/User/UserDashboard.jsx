@@ -34,8 +34,6 @@ import {
     Search,
     Plus,
     Eye as ViewIcon,
-    Edit,
-    Trash2,
     TrendingUp,
     TrendingDown,
     MoreVertical,
@@ -432,13 +430,11 @@ const getBookingHistoryStatusClass = (status = '') => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [showViewBookingModal, setShowViewBookingModal] = useState(false);
-    const [showEditBookingModal, setShowEditBookingModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
     const [justBooked, setJustBooked] = useState(false);
     const [rating, setRating] = useState(0);
-    const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
     // Store original data for cancel functionality
     const [originalProfileData, setOriginalProfileData] = useState(() => ({ ...emptyProfileTemplate }));
@@ -783,50 +779,6 @@ const getBookingHistoryStatusClass = (status = '') => {
         }
     };
 
-    // Edit Booking Handler
-    const handleEditBooking = (bookingId) => {
-        const booking = bookingHistory.find(b => b.id === bookingId);
-        if (booking) {
-            setSelectedAppointment(booking);
-            setShowEditBookingModal(true);
-        }
-    };
-
-    // Delete Booking Handler
-    const handleDeleteBooking = async (bookingId) => {
-        if (!window.confirm('Are you sure you want to delete this booking from your history?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/appointments/${bookingId}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders()
-            });
-
-            const payload = await response.json();
-            if (!response.ok || !payload.success) {
-                throw new Error(payload.message || 'Unable to delete booking');
-            }
-
-            await loadAppointments();
-
-            const deletedBooking = bookingHistory.find(b => b.id === bookingId);
-            if (deletedBooking) {
-                const newActivity = {
-                    id: recentActivities.length + 1,
-                    action: `Deleted booking for ${deletedBooking.service}`,
-                    time: 'Just now',
-                    status: 'deletion',
-                    icon: Trash2
-                };
-                setRecentActivities(prev => [newActivity, ...prev]);
-            }
-        } catch (err) {
-            console.error('Delete booking error:', err);
-            setAppointmentsError(err.message || 'Failed to delete booking');
-        }
-    };
 
     // View All Activities Handler
     const handleViewAllActivities = () => {
@@ -1426,7 +1378,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                     comment: ''
                 });
                 setRating(0);
-                setRatingSubmitted(true);
                 setErrors({});
                 setShowRatingModal(false);
                 setSelectedAppointment(null);
@@ -1673,215 +1624,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     className="px-6 py-3 border-2 border-gray-300 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    // Edit Booking Modal Component
-    const EditBookingModal = () => {
-        const [editForm, setEditForm] = useState({
-            service: selectedAppointment?.service || '',
-            provider: selectedAppointment?.provider || '',
-            date: selectedAppointment?.date || '',
-            amount: selectedAppointment?.amount || ''
-        });
-
-        const [errors, setErrors] = useState({});
-
-        const services = [
-            { name: 'Consultation', duration: '30 min', price: '$50' },
-            { name: 'Full Service', duration: '60 min', price: '$100' },
-            { name: 'Premium Package', duration: '90 min', price: '$150' },
-            { name: 'Web Development Consultation', duration: '1 hour', price: '$150' },
-            { name: 'UI/UX Design Review', duration: '1.5 hours', price: '$120' },
-            { name: 'IT Support Session', duration: '45 mins', price: '$80' },
-            { name: 'Digital Marketing Consultation', duration: '2 hours', price: '$200' },
-            { name: 'Mobile App Planning', duration: '1.5 hours', price: '$180' }
-        ];
-
-        const providers = [
-            'Tech Solutions Inc.',
-            'Creative Designs LLC',
-            'Tech Support Pro',
-            'Growth Marketing Co.',
-            'App Masters',
-            'Wordsmith Pro',
-            'Social Boost',
-            'Digital Growth'
-        ];
-
-        const handleEditSubmit = () => {
-            const newErrors = {};
-
-            if (!editForm.service.trim()) {
-                newErrors.service = 'Service is required';
-            }
-            if (!editForm.provider.trim()) {
-                newErrors.provider = 'Provider is required';
-            }
-            if (!editForm.date) {
-                newErrors.date = 'Date is required';
-            }
-            if (!editForm.amount.trim()) {
-                newErrors.amount = 'Amount is required';
-            }
-
-            setErrors(newErrors);
-
-            if (Object.keys(newErrors).length === 0) {
-                // Update the booking history
-                setBookingHistory(bookingHistory.map(booking =>
-                    booking.id === selectedAppointment.id ? {
-                        ...booking,
-                        service: editForm.service,
-                        provider: editForm.provider,
-                        date: editForm.date,
-                        amount: editForm.amount
-                    } : booking
-                ));
-
-                // Add to recent activities
-                const newActivity = {
-                    id: recentActivities.length + 1,
-                    action: `Edited booking for ${editForm.service}`,
-                    time: 'Just now',
-                    status: 'edit',
-                    icon: Edit
-                };
-                setRecentActivities(prev => [newActivity, ...prev]);
-
-                // Reset form and close modal
-                setEditForm({
-                    service: '',
-                    provider: '',
-                    date: '',
-                    amount: ''
-                });
-                setErrors({});
-                setShowEditBookingModal(false);
-                setSelectedAppointment(null);
-            }
-        };
-
-        return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                    {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">Edit Booking</h3>
-                                <p className="text-gray-600 mt-1">Modify your booking details</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setShowEditBookingModal(false);
-                                    setSelectedAppointment(null);
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Modal Body */}
-                    <div className="p-6">
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Service</label>
-                                <select
-                                    value={editForm.service}
-                                    onChange={(e) => setEditForm({ ...editForm, service: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                >
-                                    <option value="">Select a service</option>
-                                    {services.map((service, idx) => (
-                                        <option key={idx} value={service.name}>
-                                            {service.name} - {service.duration} - {service.price}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.service && <p className="text-red-500 text-sm mt-1">{errors.service}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Provider</label>
-                                <select
-                                    value={editForm.provider}
-                                    onChange={(e) => setEditForm({ ...editForm, provider: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                >
-                                    <option value="">Select a provider</option>
-                                    {providers.map((provider, idx) => (
-                                        <option key={idx} value={provider}>
-                                            {provider}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.provider && <p className="text-red-500 text-sm mt-1">{errors.provider}</p>}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Date *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        value={editForm.date}
-                                        onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
-                                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${errors.date ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
-                                            }`}
-                                    />
-                                    {errors.date && (
-                                        <p className="text-red-500 text-sm mt-1">{errors.date}</p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-gray-700 font-semibold mb-2">Amount</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.amount}
-                                        onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                                        placeholder="$100"
-                                    />
-                                    {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-500">
-                                All fields are required
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <button
-                                    onClick={() => {
-                                        setShowEditBookingModal(false);
-                                        setSelectedAppointment(null);
-                                    }}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleEditSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    <Save size={18} className="inline mr-2" />
-                                    Save Changes
                                 </button>
                             </div>
                         </div>
@@ -2986,12 +2728,18 @@ const getBookingHistoryStatusClass = (status = '') => {
                                                     </div>
                                                 )}
                                                 {appointment.status === 'Completed' && (
-                                                    <button
-                                                        onClick={() => rateAppointment(appointment.id)}
-                                                        className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
-                                                    >
-                                                        Rate Service
-                                                    </button>
+                                                    appointment.rating > 0 ? (
+                                                        <p className="w-full px-4 py-2 text-center text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg">
+                                                            Thanks for your rating
+                                                        </p>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => rateAppointment(appointment.id)}
+                                                            className="w-full px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+                                                        >
+                                                            Rate Service
+                                                        </button>
+                                                    )
                                                 )}
                                             </div>
                                         </div>
@@ -3144,18 +2892,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                                                             className="p-1 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                                                         >
                                                             <ViewIcon size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleEditBooking(booking.id)}
-                                                            className="p-1 text-violet-600 hover:text-violet-800 transition-colors cursor-pointer"
-                                                        >
-                                                            <Edit size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDeleteBooking(booking.id)}
-                                                            className="p-1 text-red-600 hover:text-red-800 transition-colors cursor-pointer"
-                                                        >
-                                                            <Trash2 size={16} />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -3728,9 +3464,6 @@ const getBookingHistoryStatusClass = (status = '') => {
 
             {/* View Booking Modal */}
             {showViewBookingModal && <ViewBookingModal />}
-
-            {/* Edit Booking Modal */}
-            {showEditBookingModal && <EditBookingModal />}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
