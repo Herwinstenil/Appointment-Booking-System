@@ -187,7 +187,7 @@ const UserDashboard = () => {
     const [serviceError, setServiceError] = useState('');
 
 const STATUS_LABELS = {
-        PENDING: 'Upcoming',
+        PENDING: 'Pending',
         CONFIRMED: 'Confirmed',
         COMPLETED: 'Completed',
         CANCELLED: 'Cancelled'
@@ -195,14 +195,19 @@ const STATUS_LABELS = {
 
 const mapStatusLabel = (status = '') => {
     const key = status?.toString().toUpperCase();
-    return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Upcoming';
+    return STATUS_LABELS[key] || status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase() || 'Pending';
 };
 
-const ACTIVE_APPOINTMENT_STATUSES = ['Upcoming', 'Confirmed'];
+const ACTIVE_APPOINTMENT_STATUSES = ['Pending', 'Confirmed'];
 
 const isActiveAppointmentStatus = (status = '') => {
     const normalized = status?.toString();
     return ACTIVE_APPOINTMENT_STATUSES.includes(normalized);
+};
+
+const isPendingStatus = (status = '') => {
+    const normalized = status?.toString().toLowerCase();
+    return normalized === 'pending' || normalized === 'upcoming';
 };
 
 const normalizeStatusForTab = (status = '') => {
@@ -491,7 +496,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const userStats = useMemo(() => {
         const totalBookings = bookingHistory.length;
         const completedBookings = bookingHistory.filter(b => b.status === 'Completed').length;
-        const upcomingBookings = appointments.filter(a => a.status === 'Upcoming').length;
+        const upcomingBookings = appointments.filter(a => isPendingStatus(a.status)).length;
         const confirmedBookings = appointments.filter(a => a.status === 'Confirmed').length;
         const cancelledBookings = appointments.filter(a => a.status === 'Cancelled').length;
 
@@ -533,7 +538,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     }, [appointments, bookingHistory]);
 
     const appointmentStatusCounts = useMemo(() => ({
-        pending: appointments.filter(a => a.status === 'Upcoming').length,
+        pending: appointments.filter(a => isPendingStatus(a.status)).length,
         confirmed: appointments.filter(a => a.status === 'Confirmed').length,
         completed: appointments.filter(a => a.status === 'Completed').length,
         cancelled: appointments.filter(a => a.status === 'Cancelled').length
@@ -1115,7 +1120,8 @@ const getBookingHistoryStatusClass = (status = '') => {
     const RescheduleModal = () => {
         const [rescheduleForm, setRescheduleForm] = useState({
             date: selectedAppointment?.appointmentDate || '',
-            time: selectedAppointment?.appointmentTime || ''
+            time: selectedAppointment?.appointmentTime || '',
+            reason: selectedAppointment?.notes || ''
         });
         const [selectedDate, setSelectedDate] = useState(selectedAppointment?.appointmentDate ? new Date(selectedAppointment.appointmentDate) : null);
         const [selectedTime, setSelectedTime] = useState(null);
@@ -1131,6 +1137,9 @@ const getBookingHistoryStatusClass = (status = '') => {
             }
             if (!rescheduleForm.time) {
                 newErrors.time = 'Please select a time';
+            }
+            if (!rescheduleForm.reason.trim()) {
+                newErrors.reason = 'Please enter a reason';
             }
 
             setErrors(newErrors);
@@ -1150,7 +1159,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                     },
                     body: JSON.stringify({
                         date: rescheduleForm.date,
-                        time: rescheduleForm.time
+                        time: rescheduleForm.time,
+                        notes: rescheduleForm.reason.trim()
                     })
                 });
 
@@ -1172,7 +1182,8 @@ const getBookingHistoryStatusClass = (status = '') => {
 
                 setRescheduleForm({
                     date: '',
-                    time: ''
+                    time: '',
+                    reason: ''
                 });
                 setSelectedDate(null);
                 setSelectedTime(null);
@@ -1278,6 +1289,22 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
                                 </div>
                             </div>
+                            <div>
+                                <label className="block font-medium mb-2">Reason</label>
+                                <textarea
+                                    value={rescheduleForm.reason}
+                                    onChange={(e) => {
+                                        setRescheduleForm({
+                                            ...rescheduleForm,
+                                            reason: e.target.value
+                                        });
+                                    }}
+                                    rows="3"
+                                    className="border p-3 rounded w-full"
+                                    placeholder="Enter reason for rescheduling"
+                                />
+                                {errors.reason && <p className="text-red-500 text-sm mt-1">{errors.reason}</p>}
+                            </div>
                         </div>
                     </div>
 
@@ -1285,7 +1312,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-gray-500">
-                                Please select both date and time
+                                Please select date, time, and reason
                             </div>
                             <div className="flex items-center space-x-3">
                                 <button
