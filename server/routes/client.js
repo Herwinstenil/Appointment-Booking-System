@@ -13,6 +13,7 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
+const VALID_APPOINTMENT_STATUSES = new Set(['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED']);
 
 const mapClientProfile = (user) => {
   if (!user) return null;
@@ -521,12 +522,12 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
       });
     }
 
-    // Validate status
-    const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
-    if (!validStatuses.includes(status.toUpperCase())) {
+    const normalizedStatus = typeof status === 'string' ? status.trim().toUpperCase() : '';
+
+    if (!normalizedStatus || !VALID_APPOINTMENT_STATUSES.has(normalizedStatus)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status'
+        message: 'Invalid status. Allowed values: PENDING, CONFIRMED, COMPLETED, CANCELLED'
       });
     }
 
@@ -544,7 +545,7 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
     }
 
     // Check if client owns this service
-    if (appointment.service.clientNo !== clientNo) {
+    if (!appointment.service || appointment.service.clientNo !== clientNo) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this appointment'
@@ -554,20 +555,20 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
     // Update appointment status
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: status.toUpperCase() },
+      data: { status: normalizedStatus },
       include: appointmentInclude
     });
+    const appointmentPayload = buildAppointmentPayload(updatedAppointment);
 
     const publisher = req.app.get('appointmentPublisher');
     if (publisher) {
-      const appointmentPayload = buildAppointmentPayload(updatedAppointment);
       publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', appointmentPayload));
     }
 
     res.json({
       success: true,
       message: 'Appointment status updated successfully',
-      data: { appointment: updatedAppointment }
+      data: { appointment: appointmentPayload }
     });
 
   } catch (error) {

@@ -625,41 +625,21 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
         notes: notes !== undefined ? notes : undefined,
         status: status ? status.toUpperCase() : undefined
       },
-      include: {
-        service: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            category: true,
-            duration: true
-          }
-        },
-        client: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            company: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            role: true
-          }
-        }
-      }
+      include: appointmentInclude
     });
+    const updatedPayload = buildAppointmentPayload(updatedAppointment);
+
+    if (status) {
+      const publisher = req.app.get('appointmentPublisher');
+      if (publisher) {
+        publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', updatedPayload));
+      }
+    }
 
     res.json({
       success: true,
       message: 'Appointment updated successfully',
-      data: { appointment: updatedAppointment }
+      data: { appointment: updatedPayload }
     });
 
   } catch (error) {

@@ -425,6 +425,7 @@ const ClientDashboard = () => {
     }, []);
     const [confirmingBookingId, setConfirmingBookingId] = useState(null);
     const [cancellingBookingId, setCancellingBookingId] = useState(null);
+    const [updatingBookingId, setUpdatingBookingId] = useState(null);
     const [bookingActionError, setBookingActionError] = useState('');
 
     const clientSessionToken = getSession('CLIENT')?.token;
@@ -1510,13 +1511,18 @@ const ClientDashboard = () => {
             time: booking.time,
             duration: booking.duration || '',
             amount: booking.amount.replace('$', ''),
-            status: booking.status
+            status: (booking.statusRaw || booking.status || 'PENDING').toString().toUpperCase()
         });
+        setBookingErrors({});
+        setBookingActionError('');
         setShowEditBookingModal(true);
     };
 
     const handleEditBookingChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'status') {
+            setBookingErrors(prev => ({ ...prev, status: undefined }));
+        }
         setEditBookingData(prev => {
             const updated = { ...prev, [name]: value };
             if (name === 'service') {
@@ -1529,25 +1535,14 @@ const ClientDashboard = () => {
         });
     };
 
-    const handleEditBookingSubmit = (e) => {
+    const handleEditBookingSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation
         const errors = {};
-        if (!editBookingData.client.trim()) {
-            errors.client = 'Client name is required';
-        }
-        if (!editBookingData.service) {
-            errors.service = 'Service is required';
-        }
-        if (!editBookingData.date) {
-            errors.date = 'Date is required';
-        }
-        if (!editBookingData.time) {
-            errors.time = 'Time is required';
-        }
-        if (!editBookingData.amount) {
-            errors.amount = 'Amount is required';
+        const nextStatus = editBookingData.status?.toString().trim().toUpperCase();
+        const validStatuses = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
+        if (!nextStatus || !validStatuses.includes(nextStatus)) {
+            errors.status = 'Select a valid status';
         }
 
         if (Object.keys(errors).length > 0) {
@@ -1555,27 +1550,40 @@ const ClientDashboard = () => {
             return;
         }
 
-        // Clear errors
         setBookingErrors({});
+        setBookingActionError('');
+        setUpdatingBookingId(editBookingData.id);
 
-        // Update booking
-        setBookings(prev => prev.map(booking =>
-            booking.id === editBookingData.id
-                ? {
-                    ...booking,
-                    client: editBookingData.client.trim(),
-                    service: editBookingData.service,
-                    date: editBookingData.date,
-                    time: editBookingData.time,
-                    duration: editBookingData.duration,
-                    amount: `$${editBookingData.amount}`,
-                    status: editBookingData.status
-                }
-                : booking
-        ));
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders('CLIENT'),
+            'Content-Type': 'application/json'
+        };
 
-        // Close modal
-        setShowEditBookingModal(false);
+        try {
+            const response = await fetch(`${baseUrl}/client/appointments/${editBookingData.id}/status`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ status: nextStatus })
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to update booking status');
+            }
+
+            const updated = buildClientBooking(payload.data.appointment);
+            setBookings(prev => prev.map(booking => booking.id === updated.id ? updated : booking));
+            await fetchBookingsList();
+            setShowEditBookingModal(false);
+        } catch (error) {
+            console.error('Edit booking status failed:', error);
+            const message = error.message || 'Unable to update booking status';
+            setBookingErrors(prev => ({ ...prev, status: message }));
+            setBookingActionError(message);
+        } finally {
+            setUpdatingBookingId(null);
+        }
     };
 
     const handleEditServiceChange = (e) => {
@@ -4766,6 +4774,7 @@ const ClientDashboard = () => {
                                             name="client"
                                             value={editBookingData.client}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.client ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
                                                 }`}
                                             placeholder="Enter client name"
@@ -4782,6 +4791,7 @@ const ClientDashboard = () => {
                                             name="service"
                                             value={editBookingData.service}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.service ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
                                                 }`}
                                         >
@@ -4808,6 +4818,7 @@ const ClientDashboard = () => {
                                             name="date"
                                             value={editBookingData.date}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.date ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
                                                 }`}
                                         />
@@ -4824,6 +4835,7 @@ const ClientDashboard = () => {
                                             name="time"
                                             value={editBookingData.time}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.time ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
                                                 }`}
                                         />
@@ -4842,6 +4854,7 @@ const ClientDashboard = () => {
                                             name="duration"
                                             value={editBookingData.duration}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                         >
                                             <option value="" disabled>Select a Duration</option>
@@ -4862,6 +4875,7 @@ const ClientDashboard = () => {
                                             name="amount"
                                             value={editBookingData.amount}
                                             onChange={handleEditBookingChange}
+                                            disabled
                                             className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${bookingErrors.amount ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'
                                                 }`}
                                             placeholder="0.00"
@@ -4880,14 +4894,18 @@ const ClientDashboard = () => {
                                             name="status"
                                             value={editBookingData.status}
                                             onChange={handleEditBookingChange}
+                                            disabled={updatingBookingId === editBookingData.id}
                                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                         >
                                             <option value="" disabled>Select a Status</option>
-                                            <option value="Pending">Pending</option>
-                                            <option value="Confirmed">Confirmed</option>
-                                            <option value="Completed">Completed</option>
-                                            <option value="Cancelled">Cancelled</option>
+                                            <option value="PENDING">Pending</option>
+                                            <option value="CONFIRMED">Confirmed</option>
+                                            <option value="COMPLETED">Completed</option>
+                                            <option value="CANCELLED">Cancelled</option>
                                         </select>
+                                        {bookingErrors.status && (
+                                            <p className="text-red-500 text-sm mt-1">{bookingErrors.status}</p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -4897,7 +4915,7 @@ const ClientDashboard = () => {
                                         <span className="text-sm font-medium">Note:</span>
                                     </div>
                                     <p className="text-sm text-amber-600 mt-1">
-                                        Changes will be applied immediately after saving.
+                                        Only status updates are supported here and are saved to the database immediately.
                                     </p>
                                 </div>
                             </form>
@@ -4912,9 +4930,10 @@ const ClientDashboard = () => {
                                 </button>
                                 <button
                                     onClick={handleEditBookingSubmit}
+                                    disabled={updatingBookingId === editBookingData.id}
                                     className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
-                                    Save Changes
+                                    {updatingBookingId === editBookingData.id ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </div>
