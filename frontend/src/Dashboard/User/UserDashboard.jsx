@@ -596,7 +596,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             const sourceDate = booking.appointmentDate || booking.createdAt;
             if (!sourceDate) return;
 
-            const parsed = new Date(sourceDate);
+            const parsed = parseDateOnly(sourceDate);
             if (Number.isNaN(parsed.getTime())) return;
 
             const key = buildMonthKey(parsed.getFullYear(), parsed.getMonth());
@@ -666,18 +666,18 @@ const getBookingHistoryStatusClass = (status = '') => {
             .filter((apt) => {
                 const statusRaw = (apt.statusRaw || apt.status || '').toString().toUpperCase();
                 if (statusRaw !== 'CONFIRMED') return false;
-                const parsedDate = apt.appointmentDate ? new Date(apt.appointmentDate) : null;
+                const parsedDate = apt.appointmentDate ? parseDateOnly(apt.appointmentDate) : null;
                 if (!parsedDate || Number.isNaN(parsedDate.getTime())) return false;
                 parsedDate.setHours(0, 0, 0, 0);
                 return parsedDate >= now;
             })
-            .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())[0];
+            .sort((a, b) => parseDateOnly(a.appointmentDate).getTime() - parseDateOnly(b.appointmentDate).getTime())[0];
 
         if (!nextConfirmed?.appointmentDate) {
             return 'No appointments';
         }
 
-        const parsed = new Date(nextConfirmed.appointmentDate);
+        const parsed = parseDateOnly(nextConfirmed.appointmentDate);
         return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }, [appointments]);
 
