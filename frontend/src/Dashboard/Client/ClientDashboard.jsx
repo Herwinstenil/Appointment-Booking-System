@@ -310,6 +310,32 @@ const normalizeServiceForUI = (service = {}) => {
     };
 };
 
+const getRoleLabel = (role = '') => {
+    const normalized = role?.toString().trim().toUpperCase();
+    if (!normalized) return 'User';
+    return normalized.charAt(0) + normalized.slice(1).toLowerCase();
+};
+
+const normalizeClientUserForUI = (record = {}) => {
+    const rawRole = record.role?.toString().trim().toUpperCase() || 'USER';
+    const parsedSpent = typeof record.totalSpent === 'number' ? record.totalSpent : Number(record.totalSpent);
+    const totalSpent = Number.isNaN(parsedSpent) ? 0 : parsedSpent;
+
+    return {
+        id: record.id,
+        name: record.name || 'User',
+        email: record.email || '',
+        role: getRoleLabel(rawRole),
+        roleRaw: rawRole,
+        status: record.status || 'Inactive',
+        joinDate: formatDateLabel(record.joinDate) || 'N/A',
+        lastLogin: record.lastLogin ? formatDateTimeLabel(record.lastLogin) : 'Never logged in',
+        bookingCount: Number(record.bookingCount || 0),
+        totalSpent,
+        totalSpentLabel: formatCurrency(totalSpent)
+    };
+};
+
 const createServiceMutationState = () => ({
     type: null,
     loading: false,
@@ -382,6 +408,32 @@ const ClientDashboard = () => {
         return normalized;
     }, [API_BASE_URL, getAuthHeaders]);
 
+    const fetchUsersList = useCallback(async () => {
+        setUsersLoading(true);
+        setUsersError(null);
+        const headers = getAuthHeaders('CLIENT');
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+
+        try {
+            const usersResponse = await fetch(`${baseUrl}/client/users`, { headers });
+            const usersData = await usersResponse.json();
+
+            if (!usersResponse.ok || !usersData.success) {
+                throw new Error(usersData.message || 'Failed to fetch users');
+            }
+
+            const normalized = (usersData.data?.users || [])
+                .map(normalizeClientUserForUI)
+                .filter(user => user.roleRaw === 'USER');
+            setUsers(normalized);
+        } catch (err) {
+            setUsersError(err.message || 'Failed to load users');
+            console.error('Fetch client users error:', err);
+        } finally {
+            setUsersLoading(false);
+        }
+    }, [API_BASE_URL, getAuthHeaders]);
+
     // Fetch data on component mount
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -431,6 +483,10 @@ const ClientDashboard = () => {
     useEffect(() => {
         fetchServicesList();
     }, [fetchServicesList]);
+
+    useEffect(() => {
+        fetchUsersList();
+    }, [fetchUsersList]);
 
     // Booking Management State
     const [bookings, setBookings] = useState([]);
@@ -651,13 +707,9 @@ const ClientDashboard = () => {
     });
 
     // User Management State
-    const [users, setUsers] = useState([
-        { id: 1, name: 'John Smith', email: 'john@example.com', role: 'Customer', status: 'Active', joinDate: '2024-01-10', lastLogin: '2 hours ago' },
-        { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', role: 'Customer', status: 'Active', joinDate: '2024-01-08', lastLogin: '1 day ago' },
-        { id: 3, name: 'Mike Davis', email: 'mike@example.com', role: 'Customer', status: 'Inactive', joinDate: '2024-01-05', lastLogin: '3 days ago' },
-        { id: 4, name: 'Emma Wilson', email: 'emma@example.com', role: 'Customer', status: 'Active', joinDate: '2024-01-03', lastLogin: '5 hours ago' },
-        { id: 5, name: 'Alex Brown', email: 'alex@example.com', role: 'Customer', status: 'Active', joinDate: '2024-01-01', lastLogin: '12 hours ago' }
-    ]);
+    const [users, setUsers] = useState([]);
+    const [usersLoading, setUsersLoading] = useState(false);
+    const [usersError, setUsersError] = useState(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -932,7 +984,7 @@ const ClientDashboard = () => {
         id: null,
         name: '',
         email: '',
-        role: 'Customer',
+        role: 'User',
         status: 'Active'
     });
     const [newClientData, setNewClientData] = useState({
@@ -1065,15 +1117,41 @@ const ClientDashboard = () => {
     };
 
     const handleSelectAll = () => {
-        setSelectedUsers(selectedUsers.length === users.length ? [] : users.map(user => user.id));
+        const term = searchTerm.toLowerCase();
+        const matchingUsers = users.filter((user) => {
+            if (user.roleRaw !== 'USER') return false;
+            const fields = [user.name, user.email, user.status, user.joinDate, user.role];
+            return fields.some(value => (value || '').toString().toLowerCase().includes(term));
+        });
+        setSelectedUsers(selectedUsers.length === matchingUsers.length ? [] : matchingUsers.map(user => user.id));
     };
 
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.joinDate.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(user => {
+        if (user.roleRaw !== 'USER') return false;
+        const term = searchTerm.toLowerCase();
+        const fields = [user.name, user.email, user.status, user.joinDate, user.role];
+        return fields.some(value => (value || '').toString().toLowerCase().includes(term));
+    });
+
+    const usersJoinedThisMonth = useMemo(() => {
+        const now = new Date();
+        return users.filter((user) => {
+            const parsed = new Date(user.joinDate);
+            if (Number.isNaN(parsed.getTime())) return false;
+            return parsed.getFullYear() === now.getFullYear() && parsed.getMonth() === now.getMonth();
+        }).length;
+    }, [users]);
+
+    const usersAverageRating = useMemo(() => {
+        if (!bookings.length || !users.length) return 0;
+        const userIds = new Set(users.map(user => user.id));
+        const ratings = bookings
+            .filter(booking => userIds.has(booking.userId) && typeof booking.rating === 'number')
+            .map(booking => booking.rating);
+        if (!ratings.length) return 0;
+        const total = ratings.reduce((sum, rating) => sum + rating, 0);
+        return Math.round((total / ratings.length) * 10) / 10;
+    }, [bookings, users]);
 
     const filteredBookings = bookings.filter(booking => {
         const normalizedTerm = bookingSearchTerm.toLowerCase();
@@ -1322,10 +1400,14 @@ const ClientDashboard = () => {
             id: users.length + 1,
             name: newClientData.name.trim(),
             email: newClientData.email.trim(),
-            role: 'Customer', // Default role, but not in form
+            role: 'User',
+            roleRaw: 'USER',
             status: newClientData.status,
             joinDate: new Date().toISOString().split('T')[0],
-            lastLogin: 'Never'
+            lastLogin: 'Never',
+            bookingCount: 0,
+            totalSpent: 0,
+            totalSpentLabel: formatCurrency(0)
         };
 
         // Add to users array
@@ -1449,7 +1531,7 @@ const ClientDashboard = () => {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: 'Customer',
+            role: user.role || 'User',
             status: user.status
         });
         setShowEditUserModal(true);
@@ -2919,14 +3001,20 @@ const ClientDashboard = () => {
                                 <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                                     User Management
                                 </h2>
-                                <p className="text-gray-600">Manage and monitor all your client accounts</p>
+                                <p className="text-gray-600">Manage and monitor all users linked to your services</p>
+                                {usersLoading && (
+                                    <p className="text-sm text-gray-500 mt-2">Loading users...</p>
+                                )}
+                                {!usersLoading && usersError && (
+                                    <p className="text-sm text-red-500 mt-2">{usersError}</p>
+                                )}
                             </div>
                             <div className="flex items-center space-x-4 mt-4 lg:mt-0">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                                     <input
                                         type="text"
-                                        placeholder="Search clients..."
+                                        placeholder="Search users..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -2937,17 +3025,17 @@ const ClientDashboard = () => {
                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <UserPlus size={16} />
-                                    Add Client
+                                    Add User
                                 </button>
                             </div>
                         </div>
 
-                        {/* Client Stats */}
+                        {/* User Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-600 text-sm font-medium">Total Clients</p>
+                                        <p className="text-gray-600 text-sm font-medium">Total Users</p>
                                         <p className="text-2xl font-bold text-gray-900">{users.length}</p>
                                     </div>
                                     <Users className="text-emerald-500" size={32} />
@@ -2956,7 +3044,7 @@ const ClientDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-600 text-sm font-medium">Active Clients</p>
+                                        <p className="text-gray-600 text-sm font-medium">Active Users</p>
                                         <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Active').length}</p>
                                     </div>
                                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -2968,7 +3056,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">New This Month</p>
-                                        <p className="text-2xl font-bold text-gray-900">12</p>
+                                        <p className="text-2xl font-bold text-gray-900">{usersJoinedThisMonth}</p>
                                     </div>
                                     <UserPlus className="text-blue-500" size={32} />
                                 </div>
@@ -2977,7 +3065,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
-                                        <p className="text-2xl font-bold text-gray-900">4.8/5</p>
+                                        <p className="text-2xl font-bold text-gray-900">{formatRatingOutOfFive(usersAverageRating)}</p>
                                     </div>
                                     <Star className="text-amber-500" size={32} />
                                 </div>
@@ -2988,9 +3076,9 @@ const ClientDashboard = () => {
                         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                             <div className="px-6 py-4 border-b border-gray-200">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-800">All Clients</h3>
+                                    <h3 className="text-lg font-semibold text-gray-800">All Users</h3>
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-600">{filteredUsers.length} clients found</span>
+                                        <span className="text-sm text-gray-600">{filteredUsers.length} users found</span>
                                     </div>
                                 </div>
                             </div>
@@ -3001,12 +3089,12 @@ const ClientDashboard = () => {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 <input
                                                     type="checkbox"
-                                                    checked={selectedUsers.length === users.length && users.length > 0}
+                                                    checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                                                     onChange={handleSelectAll}
                                                     className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
                                                 />
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
@@ -3047,8 +3135,8 @@ const ClientDashboard = () => {
                                                 <td className="px-6 py-4 text-sm text-gray-900">{user.joinDate}</td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">{user.lastLogin}</td>
                                                 <td className="px-6 py-4">
-                                                    <div className="text-sm font-medium text-gray-900">8 bookings</div>
-                                                    <div className="text-xs text-gray-500">$2,400 spent</div>
+                                                    <div className="text-sm font-medium text-gray-900">{user.bookingCount} bookings</div>
+                                                    <div className="text-xs text-gray-500">{user.totalSpentLabel} spent</div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center space-x-2">
@@ -4057,7 +4145,7 @@ const ClientDashboard = () => {
                                 </div>
                                 <div className="bg-gray-50 p-4 rounded-xl">
                                     <p className="text-sm text-gray-600">Total Bookings</p>
-                                    <p className="text-lg font-semibold text-gray-900">8</p>
+                                    <p className="text-lg font-semibold text-gray-900">{selectedUser.bookingCount ?? 0}</p>
                                 </div>
                             </div>
                         </div>
@@ -4891,7 +4979,7 @@ const ClientDashboard = () => {
                                             Role
                                         </label>
                                         <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl  text-gray-700">
-                                            Customer
+                                            {editUserData.role || 'User'}
                                         </div>
                                     </div>
                                     <div>

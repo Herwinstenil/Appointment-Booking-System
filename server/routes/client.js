@@ -41,6 +41,11 @@ const mapClientProfile = (user) => {
     };
 };
 
+const buildDisplayName = (user) => {
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  return fullName || user.username || user.email || 'User';
+};
+
 // Get client dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
@@ -166,6 +171,90 @@ router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), asyn
     res.status(500).json({
       success: false,
       message: 'Failed to get dashboard statistics'
+    });
+  }
+});
+
+// Get users (role USER only)
+router.get('/users', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot load users'
+      });
+    }
+
+    const stats = await prisma.appointment.groupBy({
+      by: ['userId'],
+      where: {
+        clientNo
+      },
+      _count: {
+        id: true
+      },
+      _sum: {
+        amount: true
+      }
+    });
+
+    const statsByUserId = new Map(
+      stats.map((item) => [
+        item.userId,
+        {
+          bookingCount: item._count?.id || 0,
+          totalSpent: Number(item._sum?.amount || 0)
+        }
+      ])
+    );
+
+    const users = await prisma.user.findMany({
+      where: {
+        role: 'USER'
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        lastLogin: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    const payload = users.map((user) => {
+      const userStats = statsByUserId.get(user.id) || { bookingCount: 0, totalSpent: 0 };
+      return {
+        id: user.id,
+        name: buildDisplayName(user),
+        email: user.email || '',
+        role: user.role,
+        status: user.isActive ? 'Active' : 'Inactive',
+        joinDate: user.createdAt,
+        lastLogin: user.lastLogin,
+        bookingCount: userStats.bookingCount,
+        totalSpent: userStats.totalSpent
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        users: payload
+      }
+    });
+  } catch (error) {
+    console.error('Get client users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get users'
     });
   }
 });
