@@ -95,8 +95,8 @@ const DEFAULT_AVAILABILITY = {
     monday: { start: '09:00', end: '17:00', enabled: false },
     tuesday: { start: '09:00', end: '17:00', enabled: false },
     wednesday: { start: '09:00', end: '17:00', enabled: false },
-    thursday: { start: '09:00', end: '17:00', enabled: true },
-    friday: { start: '09:00', end: '17:00', enabled: true },
+    thursday: { start: '09:00', end: '17:00', enabled: false },
+    friday: { start: '09:00', end: '17:00', enabled: false },
     saturday: { start: '10:00', end: '14:00', enabled: false },
     sunday: { start: '10:00', end: '14:00', enabled: false }
 };
