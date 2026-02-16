@@ -1072,8 +1072,15 @@ const ClientDashboard = () => {
     });
 
     const requests = useMemo(() => {
+        const getRequestStatusLabel = (statusRaw = '') => {
+            const normalized = statusRaw?.toString().trim().toUpperCase();
+            if (normalized === 'APPROVED' || normalized === 'CONFIRMED') return 'Approved';
+            if (normalized === 'DECLINED' || normalized === 'CANCELLED' || normalized === 'CANCELED') return 'Declined';
+            return 'Pending';
+        };
+
         return bookings
-            .filter((booking) => booking.rescheduleRequest?.status === 'PENDING')
+            .filter((booking) => Boolean(booking.rescheduleRequest))
             .map((booking) => ({
                 id: booking.id,
                 bookingId: booking.id,
@@ -1082,7 +1089,7 @@ const ClientDashboard = () => {
                 date: `${booking.date} ${booking.time ? `at ${booking.time}` : ''}`.trim(),
                 type: 'Reschedule',
                 reason: booking.rescheduleRequest?.reason || 'No reason provided',
-                status: 'Pending',
+                status: getRequestStatusLabel(booking.rescheduleRequest?.status),
                 rescheduledDate: `${booking.rescheduleRequest?.requestedDateLabel || booking.rescheduleRequest?.requestedDate || ''} ${booking.rescheduleRequest?.requestedTime ? `at ${booking.rescheduleRequest.requestedTime}` : ''}`.trim()
             }));
     }, [bookings]);

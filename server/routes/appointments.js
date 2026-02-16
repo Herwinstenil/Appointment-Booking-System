@@ -650,8 +650,15 @@ router.patch('/:appointmentId/reschedule-request', authenticateToken, authorizeR
       });
     }
 
+    const processedRequest = {
+      ...request,
+      status: action === 'CONFIRM' ? 'APPROVED' : 'DECLINED',
+      processedAction: action,
+      processedAt: new Date().toISOString()
+    };
+
     const updateData = {
-      notes: composeNotesWithRescheduleRequest(parsedNotes.cleanNotes, null)
+      notes: composeNotesWithRescheduleRequest(parsedNotes.cleanNotes, processedRequest)
     };
 
     if (action === 'CONFIRM') {
