@@ -324,7 +324,9 @@ const getBookingHistoryStatusClass = (status = '') => {
             notes: raw.notes || '',
             serviceId: raw.serviceId,
             clientId: raw.clientId,
-            createdAt: raw.createdAt
+            createdAt: raw.createdAt,
+            updatedAt: raw.updatedAt,
+            rescheduleRequest: raw.rescheduleRequest || null
         };
     };
 
@@ -596,43 +598,111 @@ const getBookingHistoryStatusClass = (status = '') => {
         };
     });
 
-    const [recentActivities, setRecentActivities] = useState([
-        {
-            id: 1,
-            action: 'Booked Web Development Consultation',
-            time: 'Today, 09:30 AM',
-            status: 'booking',
-            icon: Calendar
-        },
-        {
-            id: 2,
-            action: 'Rated UI/UX Design service 5 stars',
-            time: 'Yesterday, 3:15 PM',
-            status: 'rating',
-            icon: Star
-        },
-        {
-            id: 3,
-            action: 'Updated profile information',
-            time: '2 days ago, 11:45 AM',
-            status: 'profile',
+    const [profileActivityEvents, setProfileActivityEvents] = useState([]);
+
+    const formatActivityTime = (value) => {
+        if (!value) return 'Unknown time';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return 'Unknown time';
+        return parsed.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+    };
+
+    const recentActivities = useMemo(() => {
+        const appointmentActivities = bookingHistory.flatMap((booking) => {
+            const items = [];
+            const serviceName = booking.service || 'service';
+            const createdAt = booking.createdAt || booking.appointmentDate;
+            const updatedAt = booking.updatedAt || booking.createdAt || booking.appointmentDate;
+
+            if (createdAt) {
+                items.push({
+                    id: `booking-${booking.id}`,
+                    action: `Booked ${serviceName}`,
+                    time: formatActivityTime(createdAt),
+                    status: 'booking',
+                    icon: Calendar,
+                    timestamp: new Date(createdAt).getTime()
+                });
+            }
+
+            const statusRaw = (booking.statusRaw || '').toString().toUpperCase();
+            if (statusRaw === 'CONFIRMED') {
+                items.push({
+                    id: `confirmed-${booking.id}-${updatedAt}`,
+                    action: `Appointment confirmed for ${serviceName}`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'confirmation',
+                    icon: CheckCircle,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+            }
+            if (statusRaw === 'COMPLETED') {
+                items.push({
+                    id: `completed-${booking.id}-${updatedAt}`,
+                    action: `Completed ${serviceName}`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'completion',
+                    icon: CheckCircle,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+            }
+            if (statusRaw === 'CANCELLED') {
+                items.push({
+                    id: `cancelled-${booking.id}-${updatedAt}`,
+                    action: `Cancelled ${serviceName}`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'cancellation',
+                    icon: XCircle,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+            }
+
+            if (booking.rescheduleRequest?.status === 'PENDING') {
+                const requestedAt = booking.rescheduleRequest.requestedAt || updatedAt;
+                items.push({
+                    id: `reschedule-request-${booking.id}-${requestedAt}`,
+                    action: `Requested reschedule for ${serviceName}`,
+                    time: formatActivityTime(requestedAt),
+                    status: 'reschedule',
+                    icon: Calendar,
+                    timestamp: new Date(requestedAt).getTime()
+                });
+            }
+
+            if (typeof booking.rating === 'number' && booking.rating > 0) {
+                items.push({
+                    id: `rating-${booking.id}-${updatedAt}`,
+                    action: `Rated ${serviceName} ${booking.rating} stars`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'rating',
+                    icon: Star,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+            }
+
+            return items.filter((item) => Number.isFinite(item.timestamp));
+        });
+
+        const profileActivities = profileActivityEvents.map((event) => ({
+            ...event,
+            time: formatActivityTime(event.timestamp),
             icon: User
-        },
-        {
-            id: 4,
-            action: 'Cancelled Mobile App Planning session',
-            time: '3 days ago, 2:30 PM',
-            status: 'cancellation',
-            icon: XCircle
-        }
-    ]);
+        }));
+
+        return [...profileActivities, ...appointmentActivities]
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, 100);
+    }, [bookingHistory, profileActivityEvents]);
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'booking': return 'text-blue-600 bg-blue-50 border-blue-200';
+            case 'confirmation': return 'text-cyan-600 bg-cyan-50 border-cyan-200';
+            case 'completion': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
             case 'rating': return 'text-amber-600 bg-amber-50 border-amber-200';
             case 'profile': return 'text-purple-600 bg-purple-50 border-purple-200';
             case 'cancellation': return 'text-red-600 bg-red-50 border-red-200';
+            case 'reschedule': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
         }
     };
@@ -689,6 +759,12 @@ const getBookingHistoryStatusClass = (status = '') => {
             setProfileData({ ...updatedProfile });
             setOriginalProfileData({ ...updatedProfile });
             setImagePreview(updatedProfile.avatar || null);
+            setProfileActivityEvents((prev) => [{
+                id: `profile-${Date.now()}`,
+                action: 'Updated profile information',
+                status: 'profile',
+                timestamp: Date.now()
+            }, ...prev].slice(0, 50));
             setIsEditing(false);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
@@ -923,8 +999,6 @@ const getBookingHistoryStatusClass = (status = '') => {
             setIsSubmitting(true);
             setBookingError('');
 
-            const selectedService = serviceOptions.find(service => service.id === bookingForm.service);
-
             try {
                 const response = await fetch(`${API_BASE_URL}/appointments`, {
                     method: 'POST',
@@ -946,15 +1020,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                 }
 
                 await loadAppointments();
-
-                const newActivity = {
-                    id: recentActivities.length + 1,
-                    action: `Booked ${selectedService?.name || 'a service'}`,
-                    time: 'Just now',
-                    status: 'booking',
-                    icon: Calendar
-                };
-                setRecentActivities(prev => [newActivity, ...prev]);
 
                 resetModalForm();
                 setShowBookingModal(false);
@@ -1198,15 +1263,6 @@ const getBookingHistoryStatusClass = (status = '') => {
 
                 await loadAppointments();
 
-                const newActivity = {
-                    id: recentActivities.length + 1,
-                    action: `Requested reschedule for ${selectedAppointment.service}`,
-                    time: 'Just now',
-                    status: 'reschedule',
-                    icon: Calendar
-                };
-                setRecentActivities(prev => [newActivity, ...prev]);
-
                 setRescheduleForm({
                     date: '',
                     time: '',
@@ -1417,15 +1473,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                 }
 
                 await loadAppointments();
-
-                const newActivity = {
-                    id: recentActivities.length + 1,
-                    action: `Rated ${selectedAppointment.service} ${ratingForm.rating} stars`,
-                    time: 'Just now',
-                    status: 'rating',
-                    icon: Star
-                };
-                setRecentActivities(prev => [newActivity, ...prev]);
 
                 setRatingForm({
                     rating: 0,
@@ -1887,167 +1934,23 @@ const getBookingHistoryStatusClass = (status = '') => {
     const AllActivitiesModal = () => {
         const [currentPage, setCurrentPage] = useState(1);
         const [filterStatus, setFilterStatus] = useState('all');
-        const [searchTerm, setSearchTerm] = useState('');
+        const [activitySearchQuery, setActivitySearchQuery] = useState('');
         const activitiesPerPage = 10;
 
-        // Extended activities data for the modal
-        const allActivities = [
-            ...recentActivities,
-            {
-                id: 5,
-                action: 'Completed SEO Optimization service',
-                time: '4 days ago, 10:00 AM',
-                status: 'completion',
-                icon: CheckCircle
-            },
-            {
-                id: 6,
-                action: 'Booked Digital Marketing Consultation',
-                time: '5 days ago, 2:00 PM',
-                status: 'booking',
-                icon: Calendar
-            },
-            {
-                id: 7,
-                action: 'Updated payment method',
-                time: '1 week ago, 4:30 PM',
-                status: 'profile',
-                icon: User
-            },
-            {
-                id: 8,
-                action: 'Rated Content Writing service 4 stars',
-                time: '1 week ago, 11:15 AM',
-                status: 'rating',
-                icon: Star
-            },
-            {
-                id: 9,
-                action: 'Cancelled Graphic Design session',
-                time: '2 weeks ago, 9:45 AM',
-                status: 'cancellation',
-                icon: XCircle
-            },
-            {
-                id: 10,
-                action: 'Booked Social Media Management',
-                time: '2 weeks ago, 3:20 PM',
-                status: 'booking',
-                icon: Calendar
-            },
-            {
-                id: 11,
-                action: 'Completed Mobile App Planning',
-                time: '3 weeks ago, 1:00 PM',
-                status: 'completion',
-                icon: CheckCircle
-            },
-            {
-                id: 12,
-                action: 'Updated notification preferences',
-                time: '3 weeks ago, 5:30 PM',
-                status: 'profile',
-                icon: User
-            },
-            {
-                id: 13,
-                action: 'Booked UI/UX Design Review',
-                time: '4 weeks ago, 10:30 AM',
-                status: 'booking',
-                icon: Calendar
-            },
-            {
-                id: 14,
-                action: 'Rated Web Development service 5 stars',
-                time: '4 weeks ago, 2:15 PM',
-                status: 'rating',
-                icon: Star
-            },
-            {
-                id: 15,
-                action: 'Updated profile picture',
-                time: '5 weeks ago, 11:45 AM',
-                status: 'profile',
-                icon: User
-            },
-            {
-                id: 16,
-                action: 'Completed Digital Marketing service',
-                time: '6 weeks ago, 9:30 AM',
-                status: 'completion',
-                icon: CheckCircle
-            },
-            {
-                id: 17,
-                action: 'Booked IT Support Session',
-                time: '6 weeks ago, 3:45 PM',
-                status: 'booking',
-                icon: Calendar
-            },
-            {
-                id: 18,
-                action: 'Cancelled Content Writing session',
-                time: '7 weeks ago, 1:20 PM',
-                status: 'cancellation',
-                icon: XCircle
-            },
-            {
-                id: 19,
-                action: 'Updated contact information',
-                time: '8 weeks ago, 4:10 PM',
-                status: 'profile',
-                icon: User
-            },
-            {
-                id: 20,
-                action: 'Rated SEO Optimization service 5 stars',
-                time: '8 weeks ago, 10:55 AM',
-                status: 'rating',
-                icon: Star
-            },
-            {
-                id: 21,
-                action: 'Completed Social Media Management',
-                time: '9 weeks ago, 2:30 PM',
-                status: 'completion',
-                icon: CheckCircle
-            },
-            {
-                id: 22,
-                action: 'Booked Graphic Design service',
-                time: '10 weeks ago, 11:15 AM',
-                status: 'booking',
-                icon: Calendar
-            },
-            {
-                id: 23,
-                action: 'Updated password',
-                time: '10 weeks ago, 5:40 PM',
-                status: 'profile',
-                icon: User
-            },
-            {
-                id: 24,
-                action: 'Cancelled Mobile App Development',
-                time: '11 weeks ago, 9:25 AM',
-                status: 'cancellation',
-                icon: XCircle
-            },
-            {
-                id: 25,
-                action: 'Rated IT Support service 4 stars',
-                time: '12 weeks ago, 3:50 PM',
-                status: 'rating',
-                icon: Star
-            }
-        ];
+        const allActivities = recentActivities;
+
+        useEffect(() => {
+            setCurrentPage(1);
+        }, [filterStatus, activitySearchQuery]);
 
         // Filter activities based on status and search term
         const filteredActivities = allActivities.filter(activity => {
             const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
-            const matchesSearch = searchTerm === '' ||
-                activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                activity.time.toLowerCase().includes(searchTerm.toLowerCase());
+            const query = activitySearchQuery.trim().toLowerCase();
+            const matchesSearch = !query ||
+                activity.action.toLowerCase().includes(query) ||
+                activity.time.toLowerCase().includes(query) ||
+                activity.status.toLowerCase().includes(query);
             return matchesStatus && matchesSearch;
         });
 
@@ -2083,18 +1986,17 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 <span className="text-sm font-medium text-gray-700">Filter by:</span>
                                 <select
                                     value={filterStatus}
-                                    onChange={(e) => {
-                                        setFilterStatus(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
+                                    onChange={(e) => setFilterStatus(e.target.value)}
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm cursor-pointer"
                                 >
                                     <option value="all">All Activities</option>
                                     <option value="booking">Bookings</option>
+                                    <option value="confirmation">Confirmations</option>
+                                    <option value="completion">Completions</option>
                                     <option value="rating">Ratings</option>
                                     <option value="profile">Profile Updates</option>
                                     <option value="cancellation">Cancellations</option>
-                                    <option value="completion">Completions</option>
+                                    <option value="reschedule">Reschedule Requests</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-2 flex-1">
@@ -2104,11 +2006,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     <input
                                         type="text"
                                         placeholder="Search activities..."
-                                        value={searchTerm}
-                                        onChange={(e) => {
-                                            setSearchTerm(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
+                                        value={activitySearchQuery}
+                                        onChange={(e) => setActivitySearchQuery(e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm"
                                     />
                                 </div>
@@ -2139,6 +2038,11 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     </div>
                                 );
                             })}
+                            {paginatedActivities.length === 0 && (
+                                <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center text-gray-600">
+                                    No activities found for this filter/search.
+                                </div>
+                            )}
                         </div>
 
                         {/* Pagination */}
@@ -2549,7 +2453,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {recentActivities.map((activity) => {
+                                    {recentActivities.slice(0, 5).map((activity) => {
                                         const ActivityIcon = activity.icon;
                                         return (
                                             <div
@@ -3295,7 +3199,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                             Recent Activity
                                         </h3>
                                         <div className="space-y-4">
-                                            {recentActivities.map((activity) => {
+                                            {recentActivities.slice(0, 6).map((activity) => {
                                                 const ActivityIcon = activity.icon;
                                                 return (
                                                     <div key={activity.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-violet-50 transition-all duration-300 group transform hover:scale-[1.02]">
