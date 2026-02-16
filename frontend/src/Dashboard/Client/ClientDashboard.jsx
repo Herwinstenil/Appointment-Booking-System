@@ -198,6 +198,63 @@ const formatTime24To12 = (value = '') => {
     return `${twelveHour}:${String(minutes).padStart(2, '0')} ${meridiem}`;
 };
 
+const getShortDayLabel = (day = '') => {
+    const normalized = day.toString().trim().toLowerCase();
+    if (!normalized) return '';
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1, 3);
+};
+
+const formatTime24To12Compact = (value = '') => {
+    const [hoursRaw, minutesRaw] = String(value).split(':');
+    const hours = Number(hoursRaw);
+    const minutes = Number(minutesRaw);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return value;
+
+    const meridiem = hours >= 12 ? 'PM' : 'AM';
+    const twelveHour = hours % 12 === 0 ? 12 : hours % 12;
+    return `${String(twelveHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${meridiem}`;
+};
+
+const buildAvailabilitySummaryLines = (entries = []) => {
+    if (!Array.isArray(entries) || entries.length === 0) {
+        return [];
+    }
+
+    const groups = [];
+    entries.forEach((entry) => {
+        const signature = entry.enabled
+            ? `on|${entry.start}|${entry.end}`
+            : 'off';
+        const existing = groups[groups.length - 1];
+
+        if (existing && existing.signature === signature) {
+            existing.endDay = entry.day;
+            return;
+        }
+
+        groups.push({
+            signature,
+            enabled: entry.enabled,
+            start: entry.start,
+            end: entry.end,
+            startDay: entry.day,
+            endDay: entry.day
+        });
+    });
+
+    return groups.map((group) => {
+        const dayRange = group.startDay === group.endDay
+            ? getShortDayLabel(group.startDay)
+            : `${getShortDayLabel(group.startDay)}-${getShortDayLabel(group.endDay)}`;
+
+        if (!group.enabled) {
+            return `${dayRange} (Unavailable)`;
+        }
+
+        return `${dayRange} (${formatTime24To12Compact(group.start)} - ${formatTime24To12Compact(group.end)})`;
+    });
+};
+
 const normalizeClientProfile = (client = {}) => {
     return {
         id: client.id || '',
@@ -1216,6 +1273,22 @@ const ClientDashboard = () => {
             .map((day) => [day, availability?.[day]])
             .filter(([, schedule]) => Boolean(schedule));
     }, [availability]);
+
+    const serviceAvailabilityEntries = useMemo(() => {
+        return WEEKLY_DAY_ORDER.map((day) => {
+            const schedule = availability?.[day] || null;
+            return {
+                day,
+                enabled: Boolean(schedule?.enabled),
+                start: schedule?.start || '',
+                end: schedule?.end || ''
+            };
+        });
+    }, [availability]);
+
+    const serviceAvailabilitySummaryLines = useMemo(() => (
+        buildAvailabilitySummaryLines(serviceAvailabilityEntries)
+    ), [serviceAvailabilityEntries]);
 
     const filteredBookings = bookings.filter(booking => {
         const normalizedTerm = bookingSearchTerm.toLowerCase();
@@ -2590,6 +2663,16 @@ const ClientDashboard = () => {
                                                     <div className="flex items-center gap-2">
                                                         <Star size={14} className="text-amber-500" />
                                                         <span>{service.rating}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 mb-4">
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-2">Available</p>
+                                                    <div className="space-y-1.5">
+                                                        {serviceAvailabilitySummaryLines.map((line, index) => (
+                                                            <div key={`${service.id}-availability-${index}`} className="text-xs text-emerald-700 font-medium">
+                                                                {line}
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </div>
                                                 <div className="pt-4 border-t border-gray-200">
