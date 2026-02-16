@@ -5346,7 +5346,7 @@ const AdminDashboard = () => {
                                                         {isEditing && !field.readOnly ? (
                                                             field.key === 'phone' ? (
                                                                 <div className="flex items-center rounded-xl border-2 border-gray-200 focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-200 transition-all duration-300">
-                                                                    <span className="px-4 py-3 text-gray-600 bg-gray-50 border-r border-gray-200 rounded-l-xl">+91</span>
+                                                                    <span className="px-4 py-3 rounded-l-xl">+91</span>
                                                                     <input
                                                                         type="text"
                                                                         value={fieldValue}
