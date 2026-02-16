@@ -876,6 +876,15 @@ const ClientDashboard = () => {
         };
     }, [services, bookings, revenue, users, revenueTotals, revenueTrend, revenueByServiceStats]);
 
+    const serviceAverageRating = useMemo(() => {
+        const ratedServices = services.filter(service => typeof service.rating === 'number' && !Number.isNaN(service.rating));
+        if (!ratedServices.length) {
+            return 0;
+        }
+        const totalRating = ratedServices.reduce((sum, service) => sum + service.rating, 0);
+        return Math.round((totalRating / ratedServices.length) * 10) / 10;
+    }, [services]);
+
     // Modal States
     const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false);
     const [showAllTransactionsModal, setShowAllTransactionsModal] = useState(false);
@@ -2358,7 +2367,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
-                                        <p className="text-2xl font-bold text-gray-900">4.7/5</p>
+                                        <p className="text-2xl font-bold text-gray-900">{serviceAverageRating.toFixed(1)}/5</p>
                                     </div>
                                     <Star className="text-amber-500" size={32} />
                                 </div>
@@ -3760,7 +3769,7 @@ const ClientDashboard = () => {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-amber-100 text-sm font-medium">Avg Rating</p>
-                                            <p className="text-2xl font-bold">4.7/5</p>
+                                            <p className="text-2xl font-bold">{serviceAverageRating.toFixed(1)}/5</p>
                                             <p className="text-amber-100 text-xs mt-1">Customer satisfaction</p>
                                         </div>
                                         <Star size={32} className="opacity-80" />
