@@ -5344,24 +5344,31 @@ const AdminDashboard = () => {
                                                             {field.label}
                                                         </label>
                                                         {isEditing && !field.readOnly ? (
-                                                            <input
-                                                                type="text"
-                                                                value={field.key === 'phone' ? (phoneDisplayValue || '+91 ') : fieldValue}
-                                                                onChange={(e) => {
-                                                                    let value = e.target.value;
-                                                                    if (field.key === 'phone') {
-                                                                        const digits = value.replace(/\D/g, '');
-                                                                        // If users paste with country code (91), keep local 10 digits.
-                                                                        value = digits.startsWith('91') && digits.length > 10
-                                                                            ? digits.slice(-10)
-                                                                            : digits.slice(0, 10);
-                                                                    }
-                                                                    setProfileData(prev => ({ ...prev, [field.key]: value }));
-                                                                }}
-                                                                inputMode={field.key === 'phone' ? 'numeric' : undefined}
-                                                                maxLength={field.key === 'phone' ? 14 : undefined}
-                                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                                            />
+                                                            field.key === 'phone' ? (
+                                                                <div className="flex items-center rounded-xl border-2 border-gray-200 focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-200 transition-all duration-300">
+                                                                    <span className="px-4 py-3 text-gray-600 bg-gray-50 border-r border-gray-200 rounded-l-xl">+91</span>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={fieldValue}
+                                                                        onChange={(e) => {
+                                                                            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                                            setProfileData(prev => ({ ...prev, [field.key]: digits }));
+                                                                        }}
+                                                                        inputMode="numeric"
+                                                                        maxLength={10}
+                                                                        className="w-full px-4 py-3 rounded-r-xl focus:outline-none"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    value={fieldValue}
+                                                                    onChange={(e) => {
+                                                                        setProfileData(prev => ({ ...prev, [field.key]: e.target.value }));
+                                                                    }}
+                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                                                />
+                                                            )
                                                         ) : (
                                                             <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-rose-100 transition-all duration-300">
                                                                 <p className="text-gray-900">{displayValue}</p>
