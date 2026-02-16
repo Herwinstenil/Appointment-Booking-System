@@ -1959,11 +1959,39 @@ const getBookingHistoryStatusClass = (status = '') => {
         const startIndex = (currentPage - 1) * activitiesPerPage;
         const paginatedActivities = filteredActivities.slice(startIndex, startIndex + activitiesPerPage);
 
+        const handleExportActivities = () => {
+            const stamp = new Date().toISOString().split('T')[0];
+            const doc = new jsPDF();
+
+            doc.setFontSize(16);
+            doc.text('User Recent Activities', 14, 18);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 25);
+            doc.text(`Filter: ${filterStatus}`, 14, 31);
+            doc.text(`Search: ${activitySearchQuery || 'N/A'}`, 14, 37);
+
+            const tableRows = filteredActivities.map((activity) => [
+                activity.action,
+                activity.time,
+                activity.status
+            ]);
+
+            autoTable(doc, {
+                startY: 42,
+                head: [['Action', 'Time', 'Status']],
+                body: tableRows.length ? tableRows : [['No activities found', '-', '-']],
+                styles: { fontSize: 9, cellPadding: 2 },
+                headStyles: { fillColor: [124, 58, 237] }
+            });
+
+            doc.save(`user_recent_activities_${stamp}.pdf`);
+        };
+
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
                     {/* Modal Header */}
-                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                    <div className="sticky top-0 z-20 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-2xl font-bold text-gray-900">All Activities</h3>
@@ -2088,6 +2116,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     Close
                                 </button>
                                 <button
+                                    onClick={handleExportActivities}
                                     className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     <Download size={18} className="inline mr-2" />
