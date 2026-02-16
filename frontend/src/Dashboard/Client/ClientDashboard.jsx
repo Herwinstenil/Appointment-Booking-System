@@ -1083,18 +1083,27 @@ const ClientDashboard = () => {
 
     const requests = useMemo(() => {
         return bookings
-            .filter((booking) => booking.rescheduleRequest?.status === 'PENDING')
-            .map((booking) => ({
-                id: booking.id,
-                bookingId: booking.id,
-                client: booking.client,
-                service: booking.service,
-                date: `${booking.date} ${booking.time ? `at ${booking.time}` : ''}`.trim(),
-                type: 'Reschedule',
-                reason: booking.rescheduleRequest?.reason || 'No reason provided',
-                status: 'Pending',
-                rescheduledDate: `${booking.rescheduleRequest?.requestedDateLabel || booking.rescheduleRequest?.requestedDate || ''} ${booking.rescheduleRequest?.requestedTime ? `at ${booking.rescheduleRequest.requestedTime}` : ''}`.trim()
-            }));
+            .filter((booking) => booking.rescheduleRequest && booking.rescheduleRequest.status)
+            .map((booking) => {
+                const requestStatus = (booking.rescheduleRequest?.status || '').toString().toUpperCase();
+                const statusLabel = requestStatus === 'CONFIRMED'
+                    ? 'Confirmed'
+                    : requestStatus === 'CANCELLED'
+                        ? 'Cancelled'
+                        : 'Pending';
+
+                return {
+                    id: booking.id,
+                    bookingId: booking.id,
+                    client: booking.client,
+                    service: booking.service,
+                    date: `${booking.date} ${booking.time ? `at ${booking.time}` : ''}`.trim(),
+                    type: 'Reschedule',
+                    reason: booking.rescheduleRequest?.reason || 'No reason provided',
+                    status: statusLabel,
+                    rescheduledDate: `${booking.rescheduleRequest?.requestedDateLabel || booking.rescheduleRequest?.requestedDate || ''} ${booking.rescheduleRequest?.requestedTime ? `at ${booking.rescheduleRequest.requestedTime}` : ''}`.trim()
+                };
+            });
     }, [bookings]);
 
     // Service Management Handlers
