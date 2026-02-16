@@ -643,9 +643,14 @@ const getBookingHistoryStatusClass = (status = '') => {
         return monthlyAnalytics.visibleMonths.map((data, index, arr) => {
             const prev = arr[index - 1];
             const prevSpending = prev?.spending || 0;
-            const growth = prevSpending > 0
-                ? ((data.spending - prevSpending) / prevSpending) * 100
-                : 0;
+            let growth = 0;
+            if (index > 0) {
+                if (prevSpending > 0) {
+                    growth = ((data.spending - prevSpending) / prevSpending) * 100;
+                } else {
+                    growth = data.spending > 0 ? 100 : 0;
+                }
+            }
 
             return {
                 label: data.label,
