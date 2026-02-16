@@ -3278,10 +3278,13 @@ const ClientDashboard = () => {
                                                                     onChange={(e) => {
                                                                         let value = e.target.value;
                                                                         if (field.key === 'phone') {
-                                                                            value = normalizePhoneDigits(value);
+                                                                            const digits = value.replace(/\D/g, '');
+                                                                            value = digits.slice(0, 10);
                                                                         }
                                                                         setProfileData(prev => ({ ...prev, [field.key]: value }));
                                                                     }}
+                                                                    inputMode={field.key === 'phone' ? 'numeric' : undefined}
+                                                                    maxLength={field.key === 'phone' ? 10 : undefined}
                                                                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
                                                                 />
                                                             ) : (

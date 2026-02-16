@@ -5329,8 +5329,12 @@ const AdminDashboard = () => {
                                             ].map((field) => {
                                                 const FieldIcon = field.icon;
                                                 const fieldValue = profileData[field.key] ?? '';
+                                                const phoneDigits = field.key === 'phone' ? fieldValue.toString().replace(/\D/g, '') : '';
+                                                const phoneDisplayValue = phoneDigits
+                                                    ? `+91 ${phoneDigits.slice(-10)}`
+                                                    : '';
                                                 const displayValue = !isEditing && field.key === 'phone'
-                                                    ? formattedPhoneDisplay
+                                                    ? (phoneDisplayValue || formattedPhoneDisplay)
                                                     : fieldValue;
 
                                                 return (
@@ -5342,15 +5346,20 @@ const AdminDashboard = () => {
                                                         {isEditing && !field.readOnly ? (
                                                             <input
                                                                 type="text"
-                                                                value={fieldValue}
+                                                                value={field.key === 'phone' ? (phoneDisplayValue || '+91 ') : fieldValue}
                                                                 onChange={(e) => {
                                                                     let value = e.target.value;
                                                                     if (field.key === 'phone') {
-                                                                        // Allow only 10 digits
-                                                                        value = value.replace(/\D/g, '').slice(0, 10);
+                                                                        const digits = value.replace(/\D/g, '');
+                                                                        // If users paste with country code (91), keep local 10 digits.
+                                                                        value = digits.startsWith('91') && digits.length > 10
+                                                                            ? digits.slice(-10)
+                                                                            : digits.slice(0, 10);
                                                                     }
                                                                     setProfileData(prev => ({ ...prev, [field.key]: value }));
                                                                 }}
+                                                                inputMode={field.key === 'phone' ? 'numeric' : undefined}
+                                                                maxLength={field.key === 'phone' ? 14 : undefined}
                                                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
                                                             />
                                                         ) : (
