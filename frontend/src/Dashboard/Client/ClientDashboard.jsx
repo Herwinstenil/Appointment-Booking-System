@@ -2102,9 +2102,9 @@ const ClientDashboard = () => {
                                         // Bar Chart
                                         <div className="h-full flex items-end justify-between space-x-2">
                                             {(() => {
-                                            const revenueValues = revenueTrend.map(d => d.revenue);
-                                            const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
-                                            return revenueTrend.map((data, index) => (
+                                                const revenueValues = revenueTrend.map(d => d.revenue);
+                                                const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                                return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
                                                             className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
@@ -2122,9 +2122,9 @@ const ClientDashboard = () => {
                                         // Line/Area Chart
                                         <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
                                             {(() => {
-                                            const revenueValues = revenueTrend.map(d => d.revenue);
-                                            const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
-                                            const points = revenueTrend.map((data, index) => {
+                                                const revenueValues = revenueTrend.map(d => d.revenue);
+                                                const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                                const points = revenueTrend.map((data, index) => {
                                                     const x = (index / (revenueTrend.length - 1)) * 400;
                                                     const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
                                                     return `${x},${y}`;
@@ -2739,20 +2739,20 @@ const ClientDashboard = () => {
                         </div>
 
                         {/* Bookings Table */}
-                            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-200">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-sm text-gray-600">{bookings.length} bookings</span>
-                                        </div>
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-600">{bookings.length} bookings</span>
                                     </div>
                                 </div>
-                                {bookingActionError && (
-                                    <div className="px-6 py-3 bg-red-50 text-sm text-red-700 border-b border-red-200">
-                                        {bookingActionError}
-                                    </div>
-                                )}
+                            </div>
+                            {bookingActionError && (
+                                <div className="px-6 py-3 bg-red-50 text-sm text-red-700 border-b border-red-200">
+                                    {bookingActionError}
+                                </div>
+                            )}
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
@@ -3334,9 +3334,9 @@ const ClientDashboard = () => {
                                                                 {field.label}
                                                             </label>
                                                             {isEditing && !field.readOnly ? (
-                                                            <input
-                                                                type={inputType}
-                                                                value={profileData[field.key]}
+                                                                <input
+                                                                    type={inputType}
+                                                                    value={profileData[field.key]}
                                                                     onChange={(e) => {
                                                                         let value = e.target.value;
                                                                         if (field.key === 'phone') {
@@ -3648,12 +3648,12 @@ const ClientDashboard = () => {
                                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                                     className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 group"
                                 >
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
-                                            <p className="text-xs text-gray-500">
-                                                {profileData.role ? profileData.role.charAt(0) + profileData.role.slice(1).toLowerCase() : 'Client'}
-                                            </p>
-                                        </div>
+                                    <div className="text-right hidden sm:block">
+                                        <p className="text-sm font-semibold text-gray-800">{profileFullName}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {profileData.role ? profileData.role.charAt(0) + profileData.role.slice(1).toLowerCase() : 'Client'}
+                                        </p>
+                                    </div>
                                     <div className="relative">
                                         {imagePreview ? (
                                             <img
