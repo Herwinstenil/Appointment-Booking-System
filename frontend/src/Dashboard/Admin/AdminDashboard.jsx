@@ -84,6 +84,13 @@ const DEFAULT_PROFILE_STATE = {
     language: 'en'
 };
 
+const normalizeIndianLocalPhone = (value) => {
+    if (!value) return '';
+    const digits = String(value).replace(/\D/g, '');
+    if (!digits) return '';
+    return digits.length > 10 ? digits.slice(-10) : digits;
+};
+
 const buildProfileState = (admin) => {
     const joinDate = admin.createdAt
         ? new Date(admin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -101,7 +108,7 @@ const buildProfileState = (admin) => {
         firstName: admin.firstName || '',
         lastName: admin.lastName || '',
         email: admin.email || '',
-        phone: admin.mobile || '',
+        phone: normalizeIndianLocalPhone(admin.mobile),
         company: admin.company || '',
         address: admin.address || '',
         bio: admin.bio || '',
@@ -1271,7 +1278,7 @@ const AdminDashboard = () => {
             firstName: sanitize(profileData.firstName),
             lastName: sanitize(profileData.lastName),
             email: sanitize(profileData.email),
-            mobile: profileData.phone.replace(/\D/g, ''),
+            mobile: normalizeIndianLocalPhone(profileData.phone),
             company: sanitize(profileData.company),
             address: sanitize(profileData.address),
             bio: sanitize(profileData.bio),
@@ -1482,6 +1489,10 @@ const AdminDashboard = () => {
 
     const handleStartEditing = () => {
         setOriginalProfileData({ ...profileData });
+        setProfileData(prev => ({
+            ...prev,
+            phone: `+91 ${normalizeIndianLocalPhone(prev.phone)}`
+        }));
         setIsEditing(true);
         setProfileSaveError(null);
     };
@@ -5344,31 +5355,31 @@ const AdminDashboard = () => {
                                                             {field.label}
                                                         </label>
                                                         {isEditing && !field.readOnly ? (
-                                                            field.key === 'phone' ? (
-                                                                <div className="flex items-center rounded-xl border-2 border-gray-200 focus-within:border-rose-500 focus-within:ring-2 focus-within:ring-rose-200 transition-all duration-300">
-                                                                    <span className="px-4 py-3 rounded-l-xl">+91</span>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={fieldValue}
-                                                                        onChange={(e) => {
-                                                                            const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                                                            setProfileData(prev => ({ ...prev, [field.key]: digits }));
-                                                                        }}
-                                                                        inputMode="numeric"
-                                                                        maxLength={10}
-                                                                        className="w-full px-4 py-3 rounded-r-xl focus:outline-none"
-                                                                    />
-                                                                </div>
-                                                            ) : (
-                                                                <input
-                                                                    type="text"
-                                                                    value={fieldValue}
-                                                                    onChange={(e) => {
-                                                                        setProfileData(prev => ({ ...prev, [field.key]: e.target.value }));
-                                                                    }}
-                                                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                                                />
-                                                            )
+                                                            <input
+                                                                type="text"
+                                                                value={field.key === 'phone'
+                                                                    ? (fieldValue.startsWith('+91 ')
+                                                                        ? fieldValue
+                                                                        : `+91 ${normalizeIndianLocalPhone(fieldValue)}`)
+                                                                    : fieldValue
+                                                                }
+                                                                onChange={(e) => {
+                                                                    let value = e.target.value;
+                                                                    if (field.key === 'phone') {
+                                                                        // Match UserDashboard profile phone editing behavior.
+                                                                        if (value.startsWith('+91 ')) {
+                                                                            const digits = value.slice(4).replace(/\D/g, '');
+                                                                            value = `+91 ${digits.slice(0, 10)}`;
+                                                                        } else {
+                                                                            value = '+91 ';
+                                                                        }
+                                                                    }
+                                                                    setProfileData(prev => ({ ...prev, [field.key]: value }));
+                                                                }}
+                                                                inputMode={field.key === 'phone' ? 'numeric' : undefined}
+                                                                maxLength={field.key === 'phone' ? 14 : undefined}
+                                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                                            />
                                                         ) : (
                                                             <div className="px-4 py-3 bg-gray-50 rounded-xl border-2 border-transparent group-hover:border-rose-100 transition-all duration-300">
                                                                 <p className="text-gray-900">{displayValue}</p>
