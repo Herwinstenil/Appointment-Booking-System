@@ -6,6 +6,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
+const { sendAppointmentStatusNotifications } = require('../Notification/notificationService');
 
 const router = express.Router();
 const connectionString = process.env.DATABASE_URL;
@@ -2023,6 +2024,7 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
 
     const { appointmentId } = req.params;
     const { status } = req.body;
+    const normalizedStatus = status.toUpperCase();
 
     // Find appointment
     const appointment = await prisma.appointment.findUnique({
@@ -2039,7 +2041,7 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
     // Update appointment status
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: status.toUpperCase() },
+      data: { status: normalizedStatus },
       include: {
         service: {
           select: {
@@ -2060,11 +2062,16 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
             id: true,
             username: true,
             firstName: true,
-            lastName: true
+            lastName: true,
+            email: true,
+            mobile: true
           }
         }
       }
     });
+    if (appointment.status !== normalizedStatus && ['CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(normalizedStatus)) {
+      await sendAppointmentStatusNotifications(updatedAppointment, normalizedStatus);
+    }
 
     res.json({
       success: true,

@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
-const { sendAppointmentConfirmedNotifications } = require('../Notification/notificationService');
+const { sendAppointmentStatusNotifications } = require('../Notification/notificationService');
 
 const router = express.Router();
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -466,7 +466,7 @@ router.patch('/:appointmentId/confirm', authenticateToken, authorizeRoles('CLIEN
       data: { status: 'CONFIRMED' },
       include: appointmentInclude
     });
-    await sendAppointmentConfirmedNotifications(updatedAppointment);
+    await sendAppointmentStatusNotifications(updatedAppointment, 'CONFIRMED');
 
     const updatedPayload = buildAppointmentPayload(updatedAppointment);
     const publisher = req.app.get('appointmentPublisher');
@@ -660,8 +660,15 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
       },
       include: appointmentInclude
     });
-    if (status && status.toUpperCase() === 'CONFIRMED') {
-      await sendAppointmentConfirmedNotifications(updatedAppointment);
+    const normalizedStatus = status ? status.toUpperCase() : null;
+    const statusChanged = normalizedStatus && normalizedStatus !== appointment.status;
+    const dateChanged = date !== undefined && formatDateOnly(appointment.date) !== formatDateOnly(updatedAppointment.date);
+    const timeChanged = time !== undefined && appointment.time !== updatedAppointment.time;
+
+    if (statusChanged && ['CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(normalizedStatus)) {
+      await sendAppointmentStatusNotifications(updatedAppointment, normalizedStatus);
+    } else if (dateChanged || timeChanged) {
+      await sendAppointmentStatusNotifications(updatedAppointment, 'RESCHEDULED', appointment);
     }
     const updatedPayload = buildAppointmentPayload(updatedAppointment);
 

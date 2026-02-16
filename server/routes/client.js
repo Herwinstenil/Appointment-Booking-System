@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { buildAppointmentPayload, buildStreamPayload, appointmentInclude } = require('./appointments');
-const { sendAppointmentConfirmedNotifications } = require('../Notification/notificationService');
+const { sendAppointmentStatusNotifications } = require('../Notification/notificationService');
 
 const router = express.Router();
 const connectionString = process.env.DATABASE_URL;
@@ -596,8 +596,8 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
       data: { status: normalizedStatus },
       include: appointmentInclude
     });
-    if (normalizedStatus === 'CONFIRMED') {
-      await sendAppointmentConfirmedNotifications(updatedAppointment);
+    if (['CONFIRMED', 'CANCELLED', 'COMPLETED'].includes(normalizedStatus)) {
+      await sendAppointmentStatusNotifications(updatedAppointment, normalizedStatus);
     }
     const appointmentPayload = buildAppointmentPayload(updatedAppointment);
 

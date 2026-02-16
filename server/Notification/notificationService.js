@@ -49,11 +49,56 @@ const normalizePhoneNumber = (phone) => {
   return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
 };
 
-const buildConfirmationMessage = (appointment) => {
+const buildStatusMessage = (appointment, eventType = 'CONFIRMED', previousAppointment = null) => {
   const appointmentDate = formatDate(appointment?.date);
   const appointmentTime = appointment?.time || 'Unknown time';
   const serviceName = appointment?.service?.name || 'Service';
   const providerName = getDisplayName(appointment?.client);
+  const normalizedType = String(eventType || '').toUpperCase();
+
+  if (normalizedType === 'CANCELLED') {
+    return {
+      subject: 'Your appointment was cancelled',
+      text: `Your appointment on ${appointmentDate} at ${appointmentTime} has been cancelled. Service: ${serviceName}. Provider: ${providerName}.`,
+      html: `
+        <p>Your appointment has been cancelled.</p>
+        <p><strong>Date:</strong> ${appointmentDate}</p>
+        <p><strong>Time:</strong> ${appointmentTime}</p>
+        <p><strong>Service:</strong> ${serviceName}</p>
+        <p><strong>Provider:</strong> ${providerName}</p>
+      `
+    };
+  }
+
+  if (normalizedType === 'COMPLETED') {
+    return {
+      subject: 'Your appointment is completed',
+      text: `Your appointment on ${appointmentDate} at ${appointmentTime} is marked as completed. Service: ${serviceName}. Provider: ${providerName}.`,
+      html: `
+        <p>Your appointment is marked as completed.</p>
+        <p><strong>Date:</strong> ${appointmentDate}</p>
+        <p><strong>Time:</strong> ${appointmentTime}</p>
+        <p><strong>Service:</strong> ${serviceName}</p>
+        <p><strong>Provider:</strong> ${providerName}</p>
+      `
+    };
+  }
+
+  if (normalizedType === 'RESCHEDULED') {
+    const oldDate = formatDate(previousAppointment?.date);
+    const oldTime = previousAppointment?.time || 'Unknown time';
+    return {
+      subject: 'Your appointment was rescheduled',
+      text: `Your appointment was rescheduled from ${oldDate} at ${oldTime} to ${appointmentDate} at ${appointmentTime}. Service: ${serviceName}. Provider: ${providerName}.`,
+      html: `
+        <p>Your appointment has been rescheduled.</p>
+        <p><strong>Previous:</strong> ${oldDate} at ${oldTime}</p>
+        <p><strong>New:</strong> ${appointmentDate} at ${appointmentTime}</p>
+        <p><strong>Service:</strong> ${serviceName}</p>
+        <p><strong>Provider:</strong> ${providerName}</p>
+      `
+    };
+  }
 
   return {
     subject: 'Your appointment is confirmed',
@@ -68,10 +113,10 @@ const buildConfirmationMessage = (appointment) => {
   };
 };
 
-const sendAppointmentConfirmedNotifications = async (appointment) => {
+const sendAppointmentStatusNotifications = async (appointment, eventType = 'CONFIRMED', previousAppointment = null) => {
   if (!appointment || !appointment.user) return;
 
-  const message = buildConfirmationMessage(appointment);
+  const message = buildStatusMessage(appointment, eventType, previousAppointment);
   const tasks = [];
 
   if (emailTransporter && appointment.user.email) {
@@ -106,6 +151,11 @@ const sendAppointmentConfirmedNotifications = async (appointment) => {
   }
 };
 
+const sendAppointmentConfirmedNotifications = async (appointment) => {
+  await sendAppointmentStatusNotifications(appointment, 'CONFIRMED');
+};
+
 module.exports = {
-  sendAppointmentConfirmedNotifications
+  sendAppointmentConfirmedNotifications,
+  sendAppointmentStatusNotifications
 };
