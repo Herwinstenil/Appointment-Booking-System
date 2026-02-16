@@ -5,6 +5,16 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '../Context/AuthContext.jsx';
 
+const toDateOnlyString = (value) => {
+  if (!value) return '';
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function AppointmentLanding() {
   const navigate = useNavigate();
   const { isLoggedIn, userRole, API_BASE_URL, getAuthHeaders, user } = useAuth();
@@ -509,7 +519,7 @@ const BookingModal = ({
                   setSelectedDate(date);
                   setBookingForm((prev) => ({
                     ...prev,
-                    appointmentDate: date ? date.toISOString().split('T')[0] : ''
+                    appointmentDate: toDateOnlyString(date)
                   }));
                 }}
                 dateFormat="yyyy-MM-dd"

@@ -174,7 +174,16 @@ const getStatusBadgeClass = (statusRaw = '') => {
 
 const formatBookingDate = (value) => {
     if (!value) return '';
-    const parsed = new Date(value);
+    let parsed = null;
+    if (typeof value === 'string') {
+        const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
+        if (match) {
+            parsed = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+        }
+    }
+    if (!parsed) {
+        parsed = new Date(value);
+    }
     if (Number.isNaN(parsed.getTime())) return value;
     return parsed.toLocaleDateString();
 };

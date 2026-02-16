@@ -102,6 +102,32 @@ const formatProfileData = (record = {}) => {
     };
 };
 
+const toDateOnlyString = (value) => {
+    if (!value) return '';
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseDateOnly = (value) => {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === 'string') {
+        const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
+        if (match) {
+            const year = Number(match[1]);
+            const month = Number(match[2]);
+            const day = Number(match[3]);
+            return new Date(year, month - 1, day);
+        }
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
 const UserDashboard = () => {
     const navigate = useNavigate();
     const { logout, user, getAuthHeaders, API_BASE_URL, activateRole, getSession } = useAuth();
@@ -277,7 +303,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const normalizeAppointment = (raw = {}) => {
         const appointmentDate = raw.appointmentDate || raw.date;
         const appointmentTime = raw.appointmentTime || raw.time || '';
-        const parsedDate = appointmentDate ? new Date(appointmentDate) : null;
+        const parsedDate = parseDateOnly(appointmentDate);
     const providerName = [raw.client?.firstName, raw.client?.lastName].filter(Boolean).join(' ') || raw.client?.company || 'Service Team';
 
         return {
@@ -1043,7 +1069,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                         setSelectedDate(date);
                                         setBookingForm(prev => ({
                                             ...prev,
-                                            appointmentDate: date ? date.toISOString().split('T')[0] : ''
+                                            appointmentDate: toDateOnlyString(date)
                                         }));
                                     }}
                                     dateFormat="yyyy-MM-dd"
@@ -1124,7 +1150,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             time: selectedAppointment?.appointmentTime || '',
             reason: selectedAppointment?.notes || ''
         });
-        const [selectedDate, setSelectedDate] = useState(selectedAppointment?.appointmentDate ? new Date(selectedAppointment.appointmentDate) : null);
+        const [selectedDate, setSelectedDate] = useState(parseDateOnly(selectedAppointment?.appointmentDate));
         const [selectedTime, setSelectedTime] = useState(null);
         const [errors, setErrors] = useState({});
         const [isRescheduling, setIsRescheduling] = useState(false);
@@ -1255,7 +1281,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                             setSelectedDate(date);
                                             setRescheduleForm({
                                                 ...rescheduleForm,
-                                                date: date ? date.toISOString().split('T')[0] : ''
+                                                date: toDateOnlyString(date)
                                             });
                                         }}
                                         dateFormat="yyyy-MM-dd"

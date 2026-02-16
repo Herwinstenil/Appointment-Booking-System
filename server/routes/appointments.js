@@ -26,6 +26,34 @@ const mapStatusLabel = (status = '') => {
   return STATUS_LABELS[normalized] || normalized.charAt(0) + normalized.slice(1).toLowerCase();
 };
 
+const formatDateOnly = (dateValue) => {
+  if (!dateValue) return null;
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return null;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateOnlyInput = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (dateOnlyMatch) {
+      const year = Number(dateOnlyMatch[1]);
+      const month = Number(dateOnlyMatch[2]);
+      const day = Number(dateOnlyMatch[3]);
+      return new Date(year, month - 1, day);
+    }
+  }
+
+  return new Date(value);
+};
+
 const appointmentInclude = {
   service: true,
   client: true,
@@ -148,7 +176,7 @@ const fetchAppointments = async (where = {}, query = {}) => {
 };
 
 const buildAppointmentPayload = (appointment) => {
-  const appointmentDate = appointment.date ? appointment.date.toISOString() : null;
+  const appointmentDate = formatDateOnly(appointment.date);
   return {
     id: appointment.id,
     userId: appointment.userId,
@@ -204,7 +232,7 @@ router.post('/', authenticateToken, authorizeRoles('USER'), async (req, res) => 
       });
     }
 
-    const parsedDate = new Date(appointmentDate);
+    const parsedDate = parseDateOnlyInput(appointmentDate);
     if (isNaN(parsedDate.getTime())) {
       return res.status(400).json({
         success: false,
@@ -585,7 +613,7 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
 
     // Validate date if provided
     if (date) {
-      const appointmentDate = new Date(date);
+      const appointmentDate = parseDateOnlyInput(date);
       if (isNaN(appointmentDate.getTime())) {
         return res.status(400).json({
           success: false,
@@ -596,7 +624,7 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
 
     // Check for conflicts if date/time changed
     if ((date || time) && status !== 'CANCELLED') {
-      const checkDate = date ? new Date(date) : appointment.date;
+      const checkDate = date ? parseDateOnlyInput(date) : appointment.date;
       const checkTime = time || appointment.time;
 
       const conflict = await prisma.appointment.findFirst({
@@ -625,7 +653,7 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: {
-        date: date ? new Date(date) : undefined,
+        date: date ? parseDateOnlyInput(date) : undefined,
         time: time || undefined,
         notes: notes !== undefined ? notes : undefined,
         status: status ? status.toUpperCase() : undefined
