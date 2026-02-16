@@ -4614,26 +4614,6 @@ const ClientDashboard = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Duration
-                                        </label>
-                                        <select
-                                            name="duration"
-                                            value={editBookingData.duration}
-                                            onChange={handleEditBookingChange}
-                                            disabled
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
-                                        >
-                                            <option value="" disabled>Select a Duration</option>
-                                            <option value="1 hour">1 hour</option>
-                                            <option value="1.5 hours">1.5 hours</option>
-                                            <option value="2 hours">2 hours</option>
-                                            <option value="2.5 hours">2.5 hours</option>
-                                            <option value="3 hours">3 hours</option>
-                                            <option value="4 hours">4 hours</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
                                             Amount *
                                         </label>
                                         <input
