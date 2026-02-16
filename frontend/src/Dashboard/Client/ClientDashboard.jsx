@@ -92,7 +92,7 @@ const CLIENT_PROFILE_DEFAULT = {
 };
 
 const DEFAULT_AVAILABILITY = {
-    monday: { start: '09:00', end: '17:00', enabled: true },
+    monday: { start: '09:00', end: '17:00', enabled: false },
     tuesday: { start: '09:00', end: '17:00', enabled: true },
     wednesday: { start: '09:00', end: '17:00', enabled: true },
     thursday: { start: '09:00', end: '17:00', enabled: true },
