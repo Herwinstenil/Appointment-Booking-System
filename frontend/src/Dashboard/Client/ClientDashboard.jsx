@@ -62,6 +62,18 @@ const formatCurrency = (value) => {
     return `$${number.toFixed(2)}`;
 };
 
+const formatRatingOutOfFive = (value) => {
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    if (Number.isNaN(numericValue)) {
+        return '0/5';
+    }
+    const rounded = Math.round(numericValue * 10) / 10;
+    if (Number.isInteger(rounded)) {
+        return `${rounded}/5`;
+    }
+    return `${rounded.toFixed(1)}/5`;
+};
+
 const CLIENT_PROFILE_DEFAULT = {
     firstName: '',
     lastName: '',
@@ -2367,7 +2379,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
-                                        <p className="text-2xl font-bold text-gray-900">{serviceAverageRating.toFixed(1)}/5</p>
+                                        <p className="text-2xl font-bold text-gray-900">{formatRatingOutOfFive(serviceAverageRating)}</p>
                                     </div>
                                     <Star className="text-amber-500" size={32} />
                                 </div>
@@ -3769,7 +3781,7 @@ const ClientDashboard = () => {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-amber-100 text-sm font-medium">Avg Rating</p>
-                                            <p className="text-2xl font-bold">{serviceAverageRating.toFixed(1)}/5</p>
+                                            <p className="text-2xl font-bold">{formatRatingOutOfFive(serviceAverageRating)}</p>
                                             <p className="text-amber-100 text-xs mt-1">Customer satisfaction</p>
                                         </div>
                                         <Star size={32} className="opacity-80" />
