@@ -46,6 +46,18 @@ const buildDisplayName = (user) => {
   return fullName || user.username || user.email || 'User';
 };
 
+const splitFullName = (value = '') => {
+  const normalized = String(value || '').trim().replace(/\s+/g, ' ');
+  if (!normalized) {
+    return { firstName: null, lastName: null };
+  }
+  const [firstName, ...rest] = normalized.split(' ');
+  return {
+    firstName: firstName || null,
+    lastName: rest.length ? rest.join(' ') : null
+  };
+};
+
 // Get client dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
@@ -255,6 +267,187 @@ router.get('/users', authenticateToken, authorizeRoles('CLIENT'), async (req, re
     res.status(500).json({
       success: false,
       message: 'Failed to get users'
+    });
+  }
+});
+
+// Update user (client scope, USER role only)
+router.put('/users/:userId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, email, status } = req.body || {};
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        role: 'USER'
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        firstName: true,
+        lastName: true,
+        isActive: true
+      }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    let normalizedEmail;
+    if (email !== undefined) {
+      const trimmedEmail = String(email).trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      const duplicateEmail = await prisma.user.findFirst({
+        where: {
+          email: trimmedEmail,
+          id: { not: userId }
+        },
+        select: { id: true }
+      });
+      if (duplicateEmail) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email is already in use'
+        });
+      }
+
+      normalizedEmail = trimmedEmail;
+    }
+
+    const parsedName = name !== undefined ? splitFullName(name) : null;
+    const normalizedStatus = status !== undefined ? String(status).trim().toLowerCase() : null;
+    if (normalizedStatus && !['active', 'inactive'].includes(normalizedStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Allowed values: Active, Inactive'
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: normalizedEmail !== undefined ? normalizedEmail : undefined,
+        firstName: parsedName ? parsedName.firstName : undefined,
+        lastName: parsedName ? parsedName.lastName : undefined,
+        isActive: normalizedStatus ? normalizedStatus === 'active' : undefined
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        lastLogin: true
+      }
+    });
+
+    const appointmentStats = await prisma.appointment.aggregate({
+      where: {
+        userId,
+        clientNo: req.user.clientNo
+      },
+      _count: {
+        id: true
+      },
+      _sum: {
+        amount: true
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'User updated successfully',
+      data: {
+        user: {
+          id: updatedUser.id,
+          name: buildDisplayName(updatedUser),
+          email: updatedUser.email || '',
+          role: updatedUser.role,
+          status: updatedUser.isActive ? 'Active' : 'Inactive',
+          joinDate: updatedUser.createdAt,
+          lastLogin: updatedUser.lastLogin,
+          bookingCount: appointmentStats._count?.id || 0,
+          totalSpent: Number(appointmentStats._sum?.amount || 0)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Update client user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user'
+    });
+  }
+});
+
+// Delete user (client scope, USER role only)
+router.delete('/users/:userId', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        id: userId,
+        role: 'USER'
+      },
+      select: {
+        id: true
+      }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.appointment.deleteMany({
+        where: {
+          userId
+        }
+      });
+      await tx.activity.deleteMany({
+        where: {
+          userId
+        }
+      });
+      await tx.fileUpload.deleteMany({
+        where: {
+          userId
+        }
+      });
+      await tx.user.delete({
+        where: { id: userId }
+      });
+    });
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete client user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete user'
     });
   }
 });

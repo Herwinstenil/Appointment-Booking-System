@@ -1545,7 +1545,7 @@ const ClientDashboard = () => {
         }));
     };
 
-    const handleEditUserSubmit = (e) => {
+    const handleEditUserSubmit = async (e) => {
         e.preventDefault();
 
         // Validation
@@ -1567,20 +1567,38 @@ const ClientDashboard = () => {
         // Clear errors
         setClientErrors({});
 
-        // Update user
-        setUsers(prev => prev.map(user =>
-            user.id === editUserData.id
-                ? {
-                    ...user,
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders('CLIENT'),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/client/users/${editUserData.id}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({
                     name: editUserData.name.trim(),
                     email: editUserData.email.trim(),
                     status: editUserData.status
-                }
-                : user
-        ));
+                })
+            });
+            const payload = await response.json();
 
-        // Close modal
-        setShowEditUserModal(false);
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to update user');
+            }
+
+            const normalized = normalizeClientUserForUI(payload.data?.user || {});
+            setUsers(prev => prev.map(user => (user.id === normalized.id ? normalized : user)));
+            setShowEditUserModal(false);
+        } catch (error) {
+            console.error('Edit user failed:', error);
+            setClientErrors(prev => ({
+                ...prev,
+                email: error.message || 'Unable to update user'
+            }));
+        }
     };
 
     // Edit Booking Handlers
@@ -1792,10 +1810,30 @@ const ClientDashboard = () => {
     };
 
     // Delete User Handler
-    const handleDeleteUser = (userId) => {
-        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            return;
+        }
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = getAuthHeaders('CLIENT');
+
+        try {
+            const response = await fetch(`${baseUrl}/client/users/${userId}`, {
+                method: 'DELETE',
+                headers
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload.success === false) {
+                throw new Error(payload.message || 'Unable to delete user');
+            }
+
             setUsers(prev => prev.filter(user => user.id !== userId));
             setSelectedUsers(prev => prev.filter(id => id !== userId));
+        } catch (error) {
+            console.error('Delete user failed:', error);
+            alert(error.message || 'Unable to delete user');
         }
     };
 
