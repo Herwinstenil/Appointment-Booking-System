@@ -530,7 +530,9 @@ const getBookingHistoryStatusClass = (status = '') => {
 
         // Calculate total spent from booking history
         const totalSpent = bookingHistory.reduce((sum, booking) => {
-            const amount = parseFloat(booking.amount.replace('$', ''));
+            const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
+            const statusRaw = (booking.statusRaw || booking.status || '').toString().toUpperCase();
+            if (statusRaw === 'CANCELLED') return sum;
             return sum + (isNaN(amount) ? 0 : amount);
         }, 0);
 
@@ -572,31 +574,84 @@ const getBookingHistoryStatusClass = (status = '') => {
         cancelled: appointments.filter(a => a.status === 'Cancelled').length
     }), [appointments]);
 
-    // Monthly Spending Data
-    const monthlySpending = [
-        { month: 'Jul', amount: 850, bookings: 3 },
-        { month: 'Aug', amount: 920, bookings: 4 },
-        { month: 'Sep', amount: 1010, bookings: 5 },
-        { month: 'Oct', amount: 950, bookings: 4 },
-        { month: 'Nov', amount: 1080, bookings: 5 },
-        { month: 'Dec', amount: 1150, bookings: 6 },
-        { month: 'Jan', amount: 1250, bookings: 7 }
-    ];
+    const monthlyAnalytics = useMemo(() => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+        const monthKeys = [];
 
-    // Transform monthly spending data for chart
-    const revenueTrend = monthlySpending.map((data, index) => {
-        let growth = 0;
-        if (index > 0) {
-            const prevAmount = monthlySpending[index - 1].amount;
-            growth = ((data.amount - prevAmount) / prevAmount) * 100;
+        for (let month = 0; month <= currentMonth; month += 1) {
+            monthKeys.push(`${currentYear}-${month}`);
         }
+
+        const aggregates = new Map();
+        bookingHistory.forEach((booking) => {
+            const sourceDate = booking.createdAt || booking.appointmentDate;
+            if (!sourceDate) return;
+
+            const parsed = new Date(sourceDate);
+            if (Number.isNaN(parsed.getTime()) || parsed.getFullYear() !== currentYear) return;
+
+            const key = `${parsed.getFullYear()}-${parsed.getMonth()}`;
+            const current = aggregates.get(key) || { bookings: 0, spending: 0 };
+            current.bookings += 1;
+
+            const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
+            const statusRaw = (booking.statusRaw || booking.status || '').toString().toUpperCase();
+            if (!Number.isNaN(amount) && statusRaw !== 'CANCELLED') {
+                current.spending += amount;
+            }
+
+            aggregates.set(key, current);
+        });
+
+        const monthlyData = monthKeys.map((key) => {
+            const [yearPart, monthPart] = key.split('-');
+            const monthDate = new Date(Number(yearPart), Number(monthPart), 1);
+            const agg = aggregates.get(key) || { bookings: 0, spending: 0 };
+            return {
+                key,
+                label: monthDate.toLocaleDateString('en-US', { month: 'short' }),
+                bookings: agg.bookings,
+                spending: Number(agg.spending.toFixed(2))
+            };
+        });
+
+        const visibleMonths = monthlyData.length <= 7
+            ? monthlyData
+            : monthlyData.slice(monthlyData.length - 7);
+
+        const currentMonthData = monthlyData[monthlyData.length - 1] || { bookings: 0, spending: 0 };
+        const previousMonthData = monthlyData[monthlyData.length - 2] || { bookings: 0, spending: 0 };
+
         return {
-            label: data.month,
-            revenue: data.amount,
-            growth: Math.round(growth * 100) / 100, // Round to 2 decimal places
-            bookings: data.bookings
+            visibleMonths,
+            currentMonthBookings: currentMonthData.bookings,
+            previousMonthBookings: previousMonthData.bookings,
+            currentMonthSpending: currentMonthData.spending,
+            previousMonthSpending: previousMonthData.spending
         };
-    });
+    }, [bookingHistory]);
+
+    const revenueTrend = useMemo(() => {
+        return monthlyAnalytics.visibleMonths.map((data, index, arr) => {
+            const prev = arr[index - 1];
+            const prevSpending = prev?.spending || 0;
+            const growth = prevSpending > 0
+                ? ((data.spending - prevSpending) / prevSpending) * 100
+                : 0;
+
+            return {
+                label: data.label,
+                revenue: data.spending,
+                growth: Math.round(growth * 100) / 100,
+                bookings: data.bookings
+            };
+        });
+    }, [monthlyAnalytics]);
+
+    const bookingChange = monthlyAnalytics.currentMonthBookings - monthlyAnalytics.previousMonthBookings;
+    const spentChange = monthlyAnalytics.currentMonthSpending - monthlyAnalytics.previousMonthSpending;
 
     const [profileActivityEvents, setProfileActivityEvents] = useState([]);
 
@@ -2189,8 +2244,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 {
                                     title: 'Total Bookings',
                                     value: userStats.totalBookings,
-                                    change: '+3 this month',
-                                    positive: true,
+                                    change: `${bookingChange >= 0 ? '+' : ''}${bookingChange} this month`,
+                                    positive: bookingChange >= 0,
                                     icon: Calendar,
                                     gradient: 'from-violet-500 to-fuchsia-600',
                                     delay: 0
@@ -2198,8 +2253,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 {
                                     title: 'Total Spent',
                                     value: `$${userStats.totalSpent}`,
-                                    change: '+$450 this month',
-                                    positive: true,
+                                    change: `${spentChange >= 0 ? '+' : '-'}$${Math.abs(spentChange).toFixed(2)} this month`,
+                                    positive: spentChange >= 0,
                                     icon: DollarSign,
                                     gradient: 'from-blue-500 to-cyan-600',
                                     delay: 100
@@ -2312,7 +2367,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                         // Bar Chart
                                         <div className="h-full flex items-end justify-between space-x-2">
                                             {(() => {
-                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue), 1);
                                                 return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
@@ -2331,9 +2386,10 @@ const getBookingHistoryStatusClass = (status = '') => {
                                         // Line/Area Chart
                                         <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
                                             {(() => {
-                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue));
+                                                const maxRevenue = Math.max(...revenueTrend.map(d => d.revenue), 1);
+                                                const denominator = Math.max(revenueTrend.length - 1, 1);
                                                 const points = revenueTrend.map((data, index) => {
-                                                    const x = (index / (revenueTrend.length - 1)) * 400;
+                                                    const x = (index / denominator) * 400;
                                                     const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
                                                     return `${x},${y}`;
                                                 }).join(' ');
@@ -2361,7 +2417,7 @@ const getBookingHistoryStatusClass = (status = '') => {
 
                                                         {/* Data points */}
                                                         {revenueTrend.map((data, index) => {
-                                                            const x = (index / (revenueTrend.length - 1)) * 400;
+                                                            const x = (index / denominator) * 400;
                                                             const y = 256 - (data.revenue / maxRevenue) * 200;
                                                             return (
                                                                 <circle
