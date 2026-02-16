@@ -1039,6 +1039,56 @@ const getBookingHistoryStatusClass = (status = '') => {
         doc.save(`booking_history_${profileData.firstName}_${profileData.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
+    const handleExportProfilePDF = () => {
+        const doc = new jsPDF();
+        const generatedAt = new Date().toLocaleString();
+        const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A';
+
+        doc.setFontSize(18);
+        doc.text('User Profile Export', 14, 18);
+        doc.setFontSize(10);
+        doc.text(`Generated: ${generatedAt}`, 14, 24);
+
+        autoTable(doc, {
+            startY: 30,
+            head: [['Field', 'Value']],
+            body: [
+                ['Full Name', fullName],
+                ['Email', profileData.email || 'N/A'],
+                ['Phone', profileData.phone || 'N/A'],
+                ['Role', getRoleLabel(profileData.role) || 'N/A'],
+                ['Status', profileData.status || 'N/A'],
+                ['Join Date', profileData.joinDate || 'N/A'],
+                ['Last Login', profileData.lastLogin || 'N/A'],
+                ['Address', profileData.address || 'N/A'],
+                ['Bio', profileData.bio || 'N/A']
+            ],
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [124, 58, 237], textColor: 255 }
+        });
+
+        const summaryY = doc.lastAutoTable.finalY + 10;
+        autoTable(doc, {
+            startY: summaryY,
+            head: [['Metric', 'Value']],
+            body: [
+                ['Total Bookings', String(userStats.totalBookings)],
+                ['Completed Bookings', String(userStats.completedBookings)],
+                ['Upcoming Bookings', String(userStats.upcomingBookings)],
+                ['Confirmed Bookings', String(userStats.confirmedBookings)],
+                ['Cancelled Bookings', String(userStats.cancelledBookings)],
+                ['Total Spent', `$${userStats.totalSpent}`],
+                ['Average Rating', `${userStats.averageRating}/5`],
+                ['Loyalty Points', String(userStats.loyaltyPoints)],
+                ['Favorite Service', userStats.favoriteCategory || 'N/A']
+            ],
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [59, 130, 246], textColor: 255 }
+        });
+
+        doc.save(`user_profile_${(profileData.firstName || 'user').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`);
+    };
+
     // Booking Modal Component
     const BookingModal = () => {
         const [bookingForm, setBookingForm] = useState({
@@ -3360,7 +3410,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
-                                            { icon: Download, label: 'Export Data', color: 'text-purple-600' },
+                                            { icon: Download, label: 'Export Data', color: 'text-purple-600', onClick: handleExportProfilePDF },
                                             { icon: FileText, label: 'Download Invoices', color: 'text-blue-600' },
                                             { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600' },
                                         ].map((action, index) => {
@@ -3368,6 +3418,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                             return (
                                                 <button
                                                     key={index}
+                                                    onClick={action.onClick}
                                                     className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-violet-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group"
                                                 >
                                                     <ActionIcon size={20} className={`${action.color} group-hover:scale-110 transition-transform`} />
