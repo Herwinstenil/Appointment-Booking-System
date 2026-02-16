@@ -8,7 +8,11 @@ const fs = require('fs');
 const path = require('path');
 
 const router = express.Router();
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is required for admin routes');
+}
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 const ADMIN_PROFILE_STATS_SELECT = {

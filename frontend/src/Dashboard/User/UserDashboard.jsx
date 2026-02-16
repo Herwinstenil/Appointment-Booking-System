@@ -643,6 +643,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                     ...getAuthHeaders()
                 },
                 body: JSON.stringify({
+                    email: profileData.email,
                     firstName: profileData.firstName,
                     lastName: profileData.lastName,
                     mobile: profileData.phone,

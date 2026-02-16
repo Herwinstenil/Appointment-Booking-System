@@ -558,6 +558,7 @@ const ClientDashboard = () => {
         try {
             const formattedPhone = formatIndianPhoneNumber(profileData.phone);
             const updates = {
+                email: profileData.email,
                 firstName: profileData.firstName,
                 lastName: profileData.lastName,
                 company: profileData.company,
@@ -3242,7 +3243,7 @@ const ClientDashboard = () => {
                                                 {[
                                                     { label: 'First Name', key: 'firstName', icon: User },
                                                     { label: 'Last Name', key: 'lastName', icon: User },
-                                                    { label: 'Email', key: 'email', icon: Mail, readOnly: true },
+                                                    { label: 'Email', key: 'email', icon: Mail },
                                                     { label: 'Phone', key: 'phone', icon: Phone },
                                                     { label: 'Company', key: 'company', icon: Users },
                                                     { label: 'Position', key: 'position', icon: Settings },
@@ -3264,7 +3265,7 @@ const ClientDashboard = () => {
                                                         );
                                                     }
 
-                                                    const inputType = field.key === 'website' ? 'url' : 'text';
+                                                    const inputType = field.key === 'website' ? 'url' : field.key === 'email' ? 'email' : 'text';
                                                     return (
                                                         <div key={field.key} className="group">
                                                             <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">

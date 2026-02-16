@@ -3,9 +3,13 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const { sendAppointmentConfirmedNotifications } = require('../Notification/notificationService');
 
 const router = express.Router();
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public';
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error('DATABASE_URL is required for appointment routes');
+}
 const adapter = new PrismaPg({ connectionString: DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
@@ -434,6 +438,7 @@ router.patch('/:appointmentId/confirm', authenticateToken, authorizeRoles('CLIEN
       data: { status: 'CONFIRMED' },
       include: appointmentInclude
     });
+    await sendAppointmentConfirmedNotifications(updatedAppointment);
 
     const updatedPayload = buildAppointmentPayload(updatedAppointment);
     const publisher = req.app.get('appointmentPublisher');
@@ -627,6 +632,9 @@ router.put('/:appointmentId', authenticateToken, async (req, res) => {
       },
       include: appointmentInclude
     });
+    if (status && status.toUpperCase() === 'CONFIRMED') {
+      await sendAppointmentConfirmedNotifications(updatedAppointment);
+    }
     const updatedPayload = buildAppointmentPayload(updatedAppointment);
 
     if (status) {

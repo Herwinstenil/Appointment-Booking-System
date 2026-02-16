@@ -4,7 +4,11 @@ const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('..
 const { PrismaPg } = require('@prisma/adapter-pg');
 
 const router = express.Router();
-const adapter = new PrismaPg({ connectionString: 'postgresql://postgres:STENIL@2003@localhost:5432/appointment_booking?schema=public' });
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is required for user routes');
+}
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 // Get user profile
@@ -76,6 +80,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
     const {
+      email,
       firstName,
       lastName,
       mobile,
@@ -86,6 +91,36 @@ router.put('/profile', authenticateToken, async (req, res) => {
       website,
       avatarUrl
     } = req.body;
+
+    // Validate email if provided
+    let normalizedEmail;
+    if (email !== undefined) {
+      const trimmedEmail = String(email).trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      const existingEmailUser = await prisma.user.findFirst({
+        where: {
+          email: trimmedEmail,
+          id: { not: req.user.id }
+        },
+        select: { id: true }
+      });
+
+      if (existingEmailUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email is already in use'
+        });
+      }
+
+      normalizedEmail = trimmedEmail;
+    }
 
     // Validate mobile if provided
     if (mobile) {
@@ -101,6 +136,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
         data: {
+          email: normalizedEmail !== undefined ? normalizedEmail : undefined,
           firstName: firstName || null,
           lastName: lastName || null,
           mobile: mobile || undefined,
@@ -140,6 +176,12 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error('Update profile error:', error);
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        success: false,
+        message: 'Email is already in use'
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to update profile'

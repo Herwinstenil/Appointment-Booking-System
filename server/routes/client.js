@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { buildAppointmentPayload, buildStreamPayload, appointmentInclude } = require('./appointments');
+const { sendAppointmentConfirmedNotifications } = require('../Notification/notificationService');
 
 const router = express.Router();
 const connectionString = process.env.DATABASE_URL;
@@ -439,6 +440,7 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     }
 
     const {
+      email,
       firstName,
       lastName,
       company,
@@ -450,8 +452,38 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
       avatarUrl
     } = req.body;
 
+    let normalizedEmail;
+    if (email !== undefined) {
+      const trimmedEmail = String(email).trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format'
+        });
+      }
+
+      const existingEmailUser = await prisma.user.findFirst({
+        where: {
+          email: trimmedEmail,
+          id: { not: req.user.id }
+        },
+        select: { id: true }
+      });
+
+      if (existingEmailUser) {
+        return res.status(409).json({
+          success: false,
+          message: 'Email is already in use'
+        });
+      }
+
+      normalizedEmail = trimmedEmail;
+    }
+
     const updates = Object.fromEntries(
       Object.entries({
+        email: normalizedEmail,
         firstName,
         lastName,
         company,
@@ -502,6 +534,12 @@ router.put('/profile', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     });
   } catch (error) {
     console.error('Update client profile error:', error);
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        success: false,
+        message: 'Email is already in use'
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to update profile'
@@ -558,6 +596,9 @@ router.put('/appointments/:appointmentId/status', authenticateToken, authorizeRo
       data: { status: normalizedStatus },
       include: appointmentInclude
     });
+    if (normalizedStatus === 'CONFIRMED') {
+      await sendAppointmentConfirmedNotifications(updatedAppointment);
+    }
     const appointmentPayload = buildAppointmentPayload(updatedAppointment);
 
     const publisher = req.app.get('appointmentPublisher');

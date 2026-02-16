@@ -26,7 +26,9 @@
     "passport-facebook": "^3.0.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "nodemailer": "^6.10.1",
+    "twilio": "^5.10.4"
   },
   "devDependencies": {
     "prisma": "^7.2.0"
