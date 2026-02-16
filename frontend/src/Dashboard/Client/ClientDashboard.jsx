@@ -2717,19 +2717,23 @@ const ClientDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-600 text-sm font-medium">Pending</p>
-                                        <p className="text-2xl font-bold text-gray-900">{bookings.filter(b => b.status === 'Pending').length}</p>
+                                        <p className="text-gray-600 text-sm font-medium">Completed</p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {bookings.filter(b => (b.statusRaw || b.status || '').toString().toUpperCase() === 'COMPLETED').length}
+                                        </p>
                                     </div>
-                                    <Clock4 className="text-amber-500" size={32} />
+                                    <CheckCircle className="text-blue-500" size={32} />
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-600 text-sm font-medium">Revenue</p>
-                                        <p className="text-2xl font-bold text-gray-900">$2,300</p>
+                                        <p className="text-gray-600 text-sm font-medium">Cancelled</p>
+                                        <p className="text-2xl font-bold text-gray-900">
+                                            {bookings.filter(b => (b.statusRaw || b.status || '').toString().toUpperCase() === 'CANCELLED').length}
+                                        </p>
                                     </div>
-                                    <DollarSign className="text-green-500" size={32} />
+                                    <XCircle className="text-red-500" size={32} />
                                 </div>
                             </div>
                         </div>
