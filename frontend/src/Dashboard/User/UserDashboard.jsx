@@ -463,6 +463,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [showViewBookingModal, setShowViewBookingModal] = useState(false);
+    const [showPaymentMethodsModal, setShowPaymentMethodsModal] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
@@ -1148,6 +1149,52 @@ const getBookingHistoryStatusClass = (status = '') => {
         } catch (error) {
             console.error('Export profile PDF error:', error);
         }
+    };
+
+    const handleDownloadInvoicesPDF = () => {
+        const doc = new jsPDF();
+        const generatedAt = new Date().toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        });
+        const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'User';
+
+        doc.setFontSize(18);
+        doc.text('Invoices Report', 14, 18);
+        doc.setFontSize(10);
+        doc.text(`Generated: ${generatedAt}`, 14, 25);
+        doc.text(`Customer: ${fullName}`, 14, 31);
+        doc.text(`Email: ${profileData.email || 'N/A'}`, 14, 37);
+
+        const invoiceRows = bookingHistory.map((booking, index) => {
+            const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
+            return [
+                `INV-${String(index + 1).padStart(4, '0')}`,
+                booking.service || 'Service',
+                booking.date || 'N/A',
+                booking.status || 'N/A',
+                Number.isNaN(amount) ? '$0.00' : `$${amount.toFixed(2)}`
+            ];
+        });
+
+        autoTable(doc, {
+            startY: 44,
+            head: [['Invoice #', 'Service', 'Date', 'Status', 'Amount']],
+            body: invoiceRows.length ? invoiceRows : [['N/A', 'No invoices', '-', '-', '$0.00']],
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [37, 99, 235], textColor: 255 }
+        });
+
+        const total = bookingHistory.reduce((sum, booking) => {
+            const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
+            return sum + (Number.isNaN(amount) ? 0 : amount);
+        }, 0);
+        const summaryY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(11);
+        doc.text(`Total invoices: ${bookingHistory.length}`, 14, summaryY);
+        doc.text(`Total amount: $${total.toFixed(2)}`, 14, summaryY + 16);
+
+        doc.save(`user_invoices_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     // Booking Modal Component
@@ -3472,8 +3519,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     <div className="space-y-3">
                                         {[
                                             { icon: Download, label: 'Export Data', color: 'text-purple-600', onClick: handleExportProfilePDF },
-                                            { icon: FileText, label: 'Download Invoices', color: 'text-blue-600' },
-                                            { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600' },
+                                            { icon: FileText, label: 'Download Invoices', color: 'text-blue-600', onClick: handleDownloadInvoicesPDF },
+                                            { icon: CreditCard, label: 'Payment Methods', color: 'text-emerald-600', onClick: () => setShowPaymentMethodsModal(true) },
                                         ].map((action, index) => {
                                             const ActionIcon = action.icon;
                                             return (
@@ -3667,6 +3714,48 @@ const getBookingHistoryStatusClass = (status = '') => {
 
             {/* View Booking Modal */}
             {showViewBookingModal && <ViewBookingModal />}
+
+            {/* Payment Methods Modal */}
+            {showPaymentMethodsModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-modalSlideIn">
+                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">Payment Methods</h3>
+                                    <p className="text-gray-600 mt-1">Available options for your appointments</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowPaymentMethodsModal(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                                <p className="text-sm font-semibold text-emerald-700">Pay in Cash</p>
+                                <p className="text-sm text-emerald-600 mt-1">You can pay directly in cash at your appointment.</p>
+                            </div>
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                <p className="text-sm font-semibold text-amber-700">Online Payment</p>
+                                <p className="text-sm text-amber-600 mt-1">Online payment is coming soon.</p>
+                            </div>
+                        </div>
+                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => setShowPaymentMethodsModal(false)}
+                                    className="px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Booking Success Notification */}
             {bookingSuccess && (
