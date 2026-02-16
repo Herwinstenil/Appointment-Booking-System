@@ -193,6 +193,8 @@ const buildClientBooking = (record) => {
     const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') ||
         user.username || user.email || 'Client';
     const rawDate = record.appointmentDate || record.date;
+    const rawRescheduleRequest = record.rescheduleRequest || null;
+    const requestedDate = rawRescheduleRequest?.requestedDate ? formatBookingDate(rawRescheduleRequest.requestedDate) : '';
     return {
         id: record.id,
         client: clientName,
@@ -209,7 +211,11 @@ const buildClientBooking = (record) => {
         statusRaw: record.status,
         clientNo: record.clientNo || record.service?.clientNo || null,
         statusClass: getStatusBadgeClass(record.status),
-        createdAt: record.createdAt
+        createdAt: record.createdAt,
+        rescheduleRequest: rawRescheduleRequest ? {
+            ...rawRescheduleRequest,
+            requestedDateLabel: requestedDate
+        } : null
     };
 };
 
@@ -982,13 +988,7 @@ const ClientDashboard = () => {
         { id: 7, time: '04:00 PM - 05:00 PM', available: true }
     ]);
 
-    // Reschedule/Cancel Requests
-    const [requests, setRequests] = useState([
-        { id: 1, client: 'John Smith', service: 'Web Development', date: '2024-01-20', type: 'Reschedule', reason: 'Conflict with another meeting', status: 'Pending', rescheduledDate: '2024-01-25' },
-        { id: 2, client: 'Emma Wilson', service: 'Mobile App', date: '2024-01-18', type: 'Cancel', reason: 'Unexpected travel', status: 'Pending' },
-        { id: 3, client: 'Mike Davis', service: 'Consultation', date: '2024-01-22', type: 'Reschedule', reason: 'Prefer later time', status: 'Approved', rescheduledDate: '2024-01-28' },
-        { id: 4, client: 'Sarah Johnson', service: 'UI/UX Design', date: '2024-01-19', type: 'Cancel', reason: 'Budget constraints', status: 'Declined' }
-    ]);
+    const [processingRequestId, setProcessingRequestId] = useState(null);
 
     const handleLogout = () => {
         console.log('Logging out...');
@@ -1080,6 +1080,22 @@ const ClientDashboard = () => {
             matches(booking.userEmail)
         );
     });
+
+    const requests = useMemo(() => {
+        return bookings
+            .filter((booking) => booking.rescheduleRequest?.status === 'PENDING')
+            .map((booking) => ({
+                id: booking.id,
+                bookingId: booking.id,
+                client: booking.client,
+                service: booking.service,
+                date: `${booking.date} ${booking.time ? `at ${booking.time}` : ''}`.trim(),
+                type: 'Reschedule',
+                reason: booking.rescheduleRequest?.reason || 'No reason provided',
+                status: 'Pending',
+                rescheduledDate: `${booking.rescheduleRequest?.requestedDateLabel || booking.rescheduleRequest?.requestedDate || ''} ${booking.rescheduleRequest?.requestedTime ? `at ${booking.rescheduleRequest.requestedTime}` : ''}`.trim()
+            }));
+    }, [bookings]);
 
     // Service Management Handlers
     const toggleServiceStatus = async (serviceId) => {
@@ -1216,10 +1232,40 @@ const ClientDashboard = () => {
     };
 
     // Request Handlers
-    const handleRequestAction = (requestId, action) => {
-        setRequests(requests.map(request =>
-            request.id === requestId ? { ...request, status: action } : request
-        ));
+    const handleRequestAction = async (request, action) => {
+        if (!request?.bookingId) return;
+
+        setProcessingRequestId(request.bookingId);
+        setBookingActionError('');
+
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = {
+            ...getAuthHeaders('CLIENT'),
+            'Content-Type': 'application/json'
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/appointments/${request.bookingId}/reschedule-request`, {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ action })
+            });
+            const payload = await response.json();
+
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to process reschedule request');
+            }
+
+            await fetchBookingsList();
+            if (showRequestModal && selectedRequest?.bookingId === request.bookingId) {
+                closeModal(setShowRequestModal);
+            }
+        } catch (error) {
+            console.error('Process reschedule request failed:', error);
+            setBookingActionError(error.message || 'Unable to process reschedule request');
+        } finally {
+            setProcessingRequestId(null);
+        }
     };
 
     // Add Client Handlers
@@ -2896,16 +2942,18 @@ const ClientDashboard = () => {
                                         {request.status === 'Pending' && (
                                             <div className="flex flex-col gap-2 mt-4 lg:mt-0 lg:ml-6">
                                                 <button
-                                                    onClick={() => handleRequestAction(request.id, 'Approved')}
-                                                    className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors transform hover:scale-105 cursor-pointer"
+                                                    onClick={() => handleRequestAction(request, 'CONFIRM')}
+                                                    disabled={processingRequestId === request.bookingId}
+                                                    className="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors transform hover:scale-105 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                 >
-                                                    Approve
+                                                    {processingRequestId === request.bookingId ? 'Processing...' : 'Approve'}
                                                 </button>
                                                 <button
-                                                    onClick={() => handleRequestAction(request.id, 'Declined')}
-                                                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105 cursor-pointer"
+                                                    onClick={() => handleRequestAction(request, 'CANCEL')}
+                                                    disabled={processingRequestId === request.bookingId}
+                                                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors transform hover:scale-105 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                 >
-                                                    Decline
+                                                    {processingRequestId === request.bookingId ? 'Processing...' : 'Decline'}
                                                 </button>
                                                 <button
                                                     onClick={() => handleViewRequest(request)}

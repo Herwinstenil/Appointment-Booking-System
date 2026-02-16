@@ -1178,29 +1178,29 @@ const getBookingHistoryStatusClass = (status = '') => {
             setRescheduleError('');
 
             try {
-                const response = await fetch(`${API_BASE_URL}/appointments/${selectedAppointment.id}`, {
-                    method: 'PUT',
+                const response = await fetch(`${API_BASE_URL}/appointments/${selectedAppointment.id}/reschedule-request`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...getAuthHeaders()
                     },
                     body: JSON.stringify({
-                        date: rescheduleForm.date,
-                        time: rescheduleForm.time,
-                        notes: rescheduleForm.reason.trim()
+                        requestedDate: rescheduleForm.date,
+                        requestedTime: rescheduleForm.time,
+                        reason: rescheduleForm.reason.trim()
                     })
                 });
 
                 const payload = await response.json();
                 if (!response.ok || !payload.success) {
-                    throw new Error(payload.message || 'Unable to reschedule appointment');
+                    throw new Error(payload.message || 'Unable to send reschedule request');
                 }
 
                 await loadAppointments();
 
                 const newActivity = {
                     id: recentActivities.length + 1,
-                    action: `Rescheduled ${selectedAppointment.service}`,
+                    action: `Requested reschedule for ${selectedAppointment.service}`,
                     time: 'Just now',
                     status: 'reschedule',
                     icon: Calendar
@@ -1221,7 +1221,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                 setTimeout(() => setRescheduleSuccess(false), 3000);
             } catch (err) {
                 console.error('Reschedule error:', err);
-                setRescheduleError(err.message || 'Failed to reschedule appointment');
+                setRescheduleError(err.message || 'Failed to send reschedule request');
             } finally {
                 setIsRescheduling(false);
             }
@@ -1360,7 +1360,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     {isRescheduling ? 'Rescheduling...' : (
                                         <>
                                             <Calendar size={18} className="inline mr-2" />
-                                            Reschedule Appointment
+                                            Send Reschedule Request
                                         </>
                                     )}
                                 </button>
@@ -3536,8 +3536,8 @@ const getBookingHistoryStatusClass = (status = '') => {
                 <div className="fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fadeIn">
                     <CheckCircle size={24} />
                     <div>
-                        <p className="font-semibold">Appointment Rescheduled Successfully!</p>
-                        <p className="text-sm opacity-90">Your appointment has been updated.</p>
+                        <p className="font-semibold">Reschedule Request Sent!</p>
+                        <p className="text-sm opacity-90">Client will confirm or cancel your request.</p>
                     </div>
                 </div>
             )}

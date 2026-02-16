@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles, authorizeOwnerOrAdmin } = require('../middleware/auth');
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { sendAppointmentStatusNotifications } = require('../Notification/notificationService');
+const { parseRescheduleRequestFromNotes, composeNotesWithRescheduleRequest } = require('../utils/rescheduleRequest');
 
 const router = express.Router();
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -177,6 +178,7 @@ const fetchAppointments = async (where = {}, query = {}) => {
 
 const buildAppointmentPayload = (appointment) => {
   const appointmentDate = formatDateOnly(appointment.date);
+  const parsedNotes = parseRescheduleRequestFromNotes(appointment.notes);
   return {
     id: appointment.id,
     userId: appointment.userId,
@@ -189,7 +191,8 @@ const buildAppointmentPayload = (appointment) => {
     statusLabel: mapStatusLabel(appointment.status),
     createdAt: appointment.createdAt,
     amount: appointment.amount,
-    notes: appointment.notes || null,
+    notes: parsedNotes.cleanNotes,
+    rescheduleRequest: parsedNotes.rescheduleRequest,
     rating: appointment.rating || null,
     service: appointment.service ? {
       id: appointment.service.id,
@@ -486,6 +489,217 @@ router.patch('/:appointmentId/confirm', authenticateToken, authorizeRoles('CLIEN
     res.status(500).json({
       success: false,
       message: 'Failed to confirm appointment'
+    });
+  }
+});
+
+// Create reschedule request (user only)
+router.post('/:appointmentId/reschedule-request', authenticateToken, authorizeRoles('USER'), async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { requestedDate, requestedTime, reason } = req.body;
+
+    if (!requestedDate || !requestedTime || !reason || !reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested date, time, and reason are required'
+      });
+    }
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: appointmentInclude
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    if (appointment.userId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to request reschedule for this appointment'
+      });
+    }
+
+    if (['CANCELLED', 'COMPLETED'].includes(appointment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot request reschedule for this appointment status'
+      });
+    }
+
+    const parsedRequestedDate = parseDateOnlyInput(requestedDate);
+    if (isNaN(parsedRequestedDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid requested date'
+      });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (parsedRequestedDate < today) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot request reschedule to a past date'
+      });
+    }
+
+    const existingNotes = parseRescheduleRequestFromNotes(appointment.notes);
+    if (existingNotes.rescheduleRequest?.status === 'PENDING') {
+      return res.status(409).json({
+        success: false,
+        message: 'A reschedule request is already pending for this appointment'
+      });
+    }
+
+    const existingDate = formatDateOnly(appointment.date);
+    if (existingDate === formatDateOnly(parsedRequestedDate) && appointment.time === requestedTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested schedule is same as current appointment'
+      });
+    }
+
+    const rescheduleRequest = {
+      status: 'PENDING',
+      requestedDate: formatDateOnly(parsedRequestedDate),
+      requestedTime,
+      reason: reason.trim(),
+      requestedAt: new Date().toISOString()
+    };
+
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        notes: composeNotesWithRescheduleRequest(existingNotes.cleanNotes, rescheduleRequest)
+      },
+      include: appointmentInclude
+    });
+
+    const updatedPayload = buildAppointmentPayload(updatedAppointment);
+    const publisher = req.app.get('appointmentPublisher');
+    if (publisher) {
+      publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', updatedPayload));
+    }
+
+    res.json({
+      success: true,
+      message: 'Reschedule request sent to client',
+      data: { appointment: updatedPayload }
+    });
+  } catch (error) {
+    console.error('Create reschedule request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create reschedule request'
+    });
+  }
+});
+
+// Process reschedule request (client only)
+router.patch('/:appointmentId/reschedule-request', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const action = String(req.body?.action || '').trim().toUpperCase();
+    const clientNo = req.user?.clientNo;
+
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing'
+      });
+    }
+
+    if (!['CONFIRM', 'CANCEL'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action. Allowed values: CONFIRM, CANCEL'
+      });
+    }
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: appointmentInclude
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    if (appointment.service?.clientNo !== clientNo) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to process this reschedule request'
+      });
+    }
+
+    const parsedNotes = parseRescheduleRequestFromNotes(appointment.notes);
+    const request = parsedNotes.rescheduleRequest;
+    if (!request || request.status !== 'PENDING') {
+      return res.status(400).json({
+        success: false,
+        message: 'No pending reschedule request found for this appointment'
+      });
+    }
+
+    const updateData = {
+      notes: composeNotesWithRescheduleRequest(parsedNotes.cleanNotes, null)
+    };
+
+    if (action === 'CONFIRM') {
+      const parsedRequestedDate = parseDateOnlyInput(request.requestedDate);
+      if (isNaN(parsedRequestedDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid requested date in reschedule request'
+        });
+      }
+
+      updateData.date = parsedRequestedDate;
+      updateData.time = request.requestedTime;
+      updateData.status = 'CONFIRMED';
+    } else {
+      updateData.status = 'CANCELLED';
+    }
+
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: updateData,
+      include: appointmentInclude
+    });
+
+    if (action === 'CONFIRM') {
+      await sendAppointmentStatusNotifications(updatedAppointment, 'RESCHEDULED', appointment);
+    } else {
+      await sendAppointmentStatusNotifications(updatedAppointment, 'CANCELLED');
+    }
+
+    const updatedPayload = buildAppointmentPayload(updatedAppointment);
+    const publisher = req.app.get('appointmentPublisher');
+    if (publisher) {
+      publisher.emit('appointment:event', buildStreamPayload('appointment:status-updated', updatedPayload));
+    }
+
+    res.json({
+      success: true,
+      message: action === 'CONFIRM'
+        ? 'Reschedule request confirmed and user notified'
+        : 'Reschedule request cancelled, appointment cancelled, and user notified',
+      data: { appointment: updatedPayload }
+    });
+  } catch (error) {
+    console.error('Process reschedule request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process reschedule request'
     });
   }
 });
