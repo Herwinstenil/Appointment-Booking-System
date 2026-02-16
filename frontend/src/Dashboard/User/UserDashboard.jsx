@@ -643,20 +643,24 @@ const getBookingHistoryStatusClass = (status = '') => {
         return monthlyAnalytics.visibleMonths.map((data, index, arr) => {
             const prev = arr[index - 1];
             const prevSpending = prev?.spending || 0;
-            let growth = 0;
-            if (index > 0) {
+            const hasData = data.spending > 0 || data.bookings > 0;
+            let growth = null;
+            if (hasData && index > 0) {
                 if (prevSpending > 0) {
                     growth = ((data.spending - prevSpending) / prevSpending) * 100;
+                } else if (data.spending > 0) {
+                    growth = 100;
                 } else {
-                    growth = data.spending > 0 ? 100 : 0;
+                    growth = 0;
                 }
             }
 
             return {
                 label: data.label,
                 revenue: data.spending,
-                growth: Math.round(growth * 100) / 100,
-                bookings: data.bookings
+                growth: growth === null ? null : Math.round(growth * 100) / 100,
+                bookings: data.bookings,
+                hasData
             };
         });
     }, [monthlyAnalytics]);
@@ -2489,11 +2493,19 @@ const getBookingHistoryStatusClass = (status = '') => {
 
                                                     {/* Hover Tooltip */}
                                                     <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-y-2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm shadow-lg z-10">
-                                                        <div className="font-semibold">${data.revenue.toLocaleString()}</div>
-                                                        <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                            {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                                                            {Math.abs(data.growth)}%
-                                                        </div>
+                                                        {data.hasData ? (
+                                                            <>
+                                                                <div className="font-semibold">${data.revenue.toLocaleString()}</div>
+                                                                {data.growth !== null && (
+                                                                    <div className={`flex items-center gap-1 text-xs ${data.growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                                        {data.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                                                                        {Math.abs(data.growth)}%
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className="text-xs text-gray-300">No spending data</div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
