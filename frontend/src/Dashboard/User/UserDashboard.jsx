@@ -474,10 +474,6 @@ const getBookingHistoryStatusClass = (status = '') => {
             }
         };
 
-        const profileRefreshInterval = window.setInterval(() => {
-            fetchProfile({ silent: true });
-        }, 30000);
-
         window.addEventListener('focus', handleWindowFocus);
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -485,7 +481,6 @@ const getBookingHistoryStatusClass = (status = '') => {
             isMounted = false;
             window.removeEventListener('focus', handleWindowFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.clearInterval(profileRefreshInterval);
         };
     }, [API_BASE_URL, getAuthHeaders, loadAppointments, logout, navigate, user]);
 

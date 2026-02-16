@@ -46,6 +46,17 @@ const buildDisplayName = (user) => {
   return fullName || user.username || user.email || 'User';
 };
 
+const ensureClientAvailabilityTable = async () => {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "ClientAvailability" (
+      "clientNo" INTEGER PRIMARY KEY,
+      "availability" JSONB NOT NULL,
+      "timeSlots" JSONB NOT NULL,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+};
+
 const splitFullName = (value = '') => {
   const normalized = String(value || '').trim().replace(/\s+/g, ' ');
   if (!normalized) {
@@ -448,6 +459,87 @@ router.delete('/users/:userId', authenticateToken, authorizeRoles('CLIENT'), asy
     res.status(500).json({
       success: false,
       message: 'Failed to delete user'
+    });
+  }
+});
+
+// Get client availability settings
+router.get('/availability', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot load availability'
+      });
+    }
+
+    await ensureClientAvailabilityTable();
+    const rows = await prisma.$queryRawUnsafe(
+      `SELECT "availability", "timeSlots", "updatedAt" FROM "ClientAvailability" WHERE "clientNo" = $1 LIMIT 1`,
+      clientNo
+    );
+    const row = rows?.[0];
+
+    return res.json({
+      success: true,
+      data: {
+        availability: row?.availability || null,
+        timeSlots: row?.timeSlots || null,
+        updatedAt: row?.updatedAt || null
+      }
+    });
+  } catch (error) {
+    console.error('Get client availability error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get availability settings'
+    });
+  }
+});
+
+// Save client availability settings
+router.put('/availability', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
+  try {
+    const clientNo = req.user?.clientNo;
+    if (!clientNo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client number missing - cannot save availability'
+      });
+    }
+
+    const { availability, timeSlots } = req.body || {};
+    if (!availability || typeof availability !== 'object' || !Array.isArray(timeSlots)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid availability payload'
+      });
+    }
+
+    await ensureClientAvailabilityTable();
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "ClientAvailability" ("clientNo", "availability", "timeSlots", "updatedAt")
+       VALUES ($1, $2::jsonb, $3::jsonb, NOW())
+       ON CONFLICT ("clientNo")
+       DO UPDATE SET
+         "availability" = EXCLUDED."availability",
+         "timeSlots" = EXCLUDED."timeSlots",
+         "updatedAt" = NOW()`,
+      clientNo,
+      JSON.stringify(availability),
+      JSON.stringify(timeSlots)
+    );
+
+    return res.json({
+      success: true,
+      message: 'Availability settings saved successfully'
+    });
+  } catch (error) {
+    console.error('Save client availability error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to save availability settings'
     });
   }
 });

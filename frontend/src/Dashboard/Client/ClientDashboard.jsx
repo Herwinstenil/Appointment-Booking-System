@@ -75,6 +75,7 @@ const formatRatingOutOfFive = (value) => {
 };
 
 const CLIENT_PROFILE_DEFAULT = {
+    id: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -89,6 +90,26 @@ const CLIENT_PROFILE_DEFAULT = {
     avatarUrl: '',
     role: 'CLIENT'
 };
+
+const DEFAULT_AVAILABILITY = {
+    monday: { start: '09:00', end: '17:00', enabled: true },
+    tuesday: { start: '09:00', end: '17:00', enabled: true },
+    wednesday: { start: '09:00', end: '17:00', enabled: true },
+    thursday: { start: '09:00', end: '17:00', enabled: true },
+    friday: { start: '09:00', end: '17:00', enabled: true },
+    saturday: { start: '10:00', end: '14:00', enabled: false },
+    sunday: { start: '10:00', end: '14:00', enabled: false }
+};
+
+const DEFAULT_TIME_SLOTS = [
+    { id: 1, time: '09:00 AM - 10:00 AM', available: true },
+    { id: 2, time: '10:00 AM - 11:00 AM', available: true },
+    { id: 3, time: '11:00 AM - 12:00 PM', available: false },
+    { id: 4, time: '01:00 PM - 02:00 PM', available: true },
+    { id: 5, time: '02:00 PM - 03:00 PM', available: true },
+    { id: 6, time: '03:00 PM - 04:00 PM', available: true },
+    { id: 7, time: '04:00 PM - 05:00 PM', available: true }
+];
 
 const formatDateLabel = (value, options = { month: 'short', day: 'numeric', year: 'numeric' }) => {
     if (!value) return '';
@@ -140,8 +161,24 @@ const formatIndianTime = () => {
     }
 };
 
+const parseHourMinuteToMinutes = (value = '') => {
+    const [hoursRaw, minutesRaw] = String(value).split(':');
+    const hours = Number(hoursRaw);
+    const minutes = Number(minutesRaw);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+    return (hours * 60) + minutes;
+};
+
+const calculateHourRange = (start = '', end = '') => {
+    const startMinutes = parseHourMinuteToMinutes(start);
+    const endMinutes = parseHourMinuteToMinutes(end);
+    if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return 0;
+    return (endMinutes - startMinutes) / 60;
+};
+
 const normalizeClientProfile = (client = {}) => {
     return {
+        id: client.id || '',
         firstName: client.firstName || '',
         lastName: client.lastName || '',
         email: client.email || '',
@@ -628,13 +665,6 @@ const ClientDashboard = () => {
         loadProfile();
     }, [loadProfile]);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setIndianTime(formatIndianTime());
-        }, 60 * 1000);
-        return () => clearInterval(timer);
-    }, []);
-
     const handleSaveProfile = async () => {
         setProfileSaveError(null);
         setProfileSaving(true);
@@ -1023,29 +1053,38 @@ const ClientDashboard = () => {
     ]);
 
     // Availability Management State
-    const [availability, setAvailability] = useState({
-        monday: { start: '09:00', end: '17:00', enabled: true },
-        tuesday: { start: '09:00', end: '17:00', enabled: true },
-        wednesday: { start: '09:00', end: '17:00', enabled: true },
-        thursday: { start: '09:00', end: '17:00', enabled: true },
-        friday: { start: '09:00', end: '17:00', enabled: true },
-        saturday: { start: '10:00', end: '14:00', enabled: false },
-        sunday: { start: '10:00', end: '14:00', enabled: false }
-    });
+    const [availability, setAvailability] = useState(DEFAULT_AVAILABILITY);
 
     const [availabilitySaveSuccess, setAvailabilitySaveSuccess] = useState(false);
+    const [availabilitySaveError, setAvailabilitySaveError] = useState('');
 
-    const [timeSlots, setTimeSlots] = useState([
-        { id: 1, time: '09:00 AM - 10:00 AM', available: true },
-        { id: 2, time: '10:00 AM - 11:00 AM', available: true },
-        { id: 3, time: '11:00 AM - 12:00 PM', available: false },
-        { id: 4, time: '01:00 PM - 02:00 PM', available: true },
-        { id: 5, time: '02:00 PM - 03:00 PM', available: true },
-        { id: 6, time: '03:00 PM - 04:00 PM', available: true },
-        { id: 7, time: '04:00 PM - 05:00 PM', available: true }
-    ]);
+    const [timeSlots, setTimeSlots] = useState(DEFAULT_TIME_SLOTS);
 
     const [processingRequestId, setProcessingRequestId] = useState(null);
+    const loadAvailability = useCallback(async () => {
+        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const headers = getAuthHeaders('CLIENT');
+        try {
+            const response = await fetch(`${baseUrl}/client/availability`, { headers });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to load availability settings');
+            }
+
+            const storedAvailability = payload.data?.availability;
+            const storedTimeSlots = payload.data?.timeSlots;
+            setAvailability(storedAvailability && typeof storedAvailability === 'object' ? storedAvailability : DEFAULT_AVAILABILITY);
+            setTimeSlots(Array.isArray(storedTimeSlots) ? storedTimeSlots : DEFAULT_TIME_SLOTS);
+        } catch (error) {
+            console.error('Failed to load availability data:', error);
+            setAvailability(DEFAULT_AVAILABILITY);
+            setTimeSlots(DEFAULT_TIME_SLOTS);
+        }
+    }, [API_BASE_URL, getAuthHeaders]);
+
+    useEffect(() => {
+        loadAvailability();
+    }, [loadAvailability]);
 
     const handleLogout = () => {
         console.log('Logging out...');
@@ -1135,6 +1174,20 @@ const ClientDashboard = () => {
             return parsed.getFullYear() === now.getFullYear() && parsed.getMonth() === now.getMonth();
         }).length;
     }, [users]);
+
+    const availabilityMetrics = useMemo(() => {
+        const schedules = Object.values(availability || {});
+        const enabledSchedules = schedules.filter(schedule => schedule?.enabled);
+        const workingDays = enabledSchedules.length;
+        const totalHours = enabledSchedules.reduce((sum, schedule) => (
+            sum + calculateHourRange(schedule.start, schedule.end)
+        ), 0);
+        const averageDailyHours = workingDays > 0 ? totalHours / workingDays : 0;
+        return {
+            workingDays,
+            averageDailyHours: Math.round(averageDailyHours * 10) / 10
+        };
+    }, [availability]);
 
     const filteredBookings = bookings.filter(booking => {
         const normalizedTerm = bookingSearchTerm.toLowerCase();
@@ -1299,15 +1352,37 @@ const ClientDashboard = () => {
     };
 
     const toggleTimeSlot = (slotId) => {
-        setTimeSlots(timeSlots.map(slot =>
+        setTimeSlots(prev => prev.map(slot =>
             slot.id === slotId ? { ...slot, available: !slot.available } : slot
         ));
     };
 
-    const handleSaveAvailability = () => {
-        console.log('Saving availability settings:', { availability, timeSlots });
-        setAvailabilitySaveSuccess(true);
-        setTimeout(() => setAvailabilitySaveSuccess(false), 3000);
+    const handleSaveAvailability = async () => {
+        setAvailabilitySaveError('');
+        try {
+            const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+            const headers = {
+                ...getAuthHeaders('CLIENT'),
+                'Content-Type': 'application/json'
+            };
+            const response = await fetch(`${baseUrl}/client/availability`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({
+                    availability,
+                    timeSlots
+                })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Failed to save availability settings');
+            }
+            setAvailabilitySaveSuccess(true);
+            setTimeout(() => setAvailabilitySaveSuccess(false), 3000);
+        } catch (error) {
+            console.error('Failed to save availability:', error);
+            setAvailabilitySaveError(error.message || 'Failed to save availability. Please try again.');
+        }
     };
 
     // Request Handlers
@@ -2553,6 +2628,12 @@ const ClientDashboard = () => {
                                 <span className="text-sm font-medium">Availability settings saved successfully!</span>
                             </div>
                         )}
+                        {availabilitySaveError && (
+                            <div className="flex items-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg mb-6">
+                                <AlertCircle size={16} />
+                                <span className="text-sm font-medium">{availabilitySaveError}</span>
+                            </div>
+                        )}
 
                         {/* Availability Stats */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -2560,7 +2641,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Working Days</p>
-                                        <p className="text-2xl font-bold text-gray-900">5</p>
+                                        <p className="text-2xl font-bold text-gray-900">{availabilityMetrics.workingDays}</p>
                                     </div>
                                     <Calendar className="text-emerald-500" size={32} />
                                 </div>
@@ -2569,7 +2650,7 @@ const ClientDashboard = () => {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-gray-600 text-sm font-medium">Daily Hours</p>
-                                        <p className="text-2xl font-bold text-gray-900">8</p>
+                                        <p className="text-2xl font-bold text-gray-900">{availabilityMetrics.averageDailyHours}</p>
                                     </div>
                                     <Clock className="text-blue-500" size={32} />
                                 </div>
@@ -2618,7 +2699,9 @@ const ClientDashboard = () => {
                                                 <div className="text-sm font-medium text-emerald-700">
                                                     {schedule.start} - {schedule.end}
                                                 </div>
-                                                <div className="text-xs text-gray-500 mt-1">8 hours</div>
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    {calculateHourRange(schedule.start, schedule.end)} hours
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="text-center text-sm text-gray-500">Unavailable</div>
