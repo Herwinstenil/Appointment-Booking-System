@@ -101,6 +101,16 @@ const DEFAULT_AVAILABILITY = {
     sunday: { start: '10:00', end: '14:00', enabled: false }
 };
 
+const WEEKLY_DAY_ORDER = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday'
+];
+
 const DEFAULT_TIME_SLOTS = [
     { id: 1, time: '09:00 AM - 10:00 AM', available: true },
     { id: 2, time: '10:00 AM - 11:00 AM', available: true },
@@ -174,6 +184,18 @@ const calculateHourRange = (start = '', end = '') => {
     const endMinutes = parseHourMinuteToMinutes(end);
     if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return 0;
     return (endMinutes - startMinutes) / 60;
+};
+
+const formatTime24To12 = (value = '') => {
+    const [hoursRaw, minutesRaw] = String(value).split(':');
+    const hours = Number(hoursRaw);
+    const minutes = Number(minutesRaw);
+
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return value;
+
+    const meridiem = hours >= 12 ? 'PM' : 'AM';
+    const twelveHour = hours % 12 === 0 ? 12 : hours % 12;
+    return `${twelveHour}:${String(minutes).padStart(2, '0')} ${meridiem}`;
 };
 
 const normalizeClientProfile = (client = {}) => {
@@ -1187,6 +1209,12 @@ const ClientDashboard = () => {
             workingDays,
             averageDailyHours: Math.round(averageDailyHours * 10) / 10
         };
+    }, [availability]);
+
+    const orderedAvailabilityEntries = useMemo(() => {
+        return WEEKLY_DAY_ORDER
+            .map((day) => [day, availability?.[day]])
+            .filter(([, schedule]) => Boolean(schedule));
     }, [availability]);
 
     const filteredBookings = bookings.filter(booking => {
@@ -2679,7 +2707,7 @@ const ClientDashboard = () => {
                         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                             <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Schedule</h3>
                             <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-                                {Object.entries(availability).map(([day, schedule]) => (
+                                {orderedAvailabilityEntries.map(([day, schedule]) => (
                                     <div key={day} className="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-all duration-300">
                                         <div className="flex items-center justify-between w-full mb-3">
                                             <span className="font-medium text-gray-800 capitalize">{day}</span>
@@ -2697,7 +2725,7 @@ const ClientDashboard = () => {
                                         {schedule.enabled ? (
                                             <div className="text-center">
                                                 <div className="text-sm font-medium text-emerald-700">
-                                                    {schedule.start} - {schedule.end}
+                                                    {formatTime24To12(schedule.start)} - {formatTime24To12(schedule.end)}
                                                 </div>
                                                 <div className="text-xs text-gray-500 mt-1">
                                                     {calculateHourRange(schedule.start, schedule.end)} hours
