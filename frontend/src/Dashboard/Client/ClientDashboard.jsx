@@ -2709,9 +2709,7 @@ const ClientDashboard = () => {
                                         <p className="text-gray-600 text-sm font-medium">Confirmed</p>
                                         <p className="text-2xl font-bold text-gray-900">{bookings.filter(b => b.status === 'Confirmed').length}</p>
                                     </div>
-                                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <CheckCircle size={16} className="text-white" />
-                                    </div>
+                                    <CheckCircle className="text-blue-500" size={32} />
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -2722,7 +2720,9 @@ const ClientDashboard = () => {
                                             {bookings.filter(b => (b.statusRaw || b.status || '').toString().toUpperCase() === 'COMPLETED').length}
                                         </p>
                                     </div>
-                                    <CheckCircle className="text-blue-500" size={32} />
+                                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                        <CheckCircle size={16} className="text-white" />
+                                    </div>
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
