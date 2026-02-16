@@ -960,7 +960,6 @@ const ClientDashboard = () => {
     const [showAddServiceModal, setShowAddServiceModal] = useState(false);
     const [showEditServiceModal, setShowEditServiceModal] = useState(false);
     const [showEditBookingModal, setShowEditBookingModal] = useState(false);
-    const [showAddClientModal, setShowAddClientModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState(false);
     const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -985,11 +984,6 @@ const ClientDashboard = () => {
         name: '',
         email: '',
         role: 'User',
-        status: 'Active'
-    });
-    const [newClientData, setNewClientData] = useState({
-        name: '',
-        email: '',
         status: 'Active'
     });
     const [editBookingData, setEditBookingData] = useState({
@@ -1351,64 +1345,6 @@ const ClientDashboard = () => {
         } finally {
             setProcessingRequestId(null);
         }
-    };
-
-    // Add Client Handlers
-    const handleAddClientChange = (e) => {
-        const { name, value } = e.target;
-        setNewClientData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleAddClientSubmit = (e) => {
-        e.preventDefault();
-
-        // Validation
-        const errors = {};
-        if (!newClientData.name.trim()) {
-            errors.name = 'Client name is required';
-        }
-        if (!newClientData.email.trim()) {
-            errors.email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(newClientData.email)) {
-            errors.email = 'Email is invalid';
-        }
-
-        if (Object.keys(errors).length > 0) {
-            setClientErrors(errors);
-            return;
-        }
-
-        // Clear errors
-        setClientErrors({});
-
-        // Create new client
-        const newClient = {
-            id: users.length + 1,
-            name: newClientData.name.trim(),
-            email: newClientData.email.trim(),
-            role: 'User',
-            roleRaw: 'USER',
-            status: newClientData.status,
-            joinDate: new Date().toISOString().split('T')[0],
-            lastLogin: 'Never',
-            bookingCount: 0,
-            totalSpent: 0,
-            totalSpentLabel: formatCurrency(0)
-        };
-
-        // Add to users array
-        setUsers(prev => [...prev, newClient]);
-
-        // Reset form and close modal
-        setNewClientData({
-            name: '',
-            email: '',
-            status: 'Active'
-        });
-        setShowAddClientModal(false);
     };
 
     // Add Service Handlers
@@ -3047,13 +2983,6 @@ const ClientDashboard = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     />
                                 </div>
-                                <button
-                                    onClick={() => setShowAddClientModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    <UserPlus size={16} />
-                                    Add User
-                                </button>
                             </div>
                         </div>
 
@@ -4822,121 +4751,6 @@ const ClientDashboard = () => {
                                     className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                 >
                                     {updatingBookingId === editBookingData.id ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Add Client Modal */}
-            {showAddClientModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
-                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Add New Client</h3>
-                                    <p className="text-gray-600 mt-1">Create a new client account</p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setShowAddClientModal(false);
-                                        setNewClientData({
-                                            name: '',
-                                            email: '',
-                                            status: 'Active'
-                                        });
-                                    }}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="p-6">
-                            <form onSubmit={handleAddClientSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Client Name *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={newClientData.name}
-                                            onChange={handleAddClientChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'}`}
-                                            placeholder="Enter client name"
-                                        />
-                                        {clientErrors.name && (
-                                            <p className="text-red-500 text-sm mt-1">{clientErrors.name}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Email *
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={newClientData.email}
-                                            onChange={handleAddClientChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-200 transition-all duration-300 ${clientErrors.email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500'}`}
-                                            placeholder="Enter email address"
-                                        />
-                                        {clientErrors.email && (
-                                            <p className="text-red-500 text-sm mt-1">{clientErrors.email}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Status
-                                    </label>
-                                    <select
-                                        name="status"
-                                        value={newClientData.status}
-                                        onChange={handleAddClientChange}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300"
-                                    >
-                                        <option value="Active">Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
-                                </div>
-
-                                <div className="bg-blue-50 p-4 rounded-xl">
-                                    <div className="flex items-center gap-2 text-blue-700">
-                                        <AlertCircle size={16} />
-                                        <span className="text-sm font-medium">Note:</span>
-                                    </div>
-                                    <p className="text-sm text-blue-600 mt-1">
-                                        New clients will be assigned the default role of "Customer". You can change their status later.
-                                    </p>
-                                </div>
-                            </form>
-                        </div>
-                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
-                            <div className="flex items-center justify-end space-x-3">
-                                <button
-                                    onClick={() => {
-                                        setShowAddClientModal(false);
-                                        setNewClientData({
-                                            name: '',
-                                            email: '',
-                                            status: 'Active'
-                                        });
-                                    }}
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleAddClientSubmit}
-                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                                >
-                                    Add Client
                                 </button>
                             </div>
                         </div>
