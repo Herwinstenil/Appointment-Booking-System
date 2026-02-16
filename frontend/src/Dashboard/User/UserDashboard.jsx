@@ -1039,54 +1039,115 @@ const getBookingHistoryStatusClass = (status = '') => {
         doc.save(`booking_history_${profileData.firstName}_${profileData.lastName}_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
-    const handleExportProfilePDF = () => {
-        const doc = new jsPDF();
-        const generatedAt = new Date().toLocaleString();
-        const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A';
+    const handleExportProfilePDF = async () => {
+        try {
+            let avatarSource = imagePreview || profileData.avatar || null;
+            if (avatarSource && !avatarSource.startsWith('data:')) {
+                try {
+                    const response = await fetch(avatarSource, { cache: 'no-store' });
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        avatarSource = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(blob);
+                        });
+                    } else {
+                        avatarSource = null;
+                    }
+                } catch (fetchError) {
+                    console.warn('Unable to load avatar for PDF export', fetchError);
+                    avatarSource = null;
+                }
+            }
 
-        doc.setFontSize(18);
-        doc.text('User Profile Export', 14, 18);
-        doc.setFontSize(10);
-        doc.text(`Generated: ${generatedAt}`, 14, 24);
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const exportTimestamp = new Date().toLocaleString('en-US', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
 
-        autoTable(doc, {
-            startY: 30,
-            head: [['Field', 'Value']],
-            body: [
-                ['Full Name', fullName],
-                ['Email', profileData.email || 'N/A'],
-                ['Phone', profileData.phone || 'N/A'],
-                ['Role', getRoleLabel(profileData.role) || 'N/A'],
-                ['Status', profileData.status || 'N/A'],
-                ['Join Date', profileData.joinDate || 'N/A'],
-                ['Last Login', profileData.lastLogin || 'N/A'],
-                ['Address', profileData.address || 'N/A'],
-                ['Bio', profileData.bio || 'N/A']
-            ],
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [124, 58, 237], textColor: 255 }
-        });
+            doc.setFontSize(10);
+            doc.text(`Exported: ${exportTimestamp}`, 40, 40);
 
-        const summaryY = doc.lastAutoTable.finalY + 10;
-        autoTable(doc, {
-            startY: summaryY,
-            head: [['Metric', 'Value']],
-            body: [
-                ['Total Bookings', String(userStats.totalBookings)],
-                ['Completed Bookings', String(userStats.completedBookings)],
-                ['Upcoming Bookings', String(userStats.upcomingBookings)],
-                ['Confirmed Bookings', String(userStats.confirmedBookings)],
-                ['Cancelled Bookings', String(userStats.cancelledBookings)],
-                ['Total Spent', `$${userStats.totalSpent}`],
-                ['Average Rating', `${userStats.averageRating}/5`],
-                ['Loyalty Points', String(userStats.loyaltyPoints)],
-                ['Favorite Service', userStats.favoriteCategory || 'N/A']
-            ],
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [59, 130, 246], textColor: 255 }
-        });
+            const headerY = 70;
+            doc.setFontSize(20);
+            doc.text(`${profileData.firstName} ${profileData.lastName}`.trim() || 'User', 40, headerY);
+            doc.setFontSize(12);
+            doc.text(getRoleLabel(profileData.role) || 'User', 40, headerY + 20);
 
-        doc.save(`user_profile_${(profileData.firstName || 'user').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`);
+            if (avatarSource) {
+                const width = 90;
+                const height = 90;
+                const imageFormat = avatarSource.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+                doc.addImage(avatarSource, imageFormat, 400, 30, width, height);
+            }
+
+            let personalY = 120;
+            doc.setFontSize(16);
+            doc.text('Personal Information', 40, personalY);
+            personalY += 25;
+            doc.setFontSize(12);
+
+            const personalFields = [
+                { label: 'First Name', value: profileData.firstName },
+                { label: 'Last Name', value: profileData.lastName },
+                { label: 'Email', value: profileData.email },
+                { label: 'Phone', value: profileData.phone },
+                { label: 'Status', value: profileData.status },
+                { label: 'Join Date', value: profileData.joinDate },
+                { label: 'Last Login', value: profileData.lastLogin },
+                { label: 'Address', value: profileData.address },
+                { label: 'Bio', value: profileData.bio }
+            ];
+
+            personalFields.forEach((field) => {
+                const labelX = 40;
+                const valueX = 150;
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${field.label}:`, labelX, personalY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                const lines = doc.splitTextToSize(field.value || 'N/A', 270);
+                doc.text(lines, valueX, personalY);
+                personalY += lines.length * 14;
+                personalY += 6;
+            });
+
+            let statsY = personalY + 20;
+            doc.setFontSize(16);
+            doc.text('Account Stats', 40, statsY);
+            statsY += 25;
+            doc.setFontSize(11);
+
+            const stats = [
+                { label: 'Total Bookings', value: String(userStats.totalBookings) },
+                { label: 'Completed Bookings', value: String(userStats.completedBookings) },
+                { label: 'Upcoming Bookings', value: String(userStats.upcomingBookings) },
+                { label: 'Confirmed Bookings', value: String(userStats.confirmedBookings) },
+                { label: 'Cancelled Bookings', value: String(userStats.cancelledBookings) },
+                { label: 'Total Spent', value: `$${userStats.totalSpent}` },
+                { label: 'Average Rating', value: `${userStats.averageRating}/5` },
+                { label: 'Loyalty Points', value: String(userStats.loyaltyPoints) },
+                { label: 'Favorite Service', value: userStats.favoriteCategory || 'N/A' }
+            ];
+
+            stats.forEach((stat) => {
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${stat.label}:`, 40, statsY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                doc.text(stat.value, 170, statsY);
+                statsY += 20;
+            });
+
+            doc.save('user-profile.pdf');
+        } catch (error) {
+            console.error('Export profile PDF error:', error);
+        }
     };
 
     // Booking Modal Component
