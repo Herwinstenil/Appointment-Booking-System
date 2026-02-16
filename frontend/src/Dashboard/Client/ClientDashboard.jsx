@@ -1142,17 +1142,6 @@ const ClientDashboard = () => {
         }).length;
     }, [users]);
 
-    const usersAverageRating = useMemo(() => {
-        if (!bookings.length || !users.length) return 0;
-        const userIds = new Set(users.map(user => user.id));
-        const ratings = bookings
-            .filter(booking => userIds.has(booking.userId) && typeof booking.rating === 'number')
-            .map(booking => booking.rating);
-        if (!ratings.length) return 0;
-        const total = ratings.reduce((sum, rating) => sum + rating, 0);
-        return Math.round((total / ratings.length) * 10) / 10;
-    }, [bookings, users]);
-
     const filteredBookings = bookings.filter(booking => {
         const normalizedTerm = bookingSearchTerm.toLowerCase();
         const matches = (value) => {
@@ -3102,10 +3091,10 @@ const ClientDashboard = () => {
                             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-gray-600 text-sm font-medium">Avg Rating</p>
-                                        <p className="text-2xl font-bold text-gray-900">{formatRatingOutOfFive(usersAverageRating)}</p>
+                                        <p className="text-gray-600 text-sm font-medium">Inactive Users</p>
+                                        <p className="text-2xl font-bold text-gray-900">{users.filter(u => u.status === 'Inactive').length}</p>
                                     </div>
-                                    <Star className="text-amber-500" size={32} />
+                                    <XCircle className="text-red-500" size={32} />
                                 </div>
                             </div>
                         </div>
