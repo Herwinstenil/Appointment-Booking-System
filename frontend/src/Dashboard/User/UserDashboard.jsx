@@ -414,10 +414,17 @@ const getBookingHistoryStatusClass = (status = '') => {
         }
 
         let isMounted = true;
+        const forceLogoutToLogin = () => {
+            logout();
+            const userRole = localStorage.getItem('userRole') || 'USER';
+            navigate(`/user/login?from=dashboard&role=${userRole}`);
+        };
 
-        const fetchProfile = async () => {
-            setProfileLoading(true);
-            setProfileError(null);
+        const fetchProfile = async ({ silent = false } = {}) => {
+            if (!silent) {
+                setProfileLoading(true);
+                setProfileError(null);
+            }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/users/profile`, {
@@ -426,6 +433,10 @@ const getBookingHistoryStatusClass = (status = '') => {
                 const payload = await response.json();
 
                 if (!response.ok || !payload.success) {
+                    if (response.status === 401 || response.status === 403 || response.status === 404) {
+                        forceLogoutToLogin();
+                        return;
+                    }
                     throw new Error(payload.message || 'Unable to load profile');
                 }
 
@@ -443,7 +454,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                 if (!isMounted) return;
                 setProfileError(err.message || 'Failed to load profile');
             } finally {
-                if (isMounted) {
+                if (isMounted && !silent) {
                     setProfileLoading(false);
                 }
             }
@@ -451,10 +462,32 @@ const getBookingHistoryStatusClass = (status = '') => {
 
         fetchProfile();
 
+        const handleWindowFocus = () => {
+            fetchProfile({ silent: true });
+            loadAppointments();
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                fetchProfile({ silent: true });
+                loadAppointments();
+            }
+        };
+
+        const profileRefreshInterval = window.setInterval(() => {
+            fetchProfile({ silent: true });
+        }, 30000);
+
+        window.addEventListener('focus', handleWindowFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             isMounted = false;
+            window.removeEventListener('focus', handleWindowFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.clearInterval(profileRefreshInterval);
         };
-    }, [API_BASE_URL, getAuthHeaders, user]);
+    }, [API_BASE_URL, getAuthHeaders, loadAppointments, logout, navigate, user]);
 
     // Modal States
     const [showAllActivitiesModal, setShowAllActivitiesModal] = useState(false);
