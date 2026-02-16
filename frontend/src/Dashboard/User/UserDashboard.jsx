@@ -578,21 +578,28 @@ const getBookingHistoryStatusClass = (status = '') => {
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth();
-        const monthKeys = [];
-
-        for (let month = 0; month <= currentMonth; month += 1) {
-            monthKeys.push(`${currentYear}-${month}`);
-        }
+        const buildMonthKey = (year, monthIndex) => `${year}-${monthIndex}`;
+        const monthKeys = currentMonth < 6
+            ? [0, 1, 2, 3, 4, 5, 6].map((m) => buildMonthKey(currentYear, m)) // Jan -> Jul
+            : [
+                buildMonthKey(currentYear, 6), // Jul
+                buildMonthKey(currentYear, 7), // Aug
+                buildMonthKey(currentYear, 8), // Sep
+                buildMonthKey(currentYear, 9), // Oct
+                buildMonthKey(currentYear, 10), // Nov
+                buildMonthKey(currentYear, 11), // Dec
+                buildMonthKey(currentYear + 1, 0) // Next Jan
+            ];
 
         const aggregates = new Map();
         bookingHistory.forEach((booking) => {
-            const sourceDate = booking.createdAt || booking.appointmentDate;
+            const sourceDate = booking.appointmentDate || booking.createdAt;
             if (!sourceDate) return;
 
             const parsed = new Date(sourceDate);
-            if (Number.isNaN(parsed.getTime()) || parsed.getFullYear() !== currentYear) return;
+            if (Number.isNaN(parsed.getTime())) return;
 
-            const key = `${parsed.getFullYear()}-${parsed.getMonth()}`;
+            const key = buildMonthKey(parsed.getFullYear(), parsed.getMonth());
             const current = aggregates.get(key) || { bookings: 0, spending: 0 };
             current.bookings += 1;
 
@@ -617,15 +624,14 @@ const getBookingHistoryStatusClass = (status = '') => {
             };
         });
 
-        const visibleMonths = monthlyData.length <= 7
-            ? monthlyData
-            : monthlyData.slice(monthlyData.length - 7);
-
-        const currentMonthData = monthlyData[monthlyData.length - 1] || { bookings: 0, spending: 0 };
-        const previousMonthData = monthlyData[monthlyData.length - 2] || { bookings: 0, spending: 0 };
+        const currentMonthKey = buildMonthKey(currentYear, currentMonth);
+        const previousMonthDate = new Date(currentYear, currentMonth - 1, 1);
+        const previousMonthKey = buildMonthKey(previousMonthDate.getFullYear(), previousMonthDate.getMonth());
+        const currentMonthData = aggregates.get(currentMonthKey) || { bookings: 0, spending: 0 };
+        const previousMonthData = aggregates.get(previousMonthKey) || { bookings: 0, spending: 0 };
 
         return {
-            visibleMonths,
+            visibleMonths: monthlyData,
             currentMonthBookings: currentMonthData.bookings,
             previousMonthBookings: previousMonthData.bookings,
             currentMonthSpending: currentMonthData.spending,
@@ -652,6 +658,28 @@ const getBookingHistoryStatusClass = (status = '') => {
 
     const bookingChange = monthlyAnalytics.currentMonthBookings - monthlyAnalytics.previousMonthBookings;
     const spentChange = monthlyAnalytics.currentMonthSpending - monthlyAnalytics.previousMonthSpending;
+    const nextConfirmedAppointmentLabel = useMemo(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        const nextConfirmed = appointments
+            .filter((apt) => {
+                const statusRaw = (apt.statusRaw || apt.status || '').toString().toUpperCase();
+                if (statusRaw !== 'CONFIRMED') return false;
+                const parsedDate = apt.appointmentDate ? new Date(apt.appointmentDate) : null;
+                if (!parsedDate || Number.isNaN(parsedDate.getTime())) return false;
+                parsedDate.setHours(0, 0, 0, 0);
+                return parsedDate >= now;
+            })
+            .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime())[0];
+
+        if (!nextConfirmed?.appointmentDate) {
+            return 'No appointments';
+        }
+
+        const parsed = new Date(nextConfirmed.appointmentDate);
+        return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }, [appointments]);
 
     const [profileActivityEvents, setProfileActivityEvents] = useState([]);
 
@@ -2262,8 +2290,10 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 {
                                     title: 'Upcoming',
                                     value: appointments.filter(apt => apt.status === 'Confirmed').length,
-                                    change: 'Next: Tomorrow',
-                                    positive: true,
+                                    change: nextConfirmedAppointmentLabel === 'No appointments'
+                                        ? 'No appointments'
+                                        : `Next: ${nextConfirmedAppointmentLabel}`,
+                                    positive: nextConfirmedAppointmentLabel !== 'No appointments',
                                     icon: Clock,
                                     gradient: 'from-emerald-500 to-teal-600',
                                     delay: 200
