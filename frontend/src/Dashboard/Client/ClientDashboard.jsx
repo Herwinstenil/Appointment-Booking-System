@@ -2721,7 +2721,7 @@ const ClientDashboard = () => {
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 ${service.color} rounded-xl flex items-center justify-center text-white font-bold text-sm`}>
-                                                    {service.percentage}%
+                                                    {getInitialsFromName(service.service, 'SV')}
                                                 </div>
                                                 <div>
                                                     <p className="font-medium text-gray-800 group-hover:text-emerald-700">{service.service}</p>
