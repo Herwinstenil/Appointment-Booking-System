@@ -2517,14 +2517,6 @@ const ClientDashboard = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className={`flex items-center gap-1 text-sm font-medium ${service.growth >= 0 ? 'text-emerald-600' : 'text-red-600'
-                                                    }`}>
-                                                    {service.growth >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                    {service.growth}%
-                                                </div>
-                                                <p className="text-xs text-gray-500 mt-1">Growth</p>
-                                            </div>
                                         </div>
                                     ))}
                                 </div>
