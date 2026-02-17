@@ -62,8 +62,8 @@ const ensureClientNo = (req, res) => {
   return clientNo;
 };
 
-// Public endpoint for user booking form to load only active services
-router.get('/active', authenticateToken, async (req, res) => {
+// Public endpoint for landing page and booking form to load only active services
+router.get('/active', async (req, res) => {
   try {
     const services = await prisma.service.findMany({
       where: { isActive: true },

@@ -36,12 +36,6 @@ export default function AppointmentLanding() {
   const [servicesLoading, setServicesLoading] = useState(false);
   const [servicesError, setServicesError] = useState('');
 
-  const featuredServices = [
-    { name: 'Consultation', duration: '30 min', price: '$50' },
-    { name: 'Full Service', duration: '60 min', price: '$100' },
-    { name: 'Premium Package', duration: '90 min', price: '$150' }
-  ];
-
   const testimonials = [
     { name: 'Sarah Johnson', text: 'Amazing service! The booking process was seamless.', rating: 5 },
     { name: 'Mike Chen', text: 'Professional and efficient. Highly recommend!', rating: 5 },
@@ -49,13 +43,6 @@ export default function AppointmentLanding() {
   ];
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      setAvailableServices([]);
-      setServicesError('');
-      setServicesLoading(false);
-      return;
-    }
-
     let isMounted = true;
 
     const fetchServices = async () => {
@@ -93,7 +80,7 @@ export default function AppointmentLanding() {
     return () => {
       isMounted = false;
     };
-  }, [isLoggedIn, API_BASE_URL, getAuthHeaders]);
+  }, [API_BASE_URL, getAuthHeaders]);
 
   const handleBookNow = () => {
     if (!isLoggedIn) {
@@ -306,21 +293,32 @@ export default function AppointmentLanding() {
           <h2 className="text-4xl font-bold text-center mb-4">Our Services</h2>
           <p className="text-gray-600 text-center mb-12">Choose the perfect service for your needs</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {featuredServices.map((service, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6">
-                  <Clock className="w-8 h-8 text-white" />
+          {servicesLoading ? (
+            <div className="text-center text-gray-600">Loading services...</div>
+          ) : servicesError ? (
+            <div className="text-center text-red-600">{servicesError}</div>
+          ) : availableServices.length === 0 ? (
+            <div className="text-center text-gray-600">No services available right now.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {availableServices.map((service) => (
+                <div key={service.id} className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mb-6">
+                    <Clock className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
+                  <p className="text-gray-600 mb-4">{service.category || 'General Service'}</p>
+                  <p className="text-3xl font-bold text-purple-600 mb-6">${Number(service.price || 0).toFixed(2)}</p>
+                  <button
+                    onClick={handleBookNow}
+                    className="w-full bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition"
+                  >
+                    Select Service
+                  </button>
                 </div>
-                <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
-                <p className="text-gray-600 mb-4">{service.duration}</p>
-                <p className="text-3xl font-bold text-purple-600 mb-6">{service.price}</p>
-                <button className="w-full bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition">
-                  Select Service
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
