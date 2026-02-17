@@ -2171,7 +2171,7 @@ const ClientDashboard = () => {
                                 },
                                 {
                                     title: 'Satisfaction',
-                                    value: revenueMetrics.clientSatisfaction + '/5',
+                                    value: formatRatingOutOfFive(serviceAverageRating),
                                     change: '+0.2',
                                     positive: true,
                                     icon: Star,
