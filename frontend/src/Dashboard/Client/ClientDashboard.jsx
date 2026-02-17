@@ -2361,42 +2361,121 @@ const ClientDashboard = () => {
         doc.save('client-transactions-report.pdf');
     };
 
-    const exportProfileDataToPDF = () => {
-        const doc = new jsPDF();
+    const exportProfileDataToPDF = async () => {
+        setIsExporting(true);
+        setExportError(null);
+        try {
+            let avatarSource = imagePreview || profileData.avatarUrl || null;
+            if (avatarSource && !avatarSource.startsWith('data:')) {
+                try {
+                    const response = await fetch(avatarSource, { cache: 'no-store' });
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        avatarSource = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(blob);
+                        });
+                    } else {
+                        avatarSource = null;
+                    }
+                } catch (fetchError) {
+                    console.warn('Unable to load avatar for PDF export', fetchError);
+                    avatarSource = null;
+                }
+            }
 
-        doc.setFontSize(20);
-        doc.setTextColor(16, 185, 129);
-        doc.text('Client Profile Report', 20, 20);
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const exportedAt = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
-        doc.setFontSize(10);
-        doc.setTextColor(107, 114, 128);
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 28);
+            doc.setFontSize(10);
+            doc.text(`Exported: ${exportedAt}`, 40, 40);
 
-        const rows = [
-            ['Full Name', profileFullName || 'N/A'],
-            ['Email', profileData.email || 'N/A'],
-            ['Phone', profileData.mobile || 'N/A'],
-            ['Company', profileData.company || 'N/A'],
-            ['Position', profileData.position || 'N/A'],
-            ['Address', profileData.address || 'N/A'],
-            ['Website', profileData.website || 'N/A'],
-            ['Role', profileData.role || 'CLIENT'],
-            ['Status', profileData.status || 'active'],
-            ['Created At', profileData.createdAt ? new Date(profileData.createdAt).toLocaleString() : 'N/A'],
-            ['Updated At', profileData.updatedAt ? new Date(profileData.updatedAt).toLocaleString() : 'N/A'],
-            ['Last Login', profileData.lastLogin ? new Date(profileData.lastLogin).toLocaleString() : 'N/A'],
-            ['Bio', profileData.bio || 'N/A']
-        ];
+            const headerY = 70;
+            doc.setFontSize(20);
+            doc.text(profileFullName || 'Client', 40, headerY);
+            doc.setFontSize(12);
+            doc.text((profileData.role || 'CLIENT').toString(), 40, headerY + 20);
 
-        autoTable(doc, {
-            startY: 36,
-            head: [['Field', 'Value']],
-            body: rows,
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [16, 185, 129], textColor: 255 }
-        });
+            if (avatarSource) {
+                const width = 90;
+                const height = 90;
+                const imageFormat = avatarSource.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+                doc.addImage(avatarSource, imageFormat, 400, 30, width, height);
+            }
 
-        doc.save('client-profile-report.pdf');
+            let personalY = 120;
+            doc.setFontSize(16);
+            doc.text('Personal Information', 40, personalY);
+            personalY += 25;
+
+            const personalFields = [
+                { label: 'First Name', value: profileData.firstName },
+                { label: 'Last Name', value: profileData.lastName },
+                { label: 'Email', value: profileData.email },
+                { label: 'Phone', value: formatIndianPhoneNumber(profileData.phone) || 'N/A' },
+                { label: 'Company', value: profileData.company },
+                { label: 'Position', value: profileData.position },
+                { label: 'Website', value: profileData.website },
+                { label: 'Address', value: profileData.address },
+                { label: 'Bio', value: profileData.bio },
+                { label: 'Join Date', value: profileData.joinDate },
+                { label: 'Last Login', value: profileData.lastLogin }
+            ];
+
+            personalFields.forEach((field) => {
+                const labelX = 40;
+                const valueX = 150;
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${field.label}:`, labelX, personalY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                const lines = doc.splitTextToSize(field.value || 'N/A', 270);
+                doc.text(lines, valueX, personalY);
+                personalY += (lines.length * 14) + 6;
+            });
+
+            let statsY = personalY + 20;
+            doc.setFontSize(16);
+            doc.text('Account Stats', 40, statsY);
+            statsY += 25;
+
+            const activeBookings = bookings.filter((booking) => {
+                const status = String(booking.statusRaw || booking.status || '').toUpperCase();
+                return status === 'PENDING' || status === 'CONFIRMED';
+            }).length;
+
+            const stats = [
+                { label: 'Total Services', value: String(services.length) },
+                { label: 'Active Services', value: String(services.filter((service) => service.status === 'Active').length) },
+                { label: 'Total Bookings', value: String(bookings.length) },
+                { label: 'Active Bookings', value: String(activeBookings) },
+                { label: 'Total Revenue', value: `$${Number(revenueMetrics.totalRevenue || 0).toLocaleString()}` },
+                { label: 'Monthly Bookings', value: String(revenueMetrics.newBookings || 0) },
+                { label: 'Completion Rate', value: `${revenueMetrics.completionRate || 0}%` },
+                { label: 'Average Rating', value: formatRatingOutOfFive(serviceAverageRating) },
+                { label: 'Top Service', value: revenueMetrics.topService || 'N/A' }
+            ];
+
+            stats.forEach((stat) => {
+                doc.setFontSize(10);
+                doc.setTextColor('#555');
+                doc.text(`${stat.label}:`, 40, statsY);
+                doc.setFontSize(11);
+                doc.setTextColor('#111');
+                doc.text(stat.value, 170, statsY);
+                statsY += 20;
+            });
+
+            doc.save('client-profile.pdf');
+        } catch (error) {
+            console.error('Export client profile PDF error:', error);
+            setExportError(error.message || 'Failed to export profile PDF');
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const exportServiceReportsToPDF = () => {
