@@ -321,6 +321,8 @@ const buildClientBooking = (record) => {
     const clientName = [user.firstName, user.lastName].filter(Boolean).join(' ') ||
         user.username || user.email || 'Client';
     const rawDate = record.appointmentDate || record.date;
+    const amountRaw = Number(record.amount ?? record.service?.price ?? 0);
+    const parsedRating = Number(record.rating);
     const rawRescheduleRequest = record.rescheduleRequest || null;
     const requestedDate = rawRescheduleRequest?.requestedDate ? formatBookingDate(rawRescheduleRequest.requestedDate) : '';
     return {
@@ -335,7 +337,9 @@ const buildClientBooking = (record) => {
         date: rawDate ? formatBookingDate(rawDate) : '',
         appointmentDateRaw: rawDate || null,
         time: record.appointmentTime || record.time || '',
-        amount: formatCurrency(record.amount ?? record.service?.price ?? 0),
+        amountRaw: Number.isFinite(amountRaw) ? amountRaw : 0,
+        amount: formatCurrency(Number.isFinite(amountRaw) ? amountRaw : 0),
+        rating: Number.isFinite(parsedRating) ? parsedRating : null,
         status: getStatusLabel(record.status),
         statusRaw: record.status,
         clientNo: record.clientNo || record.service?.clientNo || null,
@@ -446,6 +450,7 @@ const normalizeClientUserForUI = (record = {}) => {
         roleRaw: rawRole,
         status: record.status || 'Inactive',
         joinDate: formatDateLabel(record.joinDate) || 'N/A',
+        createdAtRaw: record.joinDate || record.createdAt || null,
         lastLogin: record.lastLogin ? formatDateTimeLabel(record.lastLogin) : 'Never logged in',
         bookingCount: Number(record.bookingCount || 0),
         totalSpent,
@@ -1028,6 +1033,36 @@ const ClientDashboard = () => {
     }, [services]);
 
     const revenueMetrics = useMemo(() => {
+        const now = new Date();
+        const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+        const toDate = (value) => {
+            const parsed = new Date(value || 0);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+
+        const isInCurrentMonth = (value) => {
+            const parsed = toDate(value);
+            if (!parsed) return false;
+            return parsed >= startOfCurrentMonth;
+        };
+
+        const isInPreviousMonth = (value) => {
+            const parsed = toDate(value);
+            if (!parsed) return false;
+            return parsed >= startOfPreviousMonth && parsed < startOfCurrentMonth;
+        };
+
+        const toPercentChange = (current, previous) => {
+            const currentNumber = Number(current) || 0;
+            const previousNumber = Number(previous) || 0;
+            if (previousNumber === 0) {
+                return currentNumber === 0 ? 0 : 100;
+            }
+            return ((currentNumber - previousNumber) / previousNumber) * 100;
+        };
+
         const totalRevenue = Number(
             dashboardStats?.revenue?.total
             ?? revenueTotals.totalRevenue
@@ -1044,16 +1079,59 @@ const ClientDashboard = () => {
         const topService = topServiceEntry
             ? (topServiceEntry.service_name || topServiceEntry.name || 'Service')
             : (services.length > 0 ? services[0].name : 'N/A');
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        const monthlyBookings = bookings.filter((booking) => {
-            const sourceDate = booking.appointmentDateRaw || booking.createdAt || booking.date;
-            const parsed = new Date(sourceDate || 0);
-            if (Number.isNaN(parsed.getTime())) return false;
-            return parsed.getMonth() === currentMonth && parsed.getFullYear() === currentYear;
+
+        const completedCurrentMonthRevenue = bookings
+            .filter((booking) => String(booking.statusRaw || '').toUpperCase() === 'COMPLETED')
+            .filter((booking) => isInCurrentMonth(booking.appointmentDateRaw || booking.createdAt || booking.date))
+            .reduce((sum, booking) => sum + (Number(booking.amountRaw) || 0), 0);
+
+        const completedPreviousMonthRevenue = bookings
+            .filter((booking) => String(booking.statusRaw || '').toUpperCase() === 'COMPLETED')
+            .filter((booking) => isInPreviousMonth(booking.appointmentDateRaw || booking.createdAt || booking.date))
+            .reduce((sum, booking) => sum + (Number(booking.amountRaw) || 0), 0);
+
+        const monthlyBookings = bookings.filter((booking) => (
+            isInCurrentMonth(booking.appointmentDateRaw || booking.createdAt || booking.date)
+        )).length;
+
+        const previousMonthBookings = bookings.filter((booking) => (
+            isInPreviousMonth(booking.appointmentDateRaw || booking.createdAt || booking.date)
+        )).length;
+
+        const previousMonthActiveClients = users.filter((user) => {
+            if (String(user.status || '').toLowerCase() !== 'active') {
+                return false;
+            }
+            const createdAt = toDate(user.createdAtRaw);
+            if (!createdAt) {
+                return false;
+            }
+            return createdAt < startOfCurrentMonth;
         }).length;
+
+        const currentMonthRatings = bookings
+            .filter((booking) => typeof booking.rating === 'number')
+            .filter((booking) => isInCurrentMonth(booking.appointmentDateRaw || booking.createdAt || booking.date))
+            .map((booking) => booking.rating);
+
+        const previousMonthRatings = bookings
+            .filter((booking) => typeof booking.rating === 'number')
+            .filter((booking) => isInPreviousMonth(booking.appointmentDateRaw || booking.createdAt || booking.date))
+            .map((booking) => booking.rating);
+
+        const averageCurrentMonthRating = currentMonthRatings.length
+            ? (currentMonthRatings.reduce((sum, value) => sum + value, 0) / currentMonthRatings.length)
+            : serviceAverageRating;
+
+        const averagePreviousMonthRating = previousMonthRatings.length
+            ? (previousMonthRatings.reduce((sum, value) => sum + value, 0) / previousMonthRatings.length)
+            : averageCurrentMonthRating;
+
         const clientSatisfaction = serviceAverageRating;
+        const totalRevenueChange = toPercentChange(completedCurrentMonthRevenue, completedPreviousMonthRevenue);
+        const activeClientsChange = toPercentChange(activeClients, previousMonthActiveClients);
+        const monthlyBookingsChange = toPercentChange(monthlyBookings, previousMonthBookings);
+        const satisfactionChange = clientSatisfaction - averagePreviousMonthRating;
 
         return {
             totalRevenue,
@@ -1063,7 +1141,11 @@ const ClientDashboard = () => {
             topService,
             newBookings: monthlyBookings,
             completionRate,
-            clientSatisfaction
+            clientSatisfaction,
+            totalRevenueChange,
+            activeClientsChange,
+            monthlyBookingsChange,
+            satisfactionChange
         };
     }, [services, bookings, revenue, users, revenueTotals, revenueByServiceStats, dashboardStats, serviceAverageRating]);
 
@@ -2154,6 +2236,8 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Total Revenue',
                                     value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
+                                    change: `${revenueMetrics.totalRevenueChange >= 0 ? '+' : ''}${revenueMetrics.totalRevenueChange.toFixed(1)}%`,
+                                    positive: revenueMetrics.totalRevenueChange >= 0,
                                     icon: DollarSign,
                                     gradient: 'from-emerald-500 to-teal-600',
                                     delay: 0
@@ -2161,6 +2245,8 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Active Clients',
                                     value: revenueMetrics.activeClients,
+                                    change: `${revenueMetrics.activeClientsChange >= 0 ? '+' : ''}${revenueMetrics.activeClientsChange.toFixed(1)}%`,
+                                    positive: revenueMetrics.activeClientsChange >= 0,
                                     icon: Users,
                                     gradient: 'from-blue-500 to-cyan-600',
                                     delay: 100
@@ -2168,6 +2254,8 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Monthly Bookings',
                                     value: revenueMetrics.newBookings,
+                                    change: `${revenueMetrics.monthlyBookingsChange >= 0 ? '+' : ''}${revenueMetrics.monthlyBookingsChange.toFixed(1)}%`,
+                                    positive: revenueMetrics.monthlyBookingsChange >= 0,
                                     icon: Calendar,
                                     gradient: 'from-purple-500 to-violet-600',
                                     delay: 200
@@ -2175,6 +2263,8 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Satisfaction',
                                     value: formatRatingOutOfFive(serviceAverageRating),
+                                    change: `${revenueMetrics.satisfactionChange >= 0 ? '+' : ''}${revenueMetrics.satisfactionChange.toFixed(1)}`,
+                                    positive: revenueMetrics.satisfactionChange >= 0,
                                     icon: Star,
                                     gradient: 'from-amber-500 to-orange-600',
                                     delay: 300
@@ -2191,7 +2281,11 @@ const ClientDashboard = () => {
                                             <div>
                                                 <p className="text-white/80 text-sm font-medium mb-1">{metric.title}</p>
                                                 <p className="text-2xl font-bold mb-2">{metric.value}</p>
-                                                <div className="text-sm text-white/75">Live data</div>
+                                                <div className={`flex items-center gap-1 text-sm ${metric.positive ? 'text-emerald-300' : 'text-red-300'}`}>
+                                                    {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                                    <span>{metric.change}</span>
+                                                    <span className="text-white/70">from last month</span>
+                                                </div>
                                             </div>
                                             <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                                                 <Icon size={24} className="text-white" />
