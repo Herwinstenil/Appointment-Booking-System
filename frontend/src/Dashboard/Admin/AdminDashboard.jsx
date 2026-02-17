@@ -3035,7 +3035,6 @@ const AdminDashboard = () => {
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(activity.status)}`}>
                                                     {activity.status}
                                                 </span>
-                                                
                                             </div>
                                         </div>
                                     );
