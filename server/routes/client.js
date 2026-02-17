@@ -231,7 +231,8 @@ router.get('/users', authenticateToken, authorizeRoles('CLIENT'), async (req, re
     const stats = await prisma.appointment.groupBy({
       by: ['userId'],
       where: {
-        clientNo
+        clientNo,
+        status: 'COMPLETED'
       },
       _count: {
         id: true

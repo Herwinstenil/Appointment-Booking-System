@@ -561,7 +561,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         const totalSpent = bookingHistory.reduce((sum, booking) => {
             const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
             const statusRaw = (booking.statusRaw || booking.status || '').toString().toUpperCase();
-            if (statusRaw === 'CANCELLED') return sum;
+            if (statusRaw !== 'COMPLETED') return sum;
             return sum + (isNaN(amount) ? 0 : amount);
         }, 0);
 
@@ -634,7 +634,7 @@ const getBookingHistoryStatusClass = (status = '') => {
 
             const amount = parseFloat(String(booking.amount || '').replace(/[^0-9.-]+/g, ''));
             const statusRaw = (booking.statusRaw || booking.status || '').toString().toUpperCase();
-            if (!Number.isNaN(amount) && statusRaw !== 'CANCELLED') {
+            if (!Number.isNaN(amount) && statusRaw === 'COMPLETED') {
                 current.spending += amount;
             }
 
@@ -1061,7 +1061,11 @@ const getBookingHistoryStatusClass = (status = '') => {
         const finalY = doc.lastAutoTable.finalY + 20;
         doc.setFontSize(12);
         doc.text(`Total Bookings: ${filteredBookingHistory.length}`, 20, finalY);
-        doc.text(`Total Spent: $${filteredBookingHistory.reduce((sum, booking) => sum + parseFloat(booking.amount.replace('$', '')), 0).toFixed(2)}`, 20, finalY + 10);
+        doc.text(`Total Spent: $${filteredBookingHistory.reduce((sum, booking) => {
+            const statusRaw = (booking.statusRaw || booking.status || '').toString().toUpperCase();
+            if (statusRaw !== 'COMPLETED') return sum;
+            return sum + parseFloat(String(booking.amount || '0').replace('$', ''));
+        }, 0).toFixed(2)}`, 20, finalY + 10);
         doc.text(`Average Rating: ${userStats.averageRating}/5`, 20, finalY + 20);
 
         // Save the PDF
