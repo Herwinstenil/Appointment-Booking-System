@@ -1108,7 +1108,6 @@ const ClientDashboard = () => {
             {
                 name: 'Booking Rate',
                 value: `${bookingRate}%`,
-                change: 'N/A',
                 positive: bookingRate >= 70
             },
             {
