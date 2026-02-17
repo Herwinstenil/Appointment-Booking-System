@@ -2558,36 +2558,85 @@ const ClientDashboard = () => {
         { id: 'activity', label: 'Activity', icon: Activity }
     ];
 
-    const recentActivities = [
-        {
-            id: 1,
-            action: 'New booking received from John Smith',
-            time: 'Today, 09:30 AM',
-            status: 'success',
-            icon: CheckCircle
-        },
-        {
-            id: 2,
-            action: 'Updated service pricing for Web Development',
-            time: 'Yesterday, 3:15 PM',
-            status: 'modified',
-            icon: Edit3
-        },
-        {
-            id: 3,
-            action: 'Completed consultation session with Emma Wilson',
-            time: '2 days ago, 11:45 AM',
-            status: 'completed',
-            icon: CheckCircle
-        },
-        {
-            id: 4,
-            action: 'Received payment for mobile app project',
-            time: '3 days ago, 2:30 PM',
-            status: 'payment',
-            icon: DollarSign
+    const recentActivities = useMemo(() => {
+        const formatActivityTime = (value) => {
+            if (!value) return 'Unknown time';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return 'Unknown time';
+            return parsed.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        };
+
+        const activities = [];
+
+        bookings.forEach((booking) => {
+            const createdAt = booking.createdAt;
+            const updatedAt = booking.updatedAt || booking.createdAt;
+            const clientName = booking.client || 'a client';
+            const serviceName = booking.service || 'service';
+            const statusRaw = String(booking.statusRaw || '').toUpperCase();
+            const amount = Number(booking.amountRaw || 0);
+
+            if (createdAt) {
+                activities.push({
+                    id: `booking-created-${booking.id}`,
+                    action: `New booking received from ${clientName}`,
+                    time: formatActivityTime(createdAt),
+                    status: 'success',
+                    icon: CheckCircle,
+                    timestamp: new Date(createdAt).getTime()
+                });
+            }
+
+            if (statusRaw === 'COMPLETED') {
+                activities.push({
+                    id: `booking-completed-${booking.id}`,
+                    action: `Completed ${serviceName} session with ${clientName}`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'completed',
+                    icon: CheckCircle,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+
+                activities.push({
+                    id: `payment-${booking.id}`,
+                    action: `Received payment of $${amount.toFixed(2)} for ${serviceName}`,
+                    time: formatActivityTime(updatedAt),
+                    status: 'payment',
+                    icon: DollarSign,
+                    timestamp: new Date(updatedAt).getTime()
+                });
+            }
+        });
+
+        services.forEach((service) => {
+            const updatedAt = service.updatedAt || service.createdAt;
+            if (!updatedAt) return;
+            activities.push({
+                id: `service-updated-${service.id}`,
+                action: `Updated service details for ${service.name || 'service'}`,
+                time: formatActivityTime(updatedAt),
+                status: 'modified',
+                icon: Edit3,
+                timestamp: new Date(updatedAt).getTime()
+            });
+        });
+
+        if (profileData.updatedAt) {
+            activities.push({
+                id: 'profile-updated',
+                action: 'Updated profile information',
+                time: formatActivityTime(profileData.updatedAt),
+                status: 'modified',
+                icon: Edit3,
+                timestamp: new Date(profileData.updatedAt).getTime()
+            });
         }
-    ];
+
+        return activities
+            .filter((item) => Number.isFinite(item.timestamp))
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, 12);
+    }, [bookings, services, profileData.updatedAt]);
 
     const getStatusColor = (status) => {
         switch (status) {
