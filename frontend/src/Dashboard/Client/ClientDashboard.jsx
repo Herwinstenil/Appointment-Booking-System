@@ -895,38 +895,128 @@ const ClientDashboard = () => {
         return labels;
     };
 
-    const REVISION_POINTS = {
-        daily: 7,
-        weekly: 8,
-        monthly: 12,
-        yearly: 12
-    };
-
-    const formatRevenuePeriod = (value, range) => {
-        if (!value) return 'N/A';
-        const parsed = new Date(value);
-        if (Number.isNaN(parsed.getTime())) {
-            return String(value);
-        }
-        if (range === 'yearly') return parsed.getFullYear().toString();
-        if (range === 'monthly') return parsed.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-        return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    };
-
     const revenueTrend = useMemo(() => {
-        if (!revenue.length) return [];
-        const sorted = [...revenue].sort((a, b) => {
-            const dateA = new Date(a.period || a.createdAt || a.date);
-            const dateB = new Date(b.period || b.createdAt || b.date);
-            return dateA - dateB;
+        const completed = bookings
+            .filter((booking) => String(booking.statusRaw || '').toUpperCase() === 'COMPLETED')
+            .map((booking) => {
+                const sourceDate = booking.appointmentDateRaw || booking.createdAt || booking.date;
+                const parsed = new Date(sourceDate || 0);
+                if (Number.isNaN(parsed.getTime())) return null;
+                return {
+                    date: parsed,
+                    amount: Number(booking.amountRaw || 0)
+                };
+            })
+            .filter(Boolean);
+
+        const addGrowth = (points) => points.map((point, index) => {
+            if (index === 0) {
+                return { ...point, growth: 0 };
+            }
+            const prevRevenue = Number(points[index - 1]?.revenue || 0);
+            const currentRevenue = Number(point.revenue || 0);
+            const growth = prevRevenue > 0
+                ? ((currentRevenue - prevRevenue) / prevRevenue) * 100
+                : (currentRevenue > 0 ? 100 : 0);
+            return {
+                ...point,
+                growth: Math.round(growth * 10) / 10
+            };
         });
-        const limit = REVISION_POINTS[timeRange] || REVISION_POINTS.monthly;
-        const window = sorted.slice(-limit);
-        return window.map((entry) => ({
-            label: formatRevenuePeriod(entry.period || entry.date || entry.createdAt, timeRange),
-            revenue: Number(entry.revenue || entry.amount || 0)
-        }));
-    }, [revenue, timeRange]);
+
+        const now = new Date();
+
+        if (timeRange === 'daily') {
+            const monday = new Date(now);
+            monday.setHours(0, 0, 0, 0);
+            const dayIndex = monday.getDay();
+            monday.setDate(monday.getDate() - (dayIndex === 0 ? 6 : dayIndex - 1));
+
+            const buckets = Array.from({ length: 7 }, (_, index) => {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + index);
+                date.setHours(0, 0, 0, 0);
+                return {
+                    key: date.toISOString().slice(0, 10),
+                    label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    revenue: 0
+                };
+            });
+
+            const indexByKey = new Map(buckets.map((bucket, index) => [bucket.key, index]));
+            completed.forEach((entry) => {
+                const day = new Date(entry.date);
+                day.setHours(0, 0, 0, 0);
+                const key = day.toISOString().slice(0, 10);
+                const bucketIndex = indexByKey.get(key);
+                if (bucketIndex === undefined) return;
+                buckets[bucketIndex].revenue += entry.amount;
+            });
+
+            return addGrowth(buckets);
+        }
+
+        if (timeRange === 'weekly') {
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const buckets = [1, 2, 3, 4].map((week) => ({
+                key: `week-${week}`,
+                label: `Week ${week}`,
+                revenue: 0
+            }));
+
+            completed.forEach((entry) => {
+                if (entry.date.getFullYear() !== currentYear || entry.date.getMonth() !== currentMonth) {
+                    return;
+                }
+                const weekOfMonth = Math.min(4, Math.floor((entry.date.getDate() - 1) / 7) + 1);
+                buckets[weekOfMonth - 1].revenue += entry.amount;
+            });
+
+            return addGrowth(buckets);
+        }
+
+        if (timeRange === 'yearly') {
+            const currentYear = now.getFullYear();
+            const buckets = Array.from({ length: 5 }, (_, index) => {
+                const year = currentYear - (4 - index);
+                return {
+                    key: String(year),
+                    label: String(year),
+                    revenue: 0
+                };
+            });
+
+            const indexByKey = new Map(buckets.map((bucket, index) => [bucket.key, index]));
+            completed.forEach((entry) => {
+                const key = String(entry.date.getFullYear());
+                const bucketIndex = indexByKey.get(key);
+                if (bucketIndex === undefined) return;
+                buckets[bucketIndex].revenue += entry.amount;
+            });
+
+            return addGrowth(buckets);
+        }
+
+        const buckets = Array.from({ length: 12 }, (_, index) => {
+            const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
+            return {
+                key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+                label: date.toLocaleString('en-US', { month: 'short', year: 'numeric' }),
+                revenue: 0
+            };
+        });
+
+        const indexByKey = new Map(buckets.map((bucket, index) => [bucket.key, index]));
+        completed.forEach((entry) => {
+            const key = `${entry.date.getFullYear()}-${String(entry.date.getMonth() + 1).padStart(2, '0')}`;
+            const bucketIndex = indexByKey.get(key);
+            if (bucketIndex === undefined) return;
+            buckets[bucketIndex].revenue += entry.amount;
+        });
+
+        return addGrowth(buckets);
+    }, [bookings, timeRange]);
 
     const revenueByService = useMemo(() => {
         if (!revenueByServiceStats.length) return [];
@@ -2359,7 +2449,7 @@ const ClientDashboard = () => {
                                         <div className="h-full flex items-end justify-between space-x-2">
                                             {(() => {
                                                 const revenueValues = revenueTrend.map(d => d.revenue);
-                                                const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                                const maxRevenue = revenueValues.length ? Math.max(1, ...revenueValues) : 1;
                                                 return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
@@ -2379,9 +2469,10 @@ const ClientDashboard = () => {
                                         <svg className="w-full h-full" viewBox="0 0 400 256" preserveAspectRatio="none">
                                             {(() => {
                                                 const revenueValues = revenueTrend.map(d => d.revenue);
-                                                const maxRevenue = revenueValues.length ? Math.max(...revenueValues) : 1;
+                                                const maxRevenue = revenueValues.length ? Math.max(1, ...revenueValues) : 1;
+                                                const denominator = Math.max(revenueTrend.length - 1, 1);
                                                 const points = revenueTrend.map((data, index) => {
-                                                    const x = (index / (revenueTrend.length - 1)) * 400;
+                                                    const x = (index / denominator) * 400;
                                                     const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
                                                     return `${x},${y}`;
                                                 }).join(' ');
@@ -2409,7 +2500,7 @@ const ClientDashboard = () => {
 
                                                         {/* Data points */}
                                                         {revenueTrend.map((data, index) => {
-                                                            const x = (index / (revenueTrend.length - 1)) * 400;
+                                                            const x = (index / denominator) * 400;
                                                             const y = 256 - (data.revenue / maxRevenue) * 200;
                                                             return (
                                                                 <circle
