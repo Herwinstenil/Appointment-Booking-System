@@ -558,6 +558,10 @@ const AdminDashboard = () => {
         newPassword: '',
         confirmNewPassword: ''
     });
+    const [changePasswordVisibility, setChangePasswordVisibility] = useState({
+        newPassword: false,
+        confirmNewPassword: false
+    });
     const [changePasswordError, setChangePasswordError] = useState(null);
     const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
     const [changePasswordLoading, setChangePasswordLoading] = useState(false);
@@ -1278,6 +1282,7 @@ const AdminDashboard = () => {
 
     const openChangePasswordModal = () => {
         setChangePasswordForm({ newPassword: '', confirmNewPassword: '' });
+        setChangePasswordVisibility({ newPassword: false, confirmNewPassword: false });
         setChangePasswordError(null);
         setChangePasswordSuccess(false);
         setShowChangePasswordModal(true);
@@ -1295,6 +1300,13 @@ const AdminDashboard = () => {
         setChangePasswordForm(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const toggleChangePasswordVisibility = (field) => {
+        setChangePasswordVisibility(prev => ({
+            ...prev,
+            [field]: !prev[field]
         }));
     };
 
@@ -5906,25 +5918,43 @@ const AdminDashboard = () => {
                         <form onSubmit={handleChangePasswordSubmit} className="px-6 py-5 space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
-                                <input
-                                    type="password"
-                                    name="newPassword"
-                                    value={changePasswordForm.newPassword}
-                                    onChange={handleChangePasswordInput}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Enter new password"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={changePasswordVisibility.newPassword ? 'text' : 'password'}
+                                        name="newPassword"
+                                        value={changePasswordForm.newPassword}
+                                        onChange={handleChangePasswordInput}
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Enter new password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleChangePasswordVisibility('newPassword')}
+                                        className="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 transition-colors"
+                                    >
+                                        {changePasswordVisibility.newPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
-                                <input
-                                    type="password"
-                                    name="confirmNewPassword"
-                                    value={changePasswordForm.confirmNewPassword}
-                                    onChange={handleChangePasswordInput}
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
-                                    placeholder="Confirm new password"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={changePasswordVisibility.confirmNewPassword ? 'text' : 'password'}
+                                        name="confirmNewPassword"
+                                        value={changePasswordForm.confirmNewPassword}
+                                        onChange={handleChangePasswordInput}
+                                        className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-200 transition-all duration-300"
+                                        placeholder="Confirm new password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleChangePasswordVisibility('confirmNewPassword')}
+                                        className="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 transition-colors"
+                                    >
+                                        {changePasswordVisibility.confirmNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                             {changePasswordError && (
                                 <p className="text-sm text-red-600">{changePasswordError}</p>
