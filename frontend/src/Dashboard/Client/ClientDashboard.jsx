@@ -1115,7 +1115,6 @@ const ClientDashboard = () => {
             {
                 name: 'Repeat Clients',
                 value: `${repeatClients}`,
-                positive: true
             }
         ];
     }, [bookings]);
