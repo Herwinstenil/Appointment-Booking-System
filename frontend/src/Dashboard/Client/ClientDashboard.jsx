@@ -1334,6 +1334,7 @@ const ClientDashboard = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
 
     // Pagination states for modals
     const [transactionsPage, setTransactionsPage] = useState(1);
@@ -2205,6 +2206,7 @@ const ClientDashboard = () => {
         setSelectedUser(null);
         setSelectedBooking(null);
         setSelectedRequest(null);
+        setSelectedTransaction(null);
     };
 
     // Chart Handlers
@@ -4488,7 +4490,10 @@ const ClientDashboard = () => {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <button className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
+                                                        <button
+                                                            onClick={() => setSelectedTransaction(transaction)}
+                                                            className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                                                        >
                                                             <ViewIcon size={16} />
                                                         </button>
                                                     </td>
@@ -4498,6 +4503,84 @@ const ClientDashboard = () => {
                                     </table>
                                 </div>
                             </div>
+
+                            {selectedTransaction && (
+                                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4 animate-fadeIn">
+                                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-modalSlideIn">
+                                        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="text-2xl font-bold text-gray-900">Transaction Details</h3>
+                                                    <p className="text-gray-600 mt-1">View complete information about this transaction</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setSelectedTransaction(null)}
+                                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                                                >
+                                                    <X size={24} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-6">
+                                            <div className="flex items-center space-x-6 mb-8">
+                                                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                                                    {selectedTransaction.avatar}
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-2xl font-bold text-gray-900">{selectedTransaction.client}</h4>
+                                                    <p className="text-gray-600">{selectedTransaction.service}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-4">
+                                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Client Name</label>
+                                                        <p className="text-gray-900">{selectedTransaction.client}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Service</label>
+                                                        <p className="text-gray-900">{selectedTransaction.service}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Amount</label>
+                                                        <p className="text-emerald-600 font-semibold">${Number(selectedTransaction.amount || 0).toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                                                        <p className="text-gray-900">{selectedTransaction.date}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 p-4 rounded-xl">
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${selectedTransaction.status === 'completed'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : selectedTransaction.status === 'pending'
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                            }`}>
+                                                            {selectedTransaction.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
+                                            <div className="flex items-center justify-end space-x-3">
+                                                <button
+                                                    onClick={() => setSelectedTransaction(null)}
+                                                    className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                                                >
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Pagination Info */}
                             <div className="flex items-center justify-between mb-6 p-6">
