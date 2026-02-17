@@ -46,17 +46,6 @@ const buildDisplayName = (user) => {
   return fullName || user.username || user.email || 'User';
 };
 
-const ensureClientAvailabilityTable = async () => {
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "ClientAvailability" (
-      "clientNo" INTEGER PRIMARY KEY,
-      "availability" JSONB NOT NULL,
-      "timeSlots" JSONB NOT NULL,
-      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
-};
-
 const splitFullName = (value = '') => {
   const normalized = String(value || '').trim().replace(/\s+/g, ' ');
   if (!normalized) {
@@ -494,12 +483,14 @@ router.get('/availability', authenticateToken, authorizeRoles('CLIENT'), async (
       });
     }
 
-    await ensureClientAvailabilityTable();
-    const rows = await prisma.$queryRawUnsafe(
-      `SELECT "availability", "timeSlots", "updatedAt" FROM "ClientAvailability" WHERE "clientNo" = $1 LIMIT 1`,
-      clientNo
-    );
-    const row = rows?.[0];
+    const row = await prisma.clientAvailability.findUnique({
+      where: { clientNo },
+      select: {
+        availability: true,
+        timeSlots: true,
+        updatedAt: true
+      }
+    });
 
     return res.json({
       success: true,
@@ -537,19 +528,19 @@ router.put('/availability', authenticateToken, authorizeRoles('CLIENT'), async (
       });
     }
 
-    await ensureClientAvailabilityTable();
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO "ClientAvailability" ("clientNo", "availability", "timeSlots", "updatedAt")
-       VALUES ($1, $2::jsonb, $3::jsonb, NOW())
-       ON CONFLICT ("clientNo")
-       DO UPDATE SET
-         "availability" = EXCLUDED."availability",
-         "timeSlots" = EXCLUDED."timeSlots",
-         "updatedAt" = NOW()`,
-      clientNo,
-      JSON.stringify(availability),
-      JSON.stringify(timeSlots)
-    );
+    await prisma.clientAvailability.upsert({
+      where: { clientNo },
+      update: {
+        availability,
+        timeSlots,
+        updatedAt: new Date()
+      },
+      create: {
+        clientNo,
+        availability,
+        timeSlots
+      }
+    });
 
     return res.json({
       success: true,

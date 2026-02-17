@@ -131,3 +131,10 @@ model FileUpload {
 
   user User @relation(fields: [userId], references: [id])
 }
+
+model ClientAvailability {
+  clientNo     Int      @id
+  availability Json     @db.JsonB
+  timeSlots    Json     @db.JsonB
+  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
+}
