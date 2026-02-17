@@ -566,6 +566,7 @@ const ClientDashboard = () => {
             try {
                 const headers = getAuthHeaders('CLIENT');
                 const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+                const startedAt = performance.now();
 
                 const [statsResponse, revenueResponse] = await Promise.all([
                     fetch(`${baseUrl}/client/dashboard/stats`, {
@@ -588,9 +589,11 @@ const ClientDashboard = () => {
                 setRevenue(payload.revenueData || payload.revenue || []);
                 setRevenueByServiceStats(payload.revenueByService || []);
                 setRevenueTotals(payload.totalStats || {});
+                setDashboardResponseTimeMs(Math.max(0, Math.round(performance.now() - startedAt)));
             } catch (err) {
                 setError(err.message);
                 console.error('Error fetching dashboard data:', err);
+                setDashboardResponseTimeMs(0);
             } finally {
                 try {
                     await fetchBookingsList();
@@ -843,6 +846,7 @@ const ClientDashboard = () => {
     const [revenue, setRevenue] = useState([]);
     const [revenueByServiceStats, setRevenueByServiceStats] = useState([]);
     const [revenueTotals, setRevenueTotals] = useState({ totalRevenue: 0, totalAppointments: 0 });
+    const [dashboardResponseTimeMs, setDashboardResponseTimeMs] = useState(0);
 
     // Bookings State
     const [bookingsData, setBookingsData] = useState([]);
@@ -1120,24 +1124,11 @@ const ClientDashboard = () => {
             ? Math.round((ratings.reduce((sum, b) => sum + b.rating, 0) / ratings.length) * 10) / 10
             : 0;
         const repeatClients = new Set(bookings.map(b => b.client)).size;
-        const responseTimes = bookings
-            .map((booking) => {
-                const start = new Date(booking.createdAt || booking.date || booking.appointmentDate || 0);
-                const end = new Date(booking.date || booking.appointmentDate || booking.createdAt || 0);
-                if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-                    return null;
-                }
-                return (end - start) / 3600000;
-            })
-            .filter(time => time !== null && time !== undefined);
-        const averageResponse = responseTimes.length
-            ? responseTimes.reduce((sum, value) => sum + value, 0) / responseTimes.length
-            : 0;
 
         return [
             {
                 name: 'Response Time',
-                value: `${averageResponse.toFixed(1)} hrs`,
+                value: `${dashboardResponseTimeMs}ms`,
             },
             {
                 name: 'Booking Rate',
@@ -1152,7 +1143,7 @@ const ClientDashboard = () => {
                 value: `${repeatClients}`,
             }
         ];
-    }, [bookings]);
+    }, [bookings, dashboardResponseTimeMs]);
 
     const serviceAverageRating = useMemo(() => {
         const ratedServices = services.filter(service => typeof service.rating === 'number' && !Number.isNaN(service.rating));
