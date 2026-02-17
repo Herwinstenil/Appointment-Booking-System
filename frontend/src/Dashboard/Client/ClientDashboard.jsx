@@ -4344,7 +4344,7 @@ const ClientDashboard = () => {
 
                                                 <div className="text-center mb-4">
                                                     <div className="text-3xl font-bold text-emerald-600 mb-1">
-                                                        ${adjustedRevenue.toLocaleString()}
+                                                        ${revenueMetrics.totalRevenue.toLocaleString()}
                                                     </div>
                                                     <p className="text-sm text-gray-500">Total Revenue</p>
                                                 </div>
