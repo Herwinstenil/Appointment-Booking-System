@@ -1164,6 +1164,27 @@ const ClientDashboard = () => {
         ];
     }, [bookings, dashboardResponseTimeMs, serviceAverageRating]);
 
+    const serviceRevenueReportRows = useMemo(() => {
+        const revenueByServiceKey = bookings
+            .filter((booking) => String(booking.statusRaw || booking.status || '').toUpperCase() === 'COMPLETED')
+            .reduce((acc, booking) => {
+                const key = String(booking.service || 'Service');
+                const amount = Number(booking.amountRaw || 0);
+                acc[key] = (acc[key] || 0) + (Number.isFinite(amount) ? amount : 0);
+                return acc;
+            }, {});
+
+        return services.map((service) => {
+            const name = service.name || 'Service';
+            return {
+                name,
+                category: service.category || 'N/A',
+                bookings: Number(service.bookings || 0),
+                revenue: Number(revenueByServiceKey[name] || 0)
+            };
+        });
+    }, [bookings, services]);
+
     const revenueMetrics = useMemo(() => {
         const now = new Date();
         const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -2337,6 +2358,79 @@ const ClientDashboard = () => {
         doc.text(`Total: $${totalAmount.toFixed(2)}`, 20, Math.min(y, 285));
 
         doc.save('client-transactions-report.pdf');
+    };
+
+    const exportProfileDataToPDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.setTextColor(16, 185, 129);
+        doc.text('Client Profile Report', 20, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 28);
+
+        const rows = [
+            ['Full Name', profileFullName || 'N/A'],
+            ['Email', profileData.email || 'N/A'],
+            ['Phone', profileData.mobile || 'N/A'],
+            ['Company', profileData.company || 'N/A'],
+            ['Position', profileData.position || 'N/A'],
+            ['Address', profileData.address || 'N/A'],
+            ['Website', profileData.website || 'N/A'],
+            ['Role', profileData.role || 'CLIENT'],
+            ['Status', profileData.status || 'active'],
+            ['Created At', profileData.createdAt ? new Date(profileData.createdAt).toLocaleString() : 'N/A'],
+            ['Updated At', profileData.updatedAt ? new Date(profileData.updatedAt).toLocaleString() : 'N/A'],
+            ['Last Login', profileData.lastLogin ? new Date(profileData.lastLogin).toLocaleString() : 'N/A'],
+            ['Bio', profileData.bio || 'N/A']
+        ];
+
+        autoTable(doc, {
+            startY: 36,
+            head: [['Field', 'Value']],
+            body: rows,
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [16, 185, 129], textColor: 255 }
+        });
+
+        doc.save('client-profile-report.pdf');
+    };
+
+    const exportServiceReportsToPDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.setTextColor(16, 185, 129);
+        doc.text('Service Revenue Report', 20, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 28);
+
+        const rows = serviceRevenueReportRows.map((row) => ([
+            row.name,
+            row.category,
+            String(row.bookings),
+            `$${row.revenue.toFixed(2)}`
+        ]));
+
+        autoTable(doc, {
+            startY: 36,
+            head: [['Service', 'Category', 'Bookings', 'Revenue']],
+            body: rows,
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [16, 185, 129], textColor: 255 }
+        });
+
+        const totalRevenue = serviceRevenueReportRows.reduce((sum, row) => sum + Number(row.revenue || 0), 0);
+        const finalY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 10 : 280;
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text(`Total Service Revenue: $${totalRevenue.toFixed(2)}`, 20, Math.min(finalY, 285));
+
+        doc.save('client-service-revenue-report.pdf');
     };
 
     const sidebarItems = [
@@ -4011,14 +4105,15 @@ const ClientDashboard = () => {
                                     <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
                                     <div className="space-y-3">
                                         {[
-                                            { icon: FileText, label: 'Service Reports', color: 'text-blue-600' },
-                                            { icon: CreditCard, label: 'Payment History', color: 'text-emerald-600' },
-                                            { icon: Download, label: 'Export Data', color: 'text-purple-600' },
+                                            { icon: FileText, label: 'Service Reports', color: 'text-blue-600', onClick: exportServiceReportsToPDF },
+                                            { icon: CreditCard, label: 'Payment History', color: 'text-emerald-600', onClick: handleViewAllTransactions },
+                                            { icon: Download, label: 'Export Data', color: 'text-purple-600', onClick: exportProfileDataToPDF },
                                         ].map((action, index) => {
                                             const ActionIcon = action.icon;
                                             return (
                                                 <button
                                                     key={index}
+                                                    onClick={action.onClick}
                                                     className="w-full flex items-center gap-3 p-3 text-gray-700 hover:bg-emerald-50 rounded-xl transition-all duration-300 transform hover:translate-x-2 group"
                                                 >
                                                     <ActionIcon size={20} className={`${action.color} group-hover:scale-110 transition-transform`} />
