@@ -325,7 +325,7 @@ export default function AppointmentLanding() {
                     onClick={handleBookNow}
                     className="w-full bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition"
                   >
-                    Select Service
+                    Book Your Service
                   </button>
                 </div>
               ))}
