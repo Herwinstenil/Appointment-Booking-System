@@ -1111,7 +1111,6 @@ const ClientDashboard = () => {
             {
                 name: 'User Rating',
                 value: `${averageRating.toFixed(1)}/5`,
-                positive: averageRating >= 4
             },
             {
                 name: 'Repeat Clients',
