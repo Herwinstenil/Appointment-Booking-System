@@ -2589,13 +2589,6 @@ const ClientDashboard = () => {
                                                     {metric.value}
                                                 </p>
                                             </div>
-                                            <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${metric.positive
-                                                ? 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200'
-                                                : 'bg-red-100 text-red-700 group-hover:bg-red-200'
-                                                }`}>
-                                                {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                {metric.change}
-                                            </div>
                                         </div>
                                     ))}
                                 </div>
