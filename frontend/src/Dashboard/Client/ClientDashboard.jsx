@@ -333,6 +333,7 @@ const buildClientBooking = (record) => {
         userId: user.id || null,
         service: record.service?.name || record.serviceName || 'Service',
         date: rawDate ? formatBookingDate(rawDate) : '',
+        appointmentDateRaw: rawDate || null,
         time: record.appointmentTime || record.time || '',
         amount: formatCurrency(record.amount ?? record.service?.price ?? 0),
         status: getStatusLabel(record.status),
@@ -480,6 +481,7 @@ const ClientDashboard = () => {
     // Loading and error states
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [dashboardStats, setDashboardStats] = useState(null);
 
     const fetchServicesList = useCallback(async () => {
         setServicesLoading(true);
@@ -572,10 +574,12 @@ const ClientDashboard = () => {
                 if (!statsResponse.ok) throw new Error('Failed to fetch dashboard stats');
                 if (!revenueResponse.ok) throw new Error('Failed to fetch revenue');
 
-                await statsResponse.json();
+                const statsData = await statsResponse.json();
                 const revenueData = await revenueResponse.json();
+                const statsPayload = statsData?.data || {};
                 const payload = revenueData.data || {};
 
+                setDashboardStats(statsPayload);
                 setRevenue(payload.revenueData || payload.revenue || []);
                 setRevenueByServiceStats(payload.revenueByService || []);
                 setRevenueTotals(payload.totalStats || {});
@@ -1014,41 +1018,6 @@ const ClientDashboard = () => {
         ];
     }, [bookings]);
 
-    const revenueMetrics = useMemo(() => {
-        const totalRevenue = revenueTotals.totalRevenue ?? revenue.reduce((sum, item) => sum + Number(item.revenue || item.amount || 0), 0);
-        const monthlyRevenue = totalRevenue;
-        const totalBookings = bookings.length;
-        const completedBookings = bookings.filter(b => ['confirmed', 'completed'].includes(b.status?.toLowerCase())).length;
-        const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
-        const averageBookingValue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
-        const growthPercentage = revenueTrend.length > 1
-            ? Math.round(((revenueTrend[revenueTrend.length - 1].revenue - revenueTrend[0].revenue)
-                / Math.max(revenueTrend[0].revenue, 1)) * 100)
-            : 0;
-        const activeClients = users.filter(u => u.status === 'Active').length;
-        const sortedServices = [...revenueByServiceStats].sort((a, b) => Number(b.revenue || b.amount || 0) - Number(a.revenue || a.amount || 0));
-        const topServiceEntry = sortedServices[0];
-        const topService = topServiceEntry
-            ? (topServiceEntry.service_name || topServiceEntry.name || 'Service')
-            : (services.length > 0 ? services[0].name : 'N/A');
-        const ratings = bookings.filter(b => typeof b.rating === 'number');
-        const clientSatisfaction = ratings.length
-            ? Math.round((ratings.reduce((sum, b) => sum + b.rating, 0) / ratings.length) * 10) / 10
-            : 0;
-
-        return {
-            totalRevenue,
-            monthlyRevenue,
-            growthPercentage,
-            activeClients,
-            averageBookingValue,
-            topService,
-            newBookings: totalBookings,
-            completionRate,
-            clientSatisfaction
-        };
-    }, [services, bookings, revenue, users, revenueTotals, revenueTrend, revenueByServiceStats]);
-
     const serviceAverageRating = useMemo(() => {
         const ratedServices = services.filter(service => typeof service.rating === 'number' && !Number.isNaN(service.rating));
         if (!ratedServices.length) {
@@ -1057,6 +1026,46 @@ const ClientDashboard = () => {
         const totalRating = ratedServices.reduce((sum, service) => sum + service.rating, 0);
         return Math.round((totalRating / ratedServices.length) * 10) / 10;
     }, [services]);
+
+    const revenueMetrics = useMemo(() => {
+        const totalRevenue = Number(
+            dashboardStats?.revenue?.total
+            ?? revenueTotals.totalRevenue
+            ?? revenue.reduce((sum, item) => sum + Number(item.revenue || item.amount || 0), 0)
+        ) || 0;
+        const monthlyRevenue = totalRevenue;
+        const totalBookings = bookings.length;
+        const completedBookings = bookings.filter(b => ['confirmed', 'completed'].includes(b.status?.toLowerCase())).length;
+        const completionRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+        const averageBookingValue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
+        const activeClients = users.filter(u => String(u.status || '').toLowerCase() === 'active').length;
+        const sortedServices = [...revenueByServiceStats].sort((a, b) => Number(b.revenue || b.amount || 0) - Number(a.revenue || a.amount || 0));
+        const topServiceEntry = sortedServices[0];
+        const topService = topServiceEntry
+            ? (topServiceEntry.service_name || topServiceEntry.name || 'Service')
+            : (services.length > 0 ? services[0].name : 'N/A');
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const monthlyBookings = bookings.filter((booking) => {
+            const sourceDate = booking.appointmentDateRaw || booking.createdAt || booking.date;
+            const parsed = new Date(sourceDate || 0);
+            if (Number.isNaN(parsed.getTime())) return false;
+            return parsed.getMonth() === currentMonth && parsed.getFullYear() === currentYear;
+        }).length;
+        const clientSatisfaction = serviceAverageRating;
+
+        return {
+            totalRevenue,
+            monthlyRevenue,
+            activeClients,
+            averageBookingValue,
+            topService,
+            newBookings: monthlyBookings,
+            completionRate,
+            clientSatisfaction
+        };
+    }, [services, bookings, revenue, users, revenueTotals, revenueByServiceStats, dashboardStats, serviceAverageRating]);
 
     // Modal States
     const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false);
@@ -2145,8 +2154,6 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Total Revenue',
                                     value: `$${revenueMetrics.totalRevenue.toLocaleString()}`,
-                                    change: `+${revenueMetrics.growthPercentage}%`,
-                                    positive: true,
                                     icon: DollarSign,
                                     gradient: 'from-emerald-500 to-teal-600',
                                     delay: 0
@@ -2154,8 +2161,6 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Active Clients',
                                     value: revenueMetrics.activeClients,
-                                    change: '+5.2%',
-                                    positive: true,
                                     icon: Users,
                                     gradient: 'from-blue-500 to-cyan-600',
                                     delay: 100
@@ -2163,8 +2168,6 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Monthly Bookings',
                                     value: revenueMetrics.newBookings,
-                                    change: '+3.1%',
-                                    positive: true,
                                     icon: Calendar,
                                     gradient: 'from-purple-500 to-violet-600',
                                     delay: 200
@@ -2172,8 +2175,6 @@ const ClientDashboard = () => {
                                 {
                                     title: 'Satisfaction',
                                     value: formatRatingOutOfFive(serviceAverageRating),
-                                    change: '+0.2',
-                                    positive: true,
                                     icon: Star,
                                     gradient: 'from-amber-500 to-orange-600',
                                     delay: 300
@@ -2190,11 +2191,7 @@ const ClientDashboard = () => {
                                             <div>
                                                 <p className="text-white/80 text-sm font-medium mb-1">{metric.title}</p>
                                                 <p className="text-2xl font-bold mb-2">{metric.value}</p>
-                                                <div className={`flex items-center gap-1 text-sm ${metric.positive ? 'text-emerald-300' : 'text-red-300'}`}>
-                                                    {metric.positive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                                    <span>{metric.change}</span>
-                                                    <span className="text-white/70">from last month</span>
-                                                </div>
+                                                <div className="text-sm text-white/75">Live data</div>
                                             </div>
                                             <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                                                 <Icon size={24} className="text-white" />
