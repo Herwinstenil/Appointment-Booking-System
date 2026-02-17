@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const AuthContext = createContext();
 
 const ROLE_SESSION_STORAGE_KEY = 'appointment_role_sessions';
+const ACTIVE_ROLE_STORAGE_KEY = 'userRole';
 
 const readStoredSessions = () => {
     if (typeof window === 'undefined') {
@@ -36,8 +37,8 @@ const getInitialAuthState = () => {
     }
 
     const sessions = readStoredSessions();
-    const storedRole = localStorage.getItem('userRole');
-    const resolvedRole = storedRole && sessions[storedRole] ? storedRole : Object.keys(sessions)[0] || null;
+    const storedRole = sessionStorage.getItem(ACTIVE_ROLE_STORAGE_KEY) || localStorage.getItem(ACTIVE_ROLE_STORAGE_KEY);
+    const resolvedRole = resolveActiveRole(sessions, storedRole);
     return { sessions, userRole: resolvedRole };
 };
 
@@ -47,10 +48,25 @@ const updateActiveRoleStorage = (role) => {
     }
 
     if (role) {
-        localStorage.setItem('userRole', role);
+        sessionStorage.setItem(ACTIVE_ROLE_STORAGE_KEY, role);
+        localStorage.setItem(ACTIVE_ROLE_STORAGE_KEY, role);
     } else {
-        localStorage.removeItem('userRole');
+        sessionStorage.removeItem(ACTIVE_ROLE_STORAGE_KEY);
+        localStorage.removeItem(ACTIVE_ROLE_STORAGE_KEY);
     }
+};
+
+const resolveActiveRole = (sessions, preferredRole = null) => {
+    if (!sessions || typeof sessions !== 'object') return null;
+    const roles = Object.keys(sessions);
+    if (roles.length === 0) return null;
+
+    const normalizedPreferred = preferredRole?.toUpperCase();
+    if (normalizedPreferred && sessions[normalizedPreferred]?.token) {
+        return normalizedPreferred;
+    }
+
+    return roles.find((role) => sessions[role]?.token) || null;
 };
 
 export const useAuth = () => {
@@ -95,11 +111,30 @@ export const AuthProvider = ({ children }) => {
         }
     }, [sessions, userRole, applyLanguage]);
 
+    useEffect(() => {
+        const handleStorageChange = (event) => {
+            if (event.key !== ROLE_SESSION_STORAGE_KEY) {
+                return;
+            }
+            const latestSessions = readStoredSessions();
+            const storedRole = typeof window !== 'undefined'
+                ? (sessionStorage.getItem(ACTIVE_ROLE_STORAGE_KEY) || localStorage.getItem(ACTIVE_ROLE_STORAGE_KEY))
+                : null;
+            const resolvedRole = resolveActiveRole(latestSessions, storedRole);
+            setSessions(latestSessions);
+            setUserRole(resolvedRole);
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     const storeRoleSession = useCallback((role, token, userPayload) => {
         if (!role || !token) return;
         const normalized = role.toUpperCase();
-        setSessions(prev => {
-            const next = { ...prev, [normalized]: { token, user: userPayload } };
+        setSessions(() => {
+            const latestSessions = readStoredSessions();
+            const next = { ...latestSessions, [normalized]: { token, user: userPayload } };
             persistSessions(next);
             return next;
         });
@@ -113,12 +148,16 @@ export const AuthProvider = ({ children }) => {
     const activateRole = useCallback((role) => {
         if (!role) return;
         const normalized = role.toUpperCase();
-        if (!sessions[normalized]) {
+        const availableSessions = Object.keys(sessions).length ? sessions : readStoredSessions();
+        if (!availableSessions[normalized]?.token) {
             return;
+        }
+        if (availableSessions !== sessions) {
+            setSessions(availableSessions);
         }
         setUserRole(normalized);
         updateActiveRoleStorage(normalized);
-        const roleUser = sessions[normalized].user;
+        const roleUser = availableSessions[normalized].user;
         if (roleUser?.language) {
             applyLanguage(roleUser.language);
         }
@@ -127,7 +166,7 @@ export const AuthProvider = ({ children }) => {
     const getAuthHeaders = useCallback((role = userRole) => {
         const normalized = role?.toUpperCase();
         if (!normalized) return {};
-        const session = sessions[normalized];
+        const session = sessions[normalized] || readStoredSessions()[normalized];
         if (!session?.token) return {};
         return { 'Authorization': `Bearer ${session.token}` };
     }, [sessions, userRole]);
@@ -135,7 +174,7 @@ export const AuthProvider = ({ children }) => {
     const getSession = useCallback((role = userRole) => {
         const normalized = role?.toUpperCase();
         if (!normalized) return null;
-        return sessions[normalized] || null;
+        return sessions[normalized] || readStoredSessions()[normalized] || null;
     }, [sessions, userRole]);
 
     const availableRoles = useMemo(() => Object.keys(sessions), [sessions]);
@@ -219,7 +258,8 @@ export const AuthProvider = ({ children }) => {
             return;
         }
 
-        const session = sessions[normalizedRole];
+        const latestSessions = readStoredSessions();
+        const session = latestSessions[normalizedRole] || sessions[normalizedRole];
         const token = session?.token;
 
         try {
@@ -235,26 +275,18 @@ export const AuthProvider = ({ children }) => {
             console.error('Logout error:', error);
         }
 
-        const fallbackRoles = Object.keys(sessions).filter(role => role !== normalizedRole);
-        const fallback = fallbackRoles[0] || null;
-
-        setSessions(prev => {
-            if (!prev[normalizedRole]) {
-                return prev;
-            }
-            const next = { ...prev };
-            delete next[normalizedRole];
-            persistSessions(next);
-            return next;
-        });
-
-        if (fallback) {
-            setUserRole(fallback);
-            updateActiveRoleStorage(fallback);
-        } else {
-            setUserRole(null);
-            updateActiveRoleStorage(null);
+        const base = readStoredSessions();
+        if (!base[normalizedRole]) {
+            return;
         }
+
+        const next = { ...base };
+        delete next[normalizedRole];
+        persistSessions(next);
+        const fallback = resolveActiveRole(next);
+        setSessions(next);
+        setUserRole(fallback);
+        updateActiveRoleStorage(fallback);
     }, [API_BASE_URL, sessions, userRole]);
 
     const updateUser = useCallback((updates) => {
@@ -262,17 +294,18 @@ export const AuthProvider = ({ children }) => {
             return;
         }
 
-        setSessions(prev => {
-            const current = prev[userRole];
+        setSessions(() => {
+            const base = readStoredSessions();
+            const current = base[userRole];
             if (!current) {
-                return prev;
+                return base;
             }
 
             const normalizedNewRole = updates.role?.toUpperCase();
             const targetRole = normalizedNewRole && normalizedNewRole !== userRole ? normalizedNewRole : userRole;
             const updatedUser = { ...current.user, ...updates };
 
-            const nextSessions = { ...prev };
+            const nextSessions = { ...base };
             if (normalizedNewRole && normalizedNewRole !== userRole) {
                 delete nextSessions[userRole];
             }
