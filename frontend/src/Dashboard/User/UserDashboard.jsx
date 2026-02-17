@@ -513,8 +513,6 @@ const getBookingHistoryStatusClass = (status = '') => {
 
     const [securitySettings, setSecuritySettings] = useState({
         twoFactorAuth: false,
-        sessionTimeout: '60',
-        passwordExpiry: '90',
         loginAlerts: true
     });
 
@@ -3476,35 +3474,6 @@ const getBookingHistoryStatusClass = (status = '') => {
                                                     </button>
                                                 </div>
                                             ))}
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="group">
-                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Session Timeout</label>
-                                                    <select
-                                                        value={securitySettings.sessionTimeout}
-                                                        onChange={(e) => handleSecurityChange('sessionTimeout', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
-                                                    >
-                                                        <option value="15">15 minutes</option>
-                                                        <option value="30">30 minutes</option>
-                                                        <option value="60">1 hour</option>
-                                                        <option value="120">2 hours</option>
-                                                    </select>
-                                                </div>
-                                                <div className="group">
-                                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Password Expiry</label>
-                                                    <select
-                                                        value={securitySettings.passwordExpiry}
-                                                        onChange={(e) => handleSecurityChange('passwordExpiry', e.target.value)}
-                                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
-                                                    >
-                                                        <option value="30">30 days</option>
-                                                        <option value="60">60 days</option>
-                                                        <option value="90">90 days</option>
-                                                        <option value="180">180 days</option>
-                                                    </select>
-                                                </div>
-                                            </div>
 
                                             <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-[1.02]">
                                                 <Key size={20} />
