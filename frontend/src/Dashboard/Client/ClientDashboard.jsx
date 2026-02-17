@@ -4489,7 +4489,7 @@ const ClientDashboard = () => {
                                                             {transaction.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-10 py-4">
                                                         <button
                                                             onClick={() => setSelectedTransaction(transaction)}
                                                             className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
