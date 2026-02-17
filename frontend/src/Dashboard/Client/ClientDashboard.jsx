@@ -1076,6 +1076,41 @@ const ClientDashboard = () => {
         });
     }, [bookings]);
 
+    const allTransactions = useMemo(() => {
+        const sorted = [...bookings].sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.appointmentDateRaw || 0);
+            const dateB = new Date(b.createdAt || b.appointmentDateRaw || 0);
+            return dateB - dateA;
+        });
+
+        return sorted.map((booking) => {
+            const initials = getInitialsFromName(booking.client, 'CL');
+            const rawAmount = Number(booking.amountRaw || 0);
+            const statusRaw = String(booking.statusRaw || '').toUpperCase();
+            const status = statusRaw === 'COMPLETED'
+                ? 'completed'
+                : statusRaw === 'CANCELLED'
+                    ? 'cancelled'
+                    : 'pending';
+            const sourceDate = booking.appointmentDateRaw || booking.createdAt || null;
+            const parsedDate = sourceDate ? new Date(sourceDate) : null;
+            const dateISO = parsedDate && !Number.isNaN(parsedDate.getTime())
+                ? parsedDate.toISOString().slice(0, 10)
+                : '';
+
+            return {
+                id: booking.id,
+                client: booking.client,
+                service: booking.service,
+                amount: Number.isFinite(rawAmount) ? rawAmount : 0,
+                date: booking.date || '',
+                dateISO,
+                avatar: initials,
+                status
+            };
+        });
+    }, [bookings]);
+
     const performanceMetrics = useMemo(() => {
         const totalBookings = bookings.length;
         const confirmedBookings = bookings.filter(b => b.status?.toLowerCase() === 'confirmed').length;
@@ -1303,20 +1338,34 @@ const ClientDashboard = () => {
     // Pagination states for modals
     const [transactionsPage, setTransactionsPage] = useState(1);
     const [transactionsPerPage] = useState(5);
-    const [allTransactions, setAllTransactions] = useState([
-        { id: 1, client: 'John Smith', service: 'Web Development', amount: 500, date: 'Today', status: 'completed', avatar: 'JS' },
-        { id: 2, client: 'Sarah Johnson', service: 'UI/UX Design', amount: 300, date: 'Today', status: 'completed', avatar: 'SJ' },
-        { id: 3, client: 'Mike Davis', service: 'Mobile App Development', amount: 800, date: 'Yesterday', status: 'pending', avatar: 'MD' },
-        { id: 4, client: 'Emma Wilson', service: 'Consultation', amount: 200, date: 'Yesterday', status: 'completed', avatar: 'EW' },
-        { id: 5, client: 'Alex Brown', service: 'Web Development', amount: 500, date: '2 days ago', status: 'completed', avatar: 'AB' },
-        { id: 6, client: 'Lisa Chen', service: 'UI/UX Design', amount: 300, date: '2 days ago', status: 'completed', avatar: 'LC' },
-        { id: 7, client: 'David Kim', service: 'Mobile App Development', amount: 800, date: '3 days ago', status: 'pending', avatar: 'DK' },
-        { id: 8, client: 'Rachel Green', service: 'Consultation', amount: 200, date: '3 days ago', status: 'completed', avatar: 'RG' },
-        { id: 9, client: 'Tom Wilson', service: 'Web Development', amount: 500, date: '4 days ago', status: 'completed', avatar: 'TW' },
-        { id: 10, client: 'Anna Davis', service: 'UI/UX Design', amount: 300, date: '4 days ago', status: 'completed', avatar: 'AD' },
-        { id: 11, client: 'Chris Johnson', service: 'Mobile App Development', amount: 800, date: '5 days ago', status: 'pending', avatar: 'CJ' },
-        { id: 12, client: 'Maria Garcia', service: 'Consultation', amount: 200, date: '5 days ago', status: 'completed', avatar: 'MG' }
-    ]);
+    const [transactionStatusFilter, setTransactionStatusFilter] = useState('all');
+    const [transactionDateFrom, setTransactionDateFrom] = useState('');
+    const [transactionDateTo, setTransactionDateTo] = useState('');
+
+    const filteredTransactions = useMemo(() => {
+        return allTransactions.filter((transaction) => {
+            if (transactionStatusFilter !== 'all' && transaction.status !== transactionStatusFilter) {
+                return false;
+            }
+            if (transactionDateFrom && (!transaction.dateISO || transaction.dateISO < transactionDateFrom)) {
+                return false;
+            }
+            if (transactionDateTo && (!transaction.dateISO || transaction.dateISO > transactionDateTo)) {
+                return false;
+            }
+            return true;
+        });
+    }, [allTransactions, transactionStatusFilter, transactionDateFrom, transactionDateTo]);
+
+    useEffect(() => {
+        setTransactionsPage(1);
+    }, [transactionStatusFilter, transactionDateFrom, transactionDateTo, showAllTransactionsModal]);
+
+    const paginatedTransactions = useMemo(() => {
+        const start = (transactionsPage - 1) * transactionsPerPage;
+        const end = transactionsPage * transactionsPerPage;
+        return filteredTransactions.slice(start, end);
+    }, [filteredTransactions, transactionsPage, transactionsPerPage]);
 
     // Availability Management State
     const [availability, setAvailability] = useState(DEFAULT_AVAILABILITY);
@@ -4300,29 +4349,37 @@ const ClientDashboard = () => {
                         {/* Modal Body */}
                         <div className="p-6">
                             {/* Filters */}
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
-                                    <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer">
-                                        <option value="all">All Transactions</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
+                                        <select
+                                            value={transactionStatusFilter}
+                                            onChange={(e) => setTransactionStatusFilter(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm cursor-pointer"
+                                        >
+                                            <option value="all">All Transactions</option>
+                                            <option value="completed">Completed</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-gray-700">Date Range:</span>
+                                        <input
+                                            type="date"
+                                            value={transactionDateFrom}
+                                            onChange={(e) => setTransactionDateFrom(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                        />
+                                        <span className="text-gray-500">to</span>
+                                        <input
+                                            type="date"
+                                            value={transactionDateTo}
+                                            onChange={(e) => setTransactionDateTo(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-gray-700">Date Range:</span>
-                                    <input
-                                        type="date"
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                                    />
-                                    <span className="text-gray-500">to</span>
-                                    <input
-                                        type="date"
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent text-sm"
-                                    />
-                                </div>
-                            </div>
 
                             {/* Transactions Table */}
                             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6">
@@ -4330,7 +4387,7 @@ const ClientDashboard = () => {
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-lg font-semibold text-gray-800">Transaction History</h4>
                                         <span className="text-sm text-gray-600">
-                                            {allTransactions.length} transactions found
+                                            {filteredTransactions.length} transactions found
                                         </span>
                                     </div>
                                 </div>
@@ -4347,8 +4404,7 @@ const ClientDashboard = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            {/* Fixed: Use allTransactions.slice() instead of filteredRecentTransactions */}
-                                            {allTransactions.slice((transactionsPage - 1) * transactionsPerPage, transactionsPage * transactionsPerPage).map((transaction) => (
+                                            {paginatedTransactions.map((transaction) => (
                                                 <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center">
@@ -4388,7 +4444,7 @@ const ClientDashboard = () => {
                             {/* Pagination Info */}
                             <div className="flex items-center justify-between mb-6 p-6">
                                 <div className="text-sm text-gray-600">
-                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, allTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, allTransactions.length)} of {allTransactions.length} transactions
+                                    Showing {Math.min((transactionsPage - 1) * transactionsPerPage + 1, filteredTransactions.length)} to {Math.min(transactionsPage * transactionsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
@@ -4402,8 +4458,8 @@ const ClientDashboard = () => {
                                         {transactionsPage}
                                     </span>
                                     <button
-                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.ceil(allTransactions.length / transactionsPerPage)))}
-                                        disabled={transactionsPage === Math.ceil(allTransactions.length / transactionsPerPage)}
+                                        onClick={() => setTransactionsPage(prev => Math.min(prev + 1, Math.max(Math.ceil(filteredTransactions.length / transactionsPerPage), 1)))}
+                                        disabled={transactionsPage === Math.max(Math.ceil(filteredTransactions.length / transactionsPerPage), 1)}
                                         className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         Next
@@ -4413,7 +4469,7 @@ const ClientDashboard = () => {
                             <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-b-2xl">
                                 <div className="flex items-center justify-between">
                                     <div className="text-sm text-gray-500 mb-4">
-                                        Total: ${allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
+                                        Total: ${filteredTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0).toLocaleString()}
                                     </div>
                                     <div className="flex items-center justify-end space-x-3">
                                         <button
