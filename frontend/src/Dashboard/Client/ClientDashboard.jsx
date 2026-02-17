@@ -2278,6 +2278,64 @@ const ClientDashboard = () => {
         doc.save('client-dashboard-report.pdf');
     };
 
+    const exportTransactionsToPDF = () => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.setTextColor(16, 185, 129);
+        doc.text('Transactions Report', 20, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+        doc.text(`Total Transactions: ${filteredTransactions.length}`, 20, 36);
+
+        let y = 48;
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text('Client', 20, y);
+        doc.text('Service', 70, y);
+        doc.text('Amount', 130, y);
+        doc.text('Date', 160, y);
+        doc.text('Status', 185, y);
+
+        y += 6;
+        doc.setDrawColor(229, 231, 235);
+        doc.line(20, y, 195, y);
+        y += 6;
+
+        doc.setFontSize(9);
+        doc.setTextColor(55, 65, 81);
+
+        filteredTransactions.forEach((transaction) => {
+            if (y > 275) {
+                doc.addPage();
+                y = 20;
+            }
+
+            const clientText = String(transaction.client || 'N/A').slice(0, 18);
+            const serviceText = String(transaction.service || 'N/A').slice(0, 20);
+            const amountText = `$${Number(transaction.amount || 0).toFixed(2)}`;
+            const dateText = String(transaction.date || 'N/A').slice(0, 12);
+            const statusText = String(transaction.status || 'N/A');
+
+            doc.text(clientText, 20, y);
+            doc.text(serviceText, 70, y);
+            doc.text(amountText, 130, y);
+            doc.text(dateText, 160, y);
+            doc.text(statusText, 185, y);
+            y += 6;
+        });
+
+        y += 6;
+        const totalAmount = filteredTransactions.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+        doc.setFontSize(11);
+        doc.setTextColor(17, 24, 39);
+        doc.text(`Total: $${totalAmount.toFixed(2)}`, 20, Math.min(y, 285));
+
+        doc.save('client-transactions-report.pdf');
+    };
+
     const sidebarItems = [
         { name: 'Dashboard', icon: BarChart3 },
         { name: 'Services', icon: FolderOpen },
@@ -4479,6 +4537,7 @@ const ClientDashboard = () => {
                                             Close
                                         </button>
                                         <button
+                                            onClick={exportTransactionsToPDF}
                                             className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105 cursor-pointer"
                                         >
                                             <Download size={18} className="inline mr-2" />
