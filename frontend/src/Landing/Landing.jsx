@@ -308,7 +308,19 @@ export default function AppointmentLanding() {
                   </div>
                   <h3 className="text-2xl font-bold mb-2">{service.name}</h3>
                   <p className="text-gray-600 mb-4">{service.category || 'General Service'}</p>
-                  <p className="text-3xl font-bold text-purple-600 mb-6">${Number(service.price || 0).toFixed(2)}</p>
+                  <p className="text-3xl font-bold text-purple-600 mb-3">${Number(service.price || 0).toFixed(2)}</p>
+                  {Array.isArray(service.availabilitySummary) && service.availabilitySummary.length > 0 && (
+                    <div className="mb-6 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-1">Available</p>
+                      <div className="space-y-1">
+                        {service.availabilitySummary.map((line, index) => (
+                          <p key={`${service.id}-availability-${index}`} className="text-xs font-medium text-emerald-700">
+                            {line}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <button
                     onClick={handleBookNow}
                     className="w-full bg-purple-600 text-white py-3 rounded-full hover:bg-purple-700 transition"

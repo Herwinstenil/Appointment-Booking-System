@@ -50,6 +50,77 @@ const handleErrorResponse = (res, error) => {
 
 const normalizeSortBy = (field) => ALLOWED_SORT_FIELDS.includes(field) ? field : 'createdAt';
 
+const WEEKLY_DAY_ORDER = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday'
+];
+
+const getShortDayLabel = (day = '') => {
+  const normalized = String(day || '').trim().toLowerCase();
+  if (!normalized) return '';
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1, 3);
+};
+
+const formatTime24To12Compact = (value = '') => {
+  const [hoursRaw, minutesRaw] = String(value || '').split(':');
+  const hours = Number(hoursRaw);
+  const minutes = Number(minutesRaw);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return value;
+
+  const meridiem = hours >= 12 ? 'PM' : 'AM';
+  const twelveHour = hours % 12 === 0 ? 12 : hours % 12;
+  return `${String(twelveHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${meridiem}`;
+};
+
+const buildAvailabilitySummaryLines = (availability = {}) => {
+  const entries = WEEKLY_DAY_ORDER.map((day) => {
+    const schedule = availability?.[day] || null;
+    return {
+      day,
+      enabled: Boolean(schedule?.enabled),
+      start: schedule?.start || '',
+      end: schedule?.end || ''
+    };
+  });
+
+  const groups = [];
+  entries.forEach((entry) => {
+    const signature = entry.enabled ? `on|${entry.start}|${entry.end}` : 'off';
+    const previous = groups[groups.length - 1];
+
+    if (previous && previous.signature === signature) {
+      previous.endDay = entry.day;
+      return;
+    }
+
+    groups.push({
+      signature,
+      enabled: entry.enabled,
+      start: entry.start,
+      end: entry.end,
+      startDay: entry.day,
+      endDay: entry.day
+    });
+  });
+
+  return groups.map((group) => {
+    const dayRange = group.startDay === group.endDay
+      ? getShortDayLabel(group.startDay)
+      : `${getShortDayLabel(group.startDay)}-${getShortDayLabel(group.endDay)}`;
+
+    if (!group.enabled) {
+      return `${dayRange} (Unavailable)`;
+    }
+
+    return `${dayRange} (${formatTime24To12Compact(group.start)} - ${formatTime24To12Compact(group.end)})`;
+  });
+};
+
 const ensureClientNo = (req, res) => {
   const clientNo = req.user?.clientNo;
   if (!clientNo) {
@@ -80,10 +151,37 @@ router.get('/active', async (req, res) => {
       }
     });
 
+    const clientNos = [...new Set(services.map((service) => service.clientNo).filter((value) => Number.isInteger(value)))];
+    const availabilityRows = clientNos.length > 0
+      ? await prisma.clientAvailability.findMany({
+        where: {
+          clientNo: {
+            in: clientNos
+          }
+        },
+        select: {
+          clientNo: true,
+          availability: true
+        }
+      })
+      : [];
+
+    const availabilityByClientNo = new Map(
+      availabilityRows.map((row) => [row.clientNo, row.availability || {}])
+    );
+
+    const servicesWithAvailability = services.map((service) => {
+      const availability = availabilityByClientNo.get(service.clientNo) || {};
+      return {
+        ...service,
+        availabilitySummary: buildAvailabilitySummaryLines(availability)
+      };
+    });
+
     return res.json({
       success: true,
       data: {
-        services
+        services: servicesWithAvailability
       }
     });
   } catch (error) {
