@@ -515,6 +515,14 @@ const getBookingHistoryStatusClass = (status = '') => {
         twoFactorAuth: false,
         loginAlerts: true
     });
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [changePasswordForm, setChangePasswordForm] = useState({
+        newPassword: '',
+        confirmNewPassword: ''
+    });
+    const [changePasswordError, setChangePasswordError] = useState(null);
+    const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
+    const [changePasswordLoading, setChangePasswordLoading] = useState(false);
 
     // Appointments State - Load from API
     const [appointments, setAppointments] = useState([]);
@@ -844,6 +852,78 @@ const getBookingHistoryStatusClass = (status = '') => {
             ...prev,
             [key]: value
         }));
+    };
+
+    const openChangePasswordModal = () => {
+        setChangePasswordForm({ newPassword: '', confirmNewPassword: '' });
+        setChangePasswordError(null);
+        setChangePasswordSuccess(false);
+        setShowChangePasswordModal(true);
+    };
+
+    const closeChangePasswordModal = () => {
+        if (changePasswordLoading) return;
+        setShowChangePasswordModal(false);
+        setChangePasswordError(null);
+        setChangePasswordSuccess(false);
+    };
+
+    const handleChangePasswordInput = (event) => {
+        const { name, value } = event.target;
+        setChangePasswordForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleChangePasswordSubmit = async (event) => {
+        event.preventDefault();
+        setChangePasswordError(null);
+        setChangePasswordSuccess(false);
+
+        const { newPassword, confirmNewPassword } = changePasswordForm;
+        if (!newPassword || !confirmNewPassword) {
+            setChangePasswordError('Please fill in both password fields');
+            return;
+        }
+        if (newPassword.length < 6) {
+            setChangePasswordError('Password must be at least 6 characters');
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            setChangePasswordError('Passwords do not match');
+            return;
+        }
+
+        setChangePasswordLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({
+                    newPassword,
+                    confirmNewPassword
+                })
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to change password');
+            }
+
+            setChangePasswordSuccess(true);
+            setChangePasswordForm({ newPassword: '', confirmNewPassword: '' });
+            setTimeout(() => {
+                setShowChangePasswordModal(false);
+                setChangePasswordSuccess(false);
+            }, 1200);
+        } catch (error) {
+            setChangePasswordError(error.message || 'Failed to change password');
+        } finally {
+            setChangePasswordLoading(false);
+        }
     };
 
     const handleSaveProfile = async () => {
@@ -3475,7 +3555,11 @@ const getBookingHistoryStatusClass = (status = '') => {
                                                 </div>
                                             ))}
 
-                                            <button className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-[1.02]">
+                                            <button
+                                                type="button"
+                                                onClick={openChangePasswordModal}
+                                                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-[1.02]"
+                                            >
                                                 <Key size={20} />
                                                 Change Password
                                             </button>
@@ -3696,6 +3780,69 @@ const getBookingHistoryStatusClass = (status = '') => {
                     className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden transition-opacity duration-300 animate-fadeIn"
                     onClick={() => setSidebarOpen(false)}
                 ></div>
+            )}
+
+            {showChangePasswordModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl">
+                        <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
+                            <button
+                                type="button"
+                                onClick={closeChangePasswordModal}
+                                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleChangePasswordSubmit} className="px-6 py-5 space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                                <input
+                                    type="password"
+                                    name="newPassword"
+                                    value={changePasswordForm.newPassword}
+                                    onChange={handleChangePasswordInput}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                    placeholder="Enter new password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                                <input
+                                    type="password"
+                                    name="confirmNewPassword"
+                                    value={changePasswordForm.confirmNewPassword}
+                                    onChange={handleChangePasswordInput}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition-all duration-300"
+                                    placeholder="Confirm new password"
+                                />
+                            </div>
+                            {changePasswordError && (
+                                <p className="text-sm text-red-600">{changePasswordError}</p>
+                            )}
+                            {changePasswordSuccess && (
+                                <p className="text-sm text-emerald-600">Password changed successfully</p>
+                            )}
+                            <div className="pt-2 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={closeChangePasswordModal}
+                                    className="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={changePasswordLoading}
+                                    className="px-5 py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {changePasswordLoading ? 'Changing...' : 'Change Password'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
 
             {/* All Activities Modal */}
