@@ -62,13 +62,6 @@ const ensureClientNo = (req, res) => {
   return clientNo;
 };
 
-const normalizeAvailabilityPayload = (value) => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null;
-  }
-  return value;
-};
-
 // Public endpoint for user booking form to load only active services
 router.get('/active', authenticateToken, async (req, res) => {
   try {
@@ -87,47 +80,10 @@ router.get('/active', authenticateToken, async (req, res) => {
       }
     });
 
-    const clientNumbers = [...new Set(
-      services
-        .map((service) => service.clientNo)
-        .filter((clientNo) => Number.isInteger(clientNo))
-    )];
-
-    let availabilityByClientNo = {};
-    if (clientNumbers.length > 0) {
-      try {
-        const tableRows = await prisma.$queryRawUnsafe(
-          `SELECT to_regclass('public."ClientAvailability"') AS "tableName"`
-        );
-        const tableName = tableRows?.[0]?.tableName;
-
-        if (tableName) {
-          const availabilityRows = await prisma.$queryRawUnsafe(
-            `SELECT "clientNo", "availability" FROM "ClientAvailability" WHERE "clientNo" = ANY($1::int[])`,
-            clientNumbers
-          );
-          availabilityByClientNo = availabilityRows.reduce((acc, row) => {
-            if (!row || !Number.isInteger(row.clientNo)) {
-              return acc;
-            }
-            acc[row.clientNo] = normalizeAvailabilityPayload(row.availability);
-            return acc;
-          }, {});
-        }
-      } catch (availabilityError) {
-        console.error('Service availability lookup failed:', availabilityError);
-      }
-    }
-
-    const servicesWithAvailability = services.map((service) => ({
-      ...service,
-      availability: availabilityByClientNo[service.clientNo] || null
-    }));
-
     return res.json({
       success: true,
       data: {
-        services: servicesWithAvailability
+        services
       }
     });
   } catch (error) {

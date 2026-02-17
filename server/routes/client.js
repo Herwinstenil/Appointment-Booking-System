@@ -69,6 +69,25 @@ const splitFullName = (value = '') => {
   };
 };
 
+const toSafeNumber = (value, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : fallback;
+  if (typeof value === 'bigint') return Number(value);
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const toSafeInteger = (value, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object' && value !== null && '_all' in value) {
+    return toSafeInteger(value._all, fallback);
+  }
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : fallback;
+  if (typeof value === 'bigint') return Number(value);
+  const parsed = parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
 // Get client dashboard stats
 router.get('/dashboard/stats', authenticateToken, authorizeRoles('CLIENT'), async (req, res) => {
   try {
@@ -684,7 +703,7 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
       WHERE s."clientNo" = ${clientNo}
         AND a."createdAt" >= ${startDate}
         AND a."status" = 'COMPLETED'
-      GROUP BY DATE_TRUNC(${groupBy === 'month' ? 'month' : 'day'}, a."createdAt")
+      GROUP BY 1
       ORDER BY period DESC
     `;
 
@@ -704,6 +723,19 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
       GROUP BY s.id, s."name", s."category"
       ORDER BY revenue DESC
     `;
+
+    const normalizedRevenueData = (Array.isArray(revenueData) ? revenueData : []).map((row) => ({
+      ...row,
+      appointments: toSafeInteger(row?.appointments, 0),
+      revenue: toSafeNumber(row?.revenue, 0)
+    }));
+
+    const normalizedRevenueByService = (Array.isArray(revenueByService) ? revenueByService : []).map((row) => ({
+      ...row,
+      appointments: toSafeInteger(row?.appointments, 0),
+      revenue: toSafeNumber(row?.revenue, 0),
+      avg_rating: toSafeNumber(row?.avg_rating, 0)
+    }));
 
     // Get total stats
     const totalStats = await prisma.appointment.aggregate({
@@ -725,11 +757,11 @@ router.get('/revenue', authenticateToken, authorizeRoles('CLIENT'), async (req, 
     res.json({
       success: true,
       data: {
-        revenueData,
-        revenueByService,
+        revenueData: normalizedRevenueData,
+        revenueByService: normalizedRevenueByService,
         totalStats: {
-          totalRevenue: totalStats._sum.amount || 0,
-          totalAppointments: totalStats._count,
+          totalRevenue: toSafeNumber(totalStats?._sum?.amount, 0),
+          totalAppointments: toSafeInteger(totalStats?._count, 0),
           period: `${periodDays} days`
         }
       }

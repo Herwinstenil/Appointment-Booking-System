@@ -128,88 +128,6 @@ const parseDateOnly = (value) => {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const WEEKLY_DAY_ORDER = [
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-    'sunday'
-];
-
-const getShortDayLabel = (day = '') => {
-    const normalized = day.toString().trim().toLowerCase();
-    if (!normalized) return '';
-    return normalized.charAt(0).toUpperCase() + normalized.slice(1, 3);
-};
-
-const formatTime24To12Compact = (value = '') => {
-    const [hoursRaw, minutesRaw] = String(value).split(':');
-    const hours = Number(hoursRaw);
-    const minutes = Number(minutesRaw);
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-        return value;
-    }
-    const meridiem = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-    return `${String(hour12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${meridiem}`;
-};
-
-const getWeeklyAvailabilityEntries = (availability) => {
-    const normalizedAvailability = (!availability || typeof availability !== 'object' || Array.isArray(availability))
-        ? {}
-        : availability;
-
-    return WEEKLY_DAY_ORDER.map((day) => {
-        const schedule = normalizedAvailability[day] || null;
-        return {
-            day,
-            enabled: Boolean(schedule?.enabled),
-            start: schedule?.start || '',
-            end: schedule?.end || ''
-        };
-    });
-};
-
-const buildAvailabilitySummaryLines = (entries = []) => {
-    if (!Array.isArray(entries) || entries.length === 0) {
-        return [];
-    }
-
-    const groups = [];
-    entries.forEach((entry) => {
-        const signature = entry.enabled ? `on|${entry.start}|${entry.end}` : 'off';
-        const existing = groups[groups.length - 1];
-
-        if (existing && existing.signature === signature) {
-            existing.endDay = entry.day;
-            return;
-        }
-
-        groups.push({
-            signature,
-            enabled: entry.enabled,
-            start: entry.start,
-            end: entry.end,
-            startDay: entry.day,
-            endDay: entry.day
-        });
-    });
-
-    return groups.map((group) => {
-        const dayRange = group.startDay === group.endDay
-            ? getShortDayLabel(group.startDay)
-            : `${getShortDayLabel(group.startDay)}-${getShortDayLabel(group.endDay)}`;
-
-        if (!group.enabled) {
-            return `${dayRange} (Unavailable)`;
-        }
-
-        return `${dayRange} (${formatTime24To12Compact(group.start)} - ${formatTime24To12Compact(group.end)})`;
-    });
-};
-
 const UserDashboard = () => {
     const navigate = useNavigate();
     const { logout, user, getAuthHeaders, API_BASE_URL, activateRole, getSession } = useAuth();
@@ -1473,17 +1391,10 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     {serviceOptions.map((service) => {
                                         const priceValue = Number(service.price);
                                         const priceLabel = Number.isFinite(priceValue) ? `$${priceValue.toFixed(2)}` : '$0.00';
-                                        const availabilitySummary = buildAvailabilitySummaryLines(
-                                            getWeeklyAvailabilityEntries(service.availability)
-                                        );
-                                        const availabilityLabel = availabilitySummary.length
-                                            ? availabilitySummary.join(' | ')
-                                            : 'Mon-Sun (Unavailable)';
                                         return (
                                             <option key={service.id} value={service.id}>
                                                 {service.name} - {priceLabel}
                                                 {service.category ? ` (${service.category})` : ''}
-                                                {` | ${availabilityLabel}`}
                                             </option>
                                         );
                                     })}
