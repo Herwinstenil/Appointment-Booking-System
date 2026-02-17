@@ -1175,12 +1175,21 @@ const ClientDashboard = () => {
                 return acc;
             }, {});
 
+        const completedBookingsByServiceKey = bookings
+            .filter((booking) => String(booking.statusRaw || booking.status || '').toUpperCase() === 'COMPLETED')
+            .reduce((acc, booking) => {
+                const key = String(booking.service || 'Service');
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+
         return services.map((service) => {
             const name = service.name || 'Service';
             return {
                 name,
                 category: service.category || 'N/A',
                 bookings: Number(service.bookings || 0),
+                completedBookings: Number(completedBookingsByServiceKey[name] || 0),
                 revenue: Number(revenueByServiceKey[name] || 0)
             };
         });
@@ -1302,6 +1311,22 @@ const ClientDashboard = () => {
             satisfactionChange
         };
     }, [services, bookings, revenue, users, revenueTotals, revenueByServiceStats, dashboardStats, serviceAverageRating]);
+
+    const currentMonthRevenue = useMemo(() => {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        return bookings
+            .filter((booking) => String(booking.statusRaw || booking.status || '').toUpperCase() === 'COMPLETED')
+            .filter((booking) => {
+                const sourceDate = booking.appointmentDateRaw || booking.createdAt || booking.date;
+                const parsed = new Date(sourceDate || 0);
+                if (Number.isNaN(parsed.getTime())) return false;
+                return parsed.getMonth() === currentMonth && parsed.getFullYear() === currentYear;
+            })
+            .reduce((sum, booking) => sum + Number(booking.amountRaw || 0), 0);
+    }, [bookings]);
 
     // Modal States
     const [showServiceDetailsModal, setShowServiceDetailsModal] = useState(false);
@@ -2493,22 +2518,25 @@ const ClientDashboard = () => {
             row.name,
             row.category,
             String(row.bookings),
+            String(row.completedBookings),
             `$${row.revenue.toFixed(2)}`
         ]));
 
         autoTable(doc, {
             startY: 36,
-            head: [['Service', 'Category', 'Bookings', 'Revenue']],
+            head: [['Service', 'Category', 'Bookings', 'Completed Bookings', 'Revenue']],
             body: rows,
             styles: { fontSize: 10, cellPadding: 3 },
             headStyles: { fillColor: [16, 185, 129], textColor: 255 }
         });
 
         const totalRevenue = serviceRevenueReportRows.reduce((sum, row) => sum + Number(row.revenue || 0), 0);
+        const totalCompletedBookings = serviceRevenueReportRows.reduce((sum, row) => sum + Number(row.completedBookings || 0), 0);
         const finalY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 10 : 280;
         doc.setFontSize(11);
         doc.setTextColor(17, 24, 39);
         doc.text(`Total Service Revenue: $${totalRevenue.toFixed(2)}`, 20, Math.min(finalY, 285));
+        doc.text(`Total Completed Bookings: ${totalCompletedBookings}`, 20, Math.min(finalY + 14, 295));
 
         doc.save('client-service-revenue-report.pdf');
     };
@@ -4212,7 +4240,7 @@ const ClientDashboard = () => {
                                             { label: 'Total Services', value: services.length, icon: FolderOpen },
                                             { label: 'Active Bookings', value: bookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length, icon: Calendar },
                                             { label: 'User Rating', value: `${formatRatingOutOfFive(serviceAverageRating)}`, icon: Star },
-                                            { label: 'Monthly Revenue', value: '$12.5K', icon: DollarSign }
+                                            { label: 'Monthly Revenue', value: `$${currentMonthRevenue.toLocaleString()}`, icon: DollarSign }
                                         ].map((stat, index) => {
                                             const StatIcon = stat.icon;
                                             return (
