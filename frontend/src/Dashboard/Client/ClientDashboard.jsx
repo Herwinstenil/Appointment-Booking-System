@@ -1103,7 +1103,6 @@ const ClientDashboard = () => {
             {
                 name: 'Response Time',
                 value: `${averageResponse.toFixed(1)} hrs`,
-                positive: averageResponse <= 3
             },
             {
                 name: 'Booking Rate',
