@@ -1115,15 +1115,34 @@ const ClientDashboard = () => {
         });
     }, [bookings]);
 
+    const serviceAverageRating = useMemo(() => {
+        const ratedServices = services.filter(service => typeof service.rating === 'number' && !Number.isNaN(service.rating));
+        if (!ratedServices.length) {
+            return 0;
+        }
+        const totalRating = ratedServices.reduce((sum, service) => sum + service.rating, 0);
+        return Math.round((totalRating / ratedServices.length) * 10) / 10;
+    }, [services]);
+
     const performanceMetrics = useMemo(() => {
         const totalBookings = bookings.length;
-        const confirmedBookings = bookings.filter(b => b.status?.toLowerCase() === 'confirmed').length;
-        const bookingRate = totalBookings ? Math.round((confirmedBookings / totalBookings) * 100) : 0;
+        const completedBookings = bookings.filter((booking) => (
+            String(booking.statusRaw || booking.status || '').toUpperCase() === 'COMPLETED'
+        )).length;
+        const bookingRate = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
         const ratings = bookings.filter(b => typeof b.rating === 'number');
         const averageRating = ratings.length
             ? Math.round((ratings.reduce((sum, b) => sum + b.rating, 0) / ratings.length) * 10) / 10
             : 0;
-        const repeatClients = new Set(bookings.map(b => b.client)).size;
+        const completedByClient = bookings
+            .filter((booking) => String(booking.statusRaw || booking.status || '').toUpperCase() === 'COMPLETED')
+            .reduce((acc, booking) => {
+                const key = booking.userId || booking.userEmail || booking.client;
+                if (!key) return acc;
+                acc[key] = (acc[key] || 0) + 1;
+                return acc;
+            }, {});
+        const repeatClients = Object.values(completedByClient).filter((count) => count >= 2).length;
 
         return [
             {
@@ -1143,16 +1162,7 @@ const ClientDashboard = () => {
                 value: `${repeatClients}`,
             }
         ];
-    }, [bookings, dashboardResponseTimeMs]);
-
-    const serviceAverageRating = useMemo(() => {
-        const ratedServices = services.filter(service => typeof service.rating === 'number' && !Number.isNaN(service.rating));
-        if (!ratedServices.length) {
-            return 0;
-        }
-        const totalRating = ratedServices.reduce((sum, service) => sum + service.rating, 0);
-        return Math.round((totalRating / ratedServices.length) * 10) / 10;
-    }, [services]);
+    }, [bookings, dashboardResponseTimeMs, serviceAverageRating]);
 
     const revenueMetrics = useMemo(() => {
         const now = new Date();
