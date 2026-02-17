@@ -1136,7 +1136,7 @@ const ClientDashboard = () => {
             },
             {
                 name: 'User Rating',
-                value: `${averageRating.toFixed(1)}/5`,
+                value: `${formatRatingOutOfFive(serviceAverageRating)}`,
             },
             {
                 name: 'Repeat Clients',
@@ -4026,7 +4026,7 @@ const ClientDashboard = () => {
                                         {[
                                             { label: 'Total Services', value: services.length, icon: FolderOpen },
                                             { label: 'Active Bookings', value: bookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending').length, icon: Calendar },
-                                            { label: 'User Rating', value: '4.8/5', icon: Star },
+                                            { label: 'User Rating', value: `${formatRatingOutOfFive(serviceAverageRating)}`, icon: Star },
                                             { label: 'Monthly Revenue', value: '$12.5K', icon: DollarSign }
                                         ].map((stat, index) => {
                                             const StatIcon = stat.icon;
