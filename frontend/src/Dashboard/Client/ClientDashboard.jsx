@@ -1018,6 +1018,12 @@ const ClientDashboard = () => {
         return addGrowth(buckets);
     }, [bookings, timeRange]);
 
+    const getYearRangeDisplay = () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        return `${currentYear - 4} - ${currentYear}`;
+    };
+
     const revenueByService = useMemo(() => {
         if (!revenueByServiceStats.length) return [];
         const palette = ['bg-emerald-500', 'bg-blue-500', 'bg-sky-500', 'bg-purple-500', 'bg-indigo-500'];
@@ -2391,10 +2397,24 @@ const ClientDashboard = () => {
                             {/* Revenue Trend Chart */}
                             <div className={`xl:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${isFullScreen ? 'fixed inset-4 z-50 bg-white rounded-2xl shadow-2xl' : ''}`}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800">Revenue Trend</h3>
+                                        {timeRange === 'yearly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{getYearRangeDisplay()}</p>
+                                        )}
+                                        {timeRange === 'monthly' && (
+                                            <p className="text-sm text-gray-500 mt-1">{new Date().getFullYear()}</p>
+                                        )}
+                                        {timeRange === 'weekly' && (
+                                            <p className="text-sm text-gray-500 mt-1">Month: {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+                                        )}
+                                        {timeRange === 'daily' && (
+                                            <p className="text-sm text-gray-500 mt-1">Week of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                                            <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                            <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
                                             Revenue
                                         </div>
                                         <div className="relative">
@@ -2415,7 +2435,7 @@ const ClientDashboard = () => {
                                                     <div className="py-1">
                                                         <button
                                                             onClick={() => handleChartTypeChange('area')}
-                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-700'}`}
+                                                            className={`w-full flex items-center px-4 py-2 cursor-pointer text-sm hover:bg-gray-50 transition-colors ${chartType === 'area' ? 'text-rose-600 bg-pink-50' : 'text-gray-700'}`}
                                                         >
                                                             <Activity size={16} className="mr-3" />
                                                             Area Chart
@@ -2436,7 +2456,7 @@ const ClientDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="h-64 relative">
+                                <div className="h-95 relative">
                                     {/* Grid Lines */}
                                     <div className="absolute inset-0 flex flex-col justify-between">
                                         {[0, 1, 2, 3, 4].map((i) => (
@@ -2453,10 +2473,10 @@ const ClientDashboard = () => {
                                                 return revenueTrend.map((data, index) => (
                                                     <div key={index} className="flex-1 flex flex-col items-center group relative">
                                                         <div
-                                                            className="w-full bg-gradient-to-t from-emerald-500 to-teal-500 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
+                                                            className="w-full bg-gradient-to-r from-rose-600 to-pink-600 rounded-t-lg transition-all duration-500 hover:from-emerald-600 hover:to-teal-600 cursor-pointer relative overflow-hidden"
                                                             style={{ height: `${Math.max((data.revenue / maxRevenue) * 100, 5)}%` }}
                                                         >
-                                                            <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent"></div>
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
                                                         </div>
                                                         <p className="text-xs text-gray-600 mt-2 font-medium">{data.label}</p>
                                                         <p className="text-xs text-gray-500">${data.revenue.toLocaleString()}</p>
@@ -2474,7 +2494,7 @@ const ClientDashboard = () => {
                                                 const points = revenueTrend.map((data, index) => {
                                                     const x = (index / denominator) * 400;
                                                     const y = 256 - (data.revenue / maxRevenue) * 200; // Leave some margin at top
-                                                    return `${x},${y}`;
+                                                    return `${x},${Number.isNaN(y) ? 256 : y}`;
                                                 }).join(' ');
 
                                                 return (
@@ -2492,7 +2512,7 @@ const ClientDashboard = () => {
                                                         <polyline
                                                             points={points}
                                                             fill="none"
-                                                            stroke="#10b981"
+                                                            stroke="#f02450ff"
                                                             strokeWidth="3"
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
@@ -2506,9 +2526,9 @@ const ClientDashboard = () => {
                                                                 <circle
                                                                     key={index}
                                                                     cx={x}
-                                                                    cy={y}
+                                                                    cy={Number.isNaN(y) ? 256 : y}
                                                                     r="6"
-                                                                    fill="#10b981"
+                                                                    fill="#f02450ff"
                                                                     className="hover:r-8 transition-all cursor-pointer"
                                                                 />
                                                             );
@@ -2517,8 +2537,8 @@ const ClientDashboard = () => {
                                                         {/* Gradient definition */}
                                                         <defs>
                                                             <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                                <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-                                                                <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+                                                                <stop offset="0%" stopColor="#f02450ff" stopOpacity="0.8" />
+                                                                <stop offset="100%" stopColor="#f02450ff" stopOpacity="0.1" />
                                                             </linearGradient>
                                                         </defs>
                                                     </>
