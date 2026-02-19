@@ -347,9 +347,9 @@ export default function Signin() {
                     {/* Additional Links */}
                     <div className="text-center mt-6">
                         <span className="text-gray-600 text-sm">Already have an account? </span>
-                        <a href="/user/login" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
+                        <Link to="/user/login" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
                             Login
-                        </a>
+                        </Link>
                     </div>
                 </div>
 

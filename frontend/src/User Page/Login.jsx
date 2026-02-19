@@ -236,9 +236,9 @@ export default function Login() {
 
                     <div className="text-center mt-4">
                         <span className="text-gray-600 text-sm">Don't have an account? </span>
-                        <a href="/user/signin" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
+                        <Link to="/user/signin" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
                             Sign In
-                        </a>
+                        </Link>
                     </div>
                 </div>
 
