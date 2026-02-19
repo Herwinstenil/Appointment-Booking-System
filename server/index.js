@@ -25,12 +25,30 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const PORT = process.env.PORT || 5000;
+const devOrigins = ['http://localhost:3000', 'http://localhost:5173'];
+const normalizeOrigin = (value = '') => value.trim().replace(/\/+$/, '');
+const configuredOrigins = [
+  ...(process.env.FRONTEND_URLS || '').split(',').map(normalizeOrigin).filter(Boolean),
+  ...(process.env.FRONTEND_URL ? [normalizeOrigin(process.env.FRONTEND_URL)] : [])
+];
+const allowedOrigins = Array.from(new Set([
+  ...configuredOrigins,
+  ...(process.env.NODE_ENV === 'production' ? [] : devOrigins)
+]));
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://your-frontend-domain.com']
-    : ['http://localhost:3000', 'http://localhost:5173'],
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true
 }));
 
