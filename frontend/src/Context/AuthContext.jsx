@@ -86,7 +86,9 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(initialAuth.userRole ? initialAuth.sessions[initialAuth.userRole]?.user : null);
     const [loading, setLoading] = useState(true);
 
-    const resolvedApiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
+    const configuredApiBaseUrl = import.meta.env.VITE_API_URL;
+    const fallbackApiBaseUrl = import.meta.env.DEV ? 'http://localhost:5000' : window.location.origin;
+    const resolvedApiBaseUrl = (configuredApiBaseUrl || fallbackApiBaseUrl).replace(/\/+$/, '');
     const API_BASE_URL = resolvedApiBaseUrl.endsWith('/api')
         ? resolvedApiBaseUrl
         : `${resolvedApiBaseUrl}/api`;
