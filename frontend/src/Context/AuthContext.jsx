@@ -87,11 +87,24 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     const configuredApiBaseUrl = import.meta.env.VITE_API_URL;
-    const fallbackApiBaseUrl = import.meta.env.DEV ? 'http://localhost:5000' : window.location.origin;
+    const fallbackApiBaseUrl = import.meta.env.DEV ? 'http://localhost:5000' : '';
     const resolvedApiBaseUrl = (configuredApiBaseUrl || fallbackApiBaseUrl).replace(/\/+$/, '');
-    const API_BASE_URL = resolvedApiBaseUrl.endsWith('/api')
-        ? resolvedApiBaseUrl
-        : `${resolvedApiBaseUrl}/api`;
+    const API_BASE_URL = resolvedApiBaseUrl
+        ? (resolvedApiBaseUrl.endsWith('/api') ? resolvedApiBaseUrl : `${resolvedApiBaseUrl}/api`)
+        : '';
+
+    const parseResponseSafely = useCallback(async (response) => {
+        const raw = await response.text();
+        try {
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }, []);
+
+    const getErrorMessage = useCallback((response, payload, fallback) => {
+        return payload?.message || `${fallback} (${response.status})`;
+    }, []);
 
     const applyLanguage = useCallback((lang) => {
         if (!lang) return;
@@ -185,6 +198,9 @@ export const AuthProvider = ({ children }) => {
     const availableRoles = useMemo(() => Object.keys(sessions), [sessions]);
 
     const login = useCallback(async (email, password) => {
+        if (!API_BASE_URL) {
+            return { success: false, message: 'API URL not configured. Set VITE_API_URL in frontend environment.' };
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
@@ -194,22 +210,25 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
+            const data = await parseResponseSafely(response);
 
-            if (data.success) {
+            if (data?.success) {
                 const { user, token } = data.data;
                 storeRoleSession(user.role, token, user);
                 return { success: true };
             }
 
-            return { success: false, message: data.message };
+            return { success: false, message: getErrorMessage(response, data, 'Login failed') };
         } catch (error) {
             console.error('Login error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    }, [API_BASE_URL, storeRoleSession]);
+    }, [API_BASE_URL, getErrorMessage, parseResponseSafely, storeRoleSession]);
 
     const register = useCallback(async (userData) => {
+        if (!API_BASE_URL) {
+            return { success: false, message: 'API URL not configured. Set VITE_API_URL in frontend environment.' };
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
@@ -219,22 +238,25 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify(userData),
             });
 
-            const data = await response.json();
+            const data = await parseResponseSafely(response);
 
-            if (data.success) {
+            if (data?.success) {
                 const { user, token } = data.data;
                 storeRoleSession(user.role, token, user);
                 return { success: true };
             }
 
-            return { success: false, message: data.message };
+            return { success: false, message: getErrorMessage(response, data, 'Registration failed') };
         } catch (error) {
             console.error('Register error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    }, [API_BASE_URL, storeRoleSession]);
+    }, [API_BASE_URL, getErrorMessage, parseResponseSafely, storeRoleSession]);
 
     const resetPassword = useCallback(async (email, newPassword) => {
+        if (!API_BASE_URL) {
+            return { success: false, message: 'API URL not configured. Set VITE_API_URL in frontend environment.' };
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
                 method: 'POST',
@@ -244,18 +266,18 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ email, newPassword }),
             });
 
-            const data = await response.json();
+            const data = await parseResponseSafely(response);
 
-            if (data.success) {
+            if (data?.success) {
                 return await login(email, newPassword);
             }
 
-            return { success: false, message: data.message };
+            return { success: false, message: getErrorMessage(response, data, 'Password reset failed') };
         } catch (error) {
             console.error('Reset password error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
-    }, [API_BASE_URL, login]);
+    }, [API_BASE_URL, getErrorMessage, login, parseResponseSafely]);
 
     const logout = useCallback(async (targetRole) => {
         const normalizedRole = (targetRole || userRole)?.toUpperCase();

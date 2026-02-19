@@ -48,15 +48,26 @@ export default function AppointmentLanding() {
     const fetchServices = async () => {
       setServicesLoading(true);
       setServicesError('');
+      if (!API_BASE_URL) {
+        setServicesLoading(false);
+        setServicesError('API URL not configured. Set VITE_API_URL in frontend environment.');
+        return;
+      }
 
       try {
         const response = await fetch(`${API_BASE_URL}/services/active`, {
           headers: getAuthHeaders()
         });
-        const payload = await response.json();
+        const raw = await response.text();
+        let payload = null;
+        try {
+          payload = raw ? JSON.parse(raw) : null;
+        } catch {
+          payload = null;
+        }
 
-        if (!response.ok || !payload.success) {
-          throw new Error(payload.message || 'Unable to load services');
+        if (!response.ok || !payload?.success) {
+          throw new Error(payload?.message || `Unable to load services (${response.status})`);
         }
 
         if (isMounted) {
@@ -130,6 +141,9 @@ export default function AppointmentLanding() {
     setBookingError('');
 
     try {
+      if (!API_BASE_URL) {
+        throw new Error('API URL not configured. Set VITE_API_URL in frontend environment.');
+      }
       const response = await fetch(`${API_BASE_URL}/appointments`, {
         method: 'POST',
         headers: {
@@ -144,10 +158,16 @@ export default function AppointmentLanding() {
         })
       });
 
-      const payload = await response.json();
+      const raw = await response.text();
+      let payload = null;
+      try {
+        payload = raw ? JSON.parse(raw) : null;
+      } catch {
+        payload = null;
+      }
 
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.message || 'Unable to book appointment');
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.message || `Unable to book appointment (${response.status})`);
       }
 
       setBookingSuccessMessage('Appointment booked! Visit your dashboard to see the confirmed slot.');
