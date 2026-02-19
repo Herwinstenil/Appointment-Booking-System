@@ -468,7 +468,7 @@ const createServiceMutationState = () => ({
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
-    const { getAuthHeaders, API_BASE_URL, activateRole, getSession } = useAuth();
+    const { getAuthHeaders, API_BASE_URL, activateRole, getSession, logout } = useAuth();
     const baseApiUrl = API_BASE_URL || 'http://localhost:5000/api';
     const clientProfileEndpoint = `${baseApiUrl}/client/profile`;
     const [activeItem, setActiveItem] = useState('Dashboard');
@@ -1462,8 +1462,8 @@ const ClientDashboard = () => {
 
     const handleLogout = () => {
         console.log('Logging out...');
-        const userRole = localStorage.getItem('userRole');
-        navigate(`/user/login?from=dashboard&role=${userRole}`);
+        logout('CLIENT');
+        navigate('/user/login');
     };
 
     const handleNotificationChange = (key) => {

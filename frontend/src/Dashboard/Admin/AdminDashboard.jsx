@@ -134,7 +134,7 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const AdminDashboard = () => {
-    const { getAuthHeaders, user: currentUser, updateUser, activateRole } = useAuth();
+    const { getAuthHeaders, user: currentUser, updateUser, activateRole, logout } = useAuth();
     const { t } = useTranslation();
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1251,8 +1251,8 @@ const AdminDashboard = () => {
 
     const handleLogout = () => {
         console.log('Logging out...');
-        const userRole = localStorage.getItem('userRole');
-        navigate(`/user/login?from=dashboard&role=${userRole}`);
+        logout('ADMIN');
+        navigate('/user/login');
     };
 
     // Dashboard button handlers

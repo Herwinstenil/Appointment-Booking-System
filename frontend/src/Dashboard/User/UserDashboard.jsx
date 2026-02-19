@@ -417,9 +417,8 @@ const getBookingHistoryStatusClass = (status = '') => {
 
         let isMounted = true;
         const forceLogoutToLogin = () => {
-            logout();
-            const userRole = localStorage.getItem('userRole') || 'USER';
-            navigate(`/user/login?from=dashboard&role=${userRole}`);
+            logout('USER');
+            navigate('/');
         };
 
         const fetchProfile = async ({ silent = false } = {}) => {
@@ -841,9 +840,8 @@ const getBookingHistoryStatusClass = (status = '') => {
     };
 
     const handleLogout = () => {
-        logout();
-        const userRole = localStorage.getItem('userRole');
-        navigate(`/user/login?from=dashboard&role=${userRole}`);
+        logout('USER');
+        navigate('/');
     };
 
     const handleNotificationChange = (key) => {
