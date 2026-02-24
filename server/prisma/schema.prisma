@@ -24,6 +24,11 @@ model User {
   language  String   @default("en")
   emailVerified      Boolean  @default(false)
   twoFactorEnabled   Boolean  @default(false)
+  twoFactorMethod    String?  @default("APP")
+  twoFactorSecret    String?
+  twoFactorTempSecret String?
+  twoFactorOtpCodeHash String?
+  twoFactorOtpExpiresAt DateTime?
   passwordUpdatedAt  DateTime?
   lastSuspiciousLoginAt DateTime?
   position  String?

@@ -1,6 +1,9 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const OTPAuth = require('otpauth');
+const QRCode = require('qrcode');
 const { body, validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
@@ -12,6 +15,75 @@ const GitHubStrategy = require('passport-github2').Strategy;
 const router = express.Router();
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
+const TWO_FACTOR_METHODS = {
+  APP: 'APP',
+  EMAIL_OTP: 'EMAIL_OTP'
+};
+
+const EMAIL_USER = process.env.EMAIL_USER || process.env.EMAIL_HOST_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_HOST_PASSWORD;
+const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USER;
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'gmail';
+
+let emailTransporter = null;
+if (EMAIL_USER && EMAIL_PASS) {
+  emailTransporter = nodemailer.createTransport({
+    service: EMAIL_SERVICE,
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASS
+    }
+  });
+}
+
+const createAppToken = (user) => jwt.sign(
+  { userId: user.id, role: user.role },
+  process.env.JWT_SECRET,
+  { expiresIn: '7d' }
+);
+
+const createPendingTwoFactorToken = (user, method = TWO_FACTOR_METHODS.APP) => jwt.sign(
+  { userId: user.id, role: user.role, twoFactorPending: true, twoFactorMethod: method },
+  process.env.JWT_SECRET,
+  { expiresIn: '10m' }
+);
+
+const getTwoFactorIssuer = () => process.env.TWO_FACTOR_ISSUER || 'Appointment Booking System';
+
+const buildTotp = (user, secretBase32) => {
+  const secret = OTPAuth.Secret.fromBase32(secretBase32);
+  return new OTPAuth.TOTP({
+    issuer: getTwoFactorIssuer(),
+    label: user.email || user.username || user.id,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+    secret
+  });
+};
+
+const generateSixDigitCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
+const sendTwoFactorEmailCode = async (user, code) => {
+  if (!emailTransporter) {
+    throw new Error('Email service is not configured for OTP delivery');
+  }
+  if (!user?.email) {
+    throw new Error('User email is required for email OTP');
+  }
+
+  await emailTransporter.sendMail({
+    from: EMAIL_FROM,
+    to: user.email,
+    subject: 'Your login verification code',
+    text: `Your verification code is ${code}. It expires in 10 minutes.`,
+    html: `
+      <p>Your verification code is:</p>
+      <h2 style="letter-spacing: 4px;">${code}</h2>
+      <p>This code expires in 10 minutes.</p>
+    `
+  });
+};
 
 const buildRedirectUrl = (user, token) => {
   const minimalUser = {
@@ -276,6 +348,46 @@ router.post('/login', [
       });
     }
 
+    if (user.twoFactorEnabled) {
+      const twoFactorMethod = user.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP
+        ? TWO_FACTOR_METHODS.EMAIL_OTP
+        : TWO_FACTOR_METHODS.APP;
+
+      if (twoFactorMethod === TWO_FACTOR_METHODS.APP && !user.twoFactorSecret) {
+        return res.status(400).json({
+          success: false,
+          message: 'Two-factor app is not configured. Disable and set up again.'
+        });
+      }
+
+      if (twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP) {
+        const otpCode = generateSixDigitCode();
+        const otpHash = await bcrypt.hash(otpCode, 8);
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            twoFactorOtpCodeHash: otpHash,
+            twoFactorOtpExpiresAt: expiresAt
+          }
+        });
+
+        await sendTwoFactorEmailCode(user, otpCode);
+      }
+
+      const tempToken = createPendingTwoFactorToken(user, twoFactorMethod);
+      return res.json({
+        success: true,
+        message: 'Two-factor verification required',
+        data: {
+          requiresTwoFactor: true,
+          tempToken,
+          twoFactorMethod
+        }
+      });
+    }
+
     // Update last login
     await prisma.user.update({
       where: { id: user.id },
@@ -293,17 +405,13 @@ router.post('/login', [
       });
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = createAppToken(user);
 
     res.json({
       success: true,
       message: 'Login successful',
       data: {
+        requiresTwoFactor: false,
         user: {
           id: user.id,
           username: user.username,
@@ -325,6 +433,315 @@ router.post('/login', [
     res.status(500).json({
       success: false,
       message: 'Failed to login'
+    });
+  }
+});
+
+router.post('/login/2fa', [
+  body('tempToken').isString().notEmpty().withMessage('Temporary token is required'),
+  body('token').isLength({ min: 6, max: 6 }).withMessage('Invalid 2FA code')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { tempToken, token: verificationToken } = req.body;
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Two-factor session expired. Please login again.'
+      });
+    }
+
+    if (!decoded?.twoFactorPending || !decoded?.userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid two-factor session'
+      });
+    }
+    const pendingMethod = decoded.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP
+      ? TWO_FACTOR_METHODS.EMAIL_OTP
+      : TWO_FACTOR_METHODS.APP;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid user session'
+      });
+    }
+
+    if (!user.twoFactorEnabled) {
+      return res.status(400).json({
+        success: false,
+        message: 'Two-factor authentication is not enabled for this account'
+      });
+    }
+
+    if (pendingMethod === TWO_FACTOR_METHODS.EMAIL_OTP) {
+      const isMethodEnabled = user.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP;
+      const isExpired = !user.twoFactorOtpExpiresAt || new Date(user.twoFactorOtpExpiresAt).getTime() < Date.now();
+      if (!isMethodEnabled || !user.twoFactorOtpCodeHash || isExpired) {
+        return res.status(401).json({
+          success: false,
+          message: 'Email OTP expired. Please login again.'
+        });
+      }
+
+      const isCodeValid = await bcrypt.compare(verificationToken, user.twoFactorOtpCodeHash);
+      if (!isCodeValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid verification code'
+        });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorOtpCodeHash: null,
+          twoFactorOtpExpiresAt: null
+        }
+      });
+    } else {
+      if (!user.twoFactorSecret) {
+        return res.status(400).json({
+          success: false,
+          message: 'Authenticator app is not configured'
+        });
+      }
+
+      const totp = buildTotp(user, user.twoFactorSecret);
+      const delta = totp.validate({ token: verificationToken, window: 1 });
+      if (delta === null) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid verification code'
+        });
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() }
+    });
+
+    if (user.role === 'ADMIN') {
+      await prisma.activity.create({
+        data: {
+          type: 'ADMIN_LOGIN',
+          description: `Admin ${user.firstName || user.username}${user.lastName ? ' ' + user.lastName : ''} logged in`,
+          userId: user.id
+        }
+      });
+    }
+
+    const appToken = createAppToken(user);
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          company: user.company,
+          mobile: user.mobile,
+          avatarUrl: user.avatarUrl,
+          language: user.language || 'en'
+        },
+        token: appToken
+      }
+    });
+  } catch (error) {
+    console.error('Two-factor login verification error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify two-factor code'
+    });
+  }
+});
+
+router.post('/2fa/setup', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is deactivated'
+      });
+    }
+
+    const secret = new OTPAuth.Secret({ size: 20 });
+    const secretBase32 = secret.base32;
+    const totp = buildTotp(req.user, secretBase32);
+    const otpAuthUrl = totp.toString();
+    const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { twoFactorTempSecret: secretBase32 }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Scan the QR code and verify to complete setup',
+      data: {
+        qrCodeDataUrl,
+        manualEntryKey: secretBase32
+      }
+    });
+  } catch (error) {
+    console.error('2FA setup error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to setup two-factor authentication'
+    });
+  }
+});
+
+router.post('/2fa/verify-setup', authenticateToken, [
+  body('token').isLength({ min: 6, max: 6 }).withMessage('Invalid verification code')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { token } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        twoFactorTempSecret: true
+      }
+    });
+
+    if (!user?.twoFactorTempSecret) {
+      return res.status(400).json({
+        success: false,
+        message: 'Two-factor setup session not found. Please try setup again.'
+      });
+    }
+
+    const totp = buildTotp(user, user.twoFactorTempSecret);
+    const delta = totp.validate({ token, window: 1 });
+    if (delta === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorMethod: TWO_FACTOR_METHODS.APP,
+        twoFactorSecret: user.twoFactorTempSecret,
+        twoFactorTempSecret: null,
+        twoFactorOtpCodeHash: null,
+        twoFactorOtpExpiresAt: null
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Two-factor authentication enabled successfully'
+    });
+  } catch (error) {
+    console.error('2FA verify setup error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify two-factor setup'
+    });
+  }
+});
+
+router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user?.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required to enable email OTP'
+      });
+    }
+    if (!emailTransporter) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email OTP is not configured on server'
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
+        twoFactorSecret: null,
+        twoFactorTempSecret: null,
+        twoFactorOtpCodeHash: null,
+        twoFactorOtpExpiresAt: null
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Email OTP two-factor authentication enabled'
+    });
+  } catch (error) {
+    console.error('Enable email OTP 2FA error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to enable email OTP two-factor authentication'
+    });
+  }
+});
+
+router.post('/2fa/disable', authenticateToken, async (req, res) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorMethod: null,
+        twoFactorSecret: null,
+        twoFactorTempSecret: null,
+        twoFactorOtpCodeHash: null,
+        twoFactorOtpExpiresAt: null
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Two-factor authentication disabled'
+    });
+  } catch (error) {
+    console.error('2FA disable error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to disable two-factor authentication'
     });
   }
 });
@@ -533,7 +950,7 @@ router.get('/google/callback', (req, res, next) => {
     }
 
     try {
-      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      const token = createAppToken(user);
       res.redirect(buildRedirectUrl(user, token));
     } catch (error) {
       console.error('Google callback error:', error);
@@ -560,7 +977,7 @@ router.get('/facebook/callback', (req, res, next) => {
     }
 
     try {
-      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      const token = createAppToken(user);
       res.redirect(buildRedirectUrl(user, token));
     } catch (error) {
       console.error('Facebook callback error:', error);
@@ -587,7 +1004,7 @@ router.get('/github/callback', (req, res, next) => {
     }
 
     try {
-      const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      const token = createAppToken(user);
       res.redirect(buildRedirectUrl(user, token));
     } catch (error) {
       console.error('GitHub callback error:', error);

@@ -1,0 +1,4 @@
+-- Add 2FA method + email OTP storage
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "twoFactorMethod" TEXT DEFAULT 'APP';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "twoFactorOtpCodeHash" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "twoFactorOtpExpiresAt" TIMESTAMP(3);

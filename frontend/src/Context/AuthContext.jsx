@@ -192,6 +192,16 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
 
             if (data.success) {
+                if (data.data?.requiresTwoFactor) {
+                    return {
+                        success: false,
+                        requiresTwoFactor: true,
+                        tempToken: data.data.tempToken,
+                        twoFactorMethod: data.data.twoFactorMethod || 'APP',
+                        message: data.message || 'Two-factor verification required'
+                    };
+                }
+
                 const { user, token } = data.data;
                 storeRoleSession(user.role, token, user);
                 return { success: true };
@@ -200,6 +210,31 @@ export const AuthProvider = ({ children }) => {
             return { success: false, message: data.message };
         } catch (error) {
             console.error('Login error:', error);
+            return { success: false, message: 'Network error. Please try again.' };
+        }
+    }, [API_BASE_URL, storeRoleSession]);
+
+    const verifyTwoFactorLogin = useCallback(async (tempToken, token) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login/2fa`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tempToken, token }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const { user, token: authToken } = data.data;
+                storeRoleSession(user.role, authToken, user);
+                return { success: true };
+            }
+
+            return { success: false, message: data.message };
+        } catch (error) {
+            console.error('2FA login verification error:', error);
             return { success: false, message: 'Network error. Please try again.' };
         }
     }, [API_BASE_URL, storeRoleSession]);
@@ -363,6 +398,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        verifyTwoFactorLogin,
         register,
         resetPassword,
         logout,
