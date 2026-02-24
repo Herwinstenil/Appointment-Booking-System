@@ -5,7 +5,7 @@ import { useAuth } from '../Context/AuthContext.jsx';
 
 export default function Login() {
     const navigate = useNavigate();
-    const { login, verifyTwoFactorLogin, resetPassword } = useAuth();
+    const { login, resetPassword } = useAuth();
     const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         email: '',
@@ -19,11 +19,6 @@ export default function Login() {
         email: '',
         password: ''
     });
-    const [twoFactorRequired, setTwoFactorRequired] = useState(false);
-    const [twoFactorMethod, setTwoFactorMethod] = useState('APP');
-    const [twoFactorCode, setTwoFactorCode] = useState('');
-    const [twoFactorTempToken, setTwoFactorTempToken] = useState('');
-    const [twoFactorError, setTwoFactorError] = useState('');
     const [showForgotModal, setShowForgotModal] = useState(false);
     const [forgotFormData, setForgotFormData] = useState({
         email: '',
@@ -52,33 +47,6 @@ export default function Login() {
     }, [resetSuccess]);
 
     const handleSubmit = async () => {
-        if (twoFactorRequired) {
-            setTwoFactorError('');
-            if (!/^\d{6}$/.test(twoFactorCode.trim())) {
-                setTwoFactorError('Enter a valid 6-digit verification code');
-                return;
-            }
-
-            setIsLoading(true);
-            const result = await verifyTwoFactorLogin(twoFactorTempToken, twoFactorCode.trim());
-            setIsLoading(false);
-
-            if (result.success) {
-                const userRole = localStorage.getItem('userRole');
-                if (userRole === 'USER') {
-                    navigate('/dashboard/user');
-                } else if (userRole === 'ADMIN') {
-                    navigate('/dashboard/admin');
-                } else if (userRole === 'CLIENT') {
-                    navigate('/dashboard/client');
-                }
-                return;
-            }
-
-            setTwoFactorError(result.message || 'Unable to verify code');
-            return;
-        }
-
         // Clear previous errors
         setErrors({ email: '', password: '' });
 
@@ -111,12 +79,6 @@ export default function Login() {
                 } else if (userRole === 'CLIENT') {
                     navigate('/dashboard/client');
                 }
-            } else if (result.requiresTwoFactor) {
-                setTwoFactorRequired(true);
-                setTwoFactorTempToken(result.tempToken || '');
-                setTwoFactorMethod(result.twoFactorMethod || 'APP');
-                setTwoFactorCode('');
-                setTwoFactorError('');
             } else {
                 // Show error
                 alert(result.message);
@@ -187,20 +149,13 @@ export default function Login() {
                             <User className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                            {twoFactorRequired ? 'Two-Step Verification' : 'Welcome Back'}
+                            Welcome Back
                         </h1>
-                        <p className="text-gray-600">
-                            {twoFactorRequired
-                                ? (twoFactorMethod === 'EMAIL_OTP'
-                                    ? 'Enter the 6-digit OTP sent to your email'
-                                    : 'Enter the 6-digit code from your authenticator app')
-                                : 'Login to your account'}
-                        </p>
+                        <p className="text-gray-600">Login to your account</p>
                     </div>
 
                     <div className="space-y-6">
                         {/* Email Field */}
-                        {!twoFactorRequired && (
                         <div className="transform transition-all duration-300">
                             <label className="block text-gray-700 font-semibold mb-2">Email</label>
                             <div className="relative group">
@@ -218,10 +173,8 @@ export default function Login() {
                             </div>
                             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                         </div>
-                        )}
 
                         {/* Password Field */}
-                        {!twoFactorRequired && (
                         <div className="transform transition-all duration-300">
                             <label className="block text-gray-700 font-semibold mb-2">Password</label>
                             <div className="relative group">
@@ -247,27 +200,6 @@ export default function Login() {
                             </div>
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                         </div>
-                        )}
-
-                        {twoFactorRequired && (
-                            <div className="transform transition-all duration-300">
-                                <label className="block text-gray-700 font-semibold mb-2">Verification Code</label>
-                                <div className="relative group">
-                                    <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        value={twoFactorCode}
-                                        onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-                                        className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-600 focus:outline-none transition-all duration-300 bg-white/50 backdrop-blur-sm hover:bg-white tracking-[0.3em]"
-                                        placeholder="000000"
-                                        inputMode="numeric"
-                                        autoComplete="one-time-code"
-                                    />
-                                </div>
-                                {twoFactorError && <p className="text-red-500 text-sm mt-1">{twoFactorError}</p>}
-                            </div>
-                        )}
 
                         {/* Login Button */}
                         <button
@@ -285,7 +217,7 @@ export default function Login() {
                                         Logging in...
                                     </span>
                                 ) : (
-                                    twoFactorRequired ? 'Verify & Login' : 'Login'
+                                    'Login'
                                 )}
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -293,7 +225,6 @@ export default function Login() {
                     </div>
 
                     {/* Additional Links */}
-                    {!twoFactorRequired && (
                     <div className="text-center mt-6">
                         <button
                             onClick={() => setShowForgotModal(true)}
@@ -302,16 +233,13 @@ export default function Login() {
                             Forgot your password?
                         </button>
                     </div>
-                    )}
 
-                    {!twoFactorRequired && (
                     <div className="text-center mt-4">
                         <span className="text-gray-600 text-sm">Don't have an account? </span>
                         <Link to="/user/signin" className="text-purple-600 hover:text-purple-700 text-sm font-bold transition-colors duration-300 hover:underline">
                             Sign In
                         </Link>
                     </div>
-                    )}
                 </div>
 
                 {/* Forgot Password Modal */}

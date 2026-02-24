@@ -354,48 +354,6 @@ router.post('/login', [
       });
     }
 
-    if (user.twoFactorEnabled) {
-      const twoFactorMethod = user.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP
-        ? TWO_FACTOR_METHODS.EMAIL_OTP
-        : TWO_FACTOR_METHODS.APP;
-
-      if (twoFactorMethod === TWO_FACTOR_METHODS.APP && !user.twoFactorSecret) {
-        return res.status(400).json({
-          success: false,
-          message: 'Two-factor app is not configured. Disable and set up again.'
-        });
-      }
-
-      if (twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP) {
-        const otpCode = generateSixDigitCode();
-        const otpHash = await bcrypt.hash(otpCode, 8);
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            twoFactorOtpCodeHash: otpHash
-          }
-        });
-
-        await sendTwoFactorEmailCode(user, otpCode);
-      }
-
-      const tempToken = createPendingTwoFactorToken(
-        user,
-        twoFactorMethod,
-        twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP ? '1m' : '10m'
-      );
-      return res.json({
-        success: true,
-        message: 'Two-factor verification required',
-        data: {
-          requiresTwoFactor: true,
-          tempToken,
-          twoFactorMethod
-        }
-      });
-    }
-
     // Update last login
     await prisma.user.update({
       where: { id: user.id },
