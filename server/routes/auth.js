@@ -512,7 +512,7 @@ router.post('/login/2fa', [
         where: { id: user.id },
         data: {
           twoFactorOtpCodeHash: null,
-          twoFactorOtpExpiresAt: null
+          twoFactorOtpExpiresAt: new Date()
         }
       });
     } else {
@@ -694,6 +694,10 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
       });
     }
 
+    const otpCode = generateSixDigitCode();
+    const otpHash = await bcrypt.hash(otpCode, 8);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -701,14 +705,16 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
         twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
         twoFactorSecret: null,
         twoFactorTempSecret: null,
-        twoFactorOtpCodeHash: null,
-        twoFactorOtpExpiresAt: null
+        twoFactorOtpCodeHash: otpHash,
+        twoFactorOtpExpiresAt: expiresAt
       }
     });
 
+    await sendTwoFactorEmailCode(req.user, otpCode);
+
     return res.json({
       success: true,
-      message: 'Email OTP two-factor authentication enabled'
+      message: 'Email OTP two-factor authentication enabled and OTP sent to your email'
     });
   } catch (error) {
     console.error('Enable email OTP 2FA error:', error);
@@ -721,6 +727,7 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
 
 router.post('/2fa/disable', authenticateToken, async (req, res) => {
   try {
+    const expiredAt = new Date();
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -729,7 +736,7 @@ router.post('/2fa/disable', authenticateToken, async (req, res) => {
         twoFactorSecret: null,
         twoFactorTempSecret: null,
         twoFactorOtpCodeHash: null,
-        twoFactorOtpExpiresAt: null
+        twoFactorOtpExpiresAt: expiredAt
       }
     });
 
