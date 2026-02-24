@@ -89,7 +89,9 @@ const CLIENT_PROFILE_DEFAULT = {
     bio: '',
     website: '',
     avatarUrl: '',
-    role: 'CLIENT'
+    role: 'CLIENT',
+    twoFactorEnabled: false,
+    twoFactorMethod: 'APP'
 };
 
 const DEFAULT_AVAILABILITY = {
@@ -271,7 +273,9 @@ const normalizeClientProfile = (client = {}) => {
         bio: client.bio || '',
         website: client.website || '',
         avatarUrl: client.avatarUrl || '',
-        role: client.role || 'CLIENT'
+        role: client.role || 'CLIENT',
+        twoFactorEnabled: Boolean(client.twoFactorEnabled),
+        twoFactorMethod: client.twoFactorMethod || 'APP'
     };
 };
 
@@ -745,6 +749,10 @@ const ClientDashboard = () => {
             setOriginalProfileData(profile);
             setImagePreview(profile.avatarUrl || null);
             setProfileImage(null);
+            setSecuritySettings((prev) => ({
+                ...prev,
+                twoFactorAuth: Boolean(profile.twoFactorEnabled)
+            }));
         } catch (error) {
             console.error('Load client profile error:', error);
             setProfileError(error.message || 'Failed to load profile information');
@@ -825,6 +833,16 @@ const ClientDashboard = () => {
         loginAlerts: true,
         deviceManagement: true
     });
+    const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+    const [showTwoFactorSetupModal, setShowTwoFactorSetupModal] = useState(false);
+    const [twoFactorSetupData, setTwoFactorSetupData] = useState({ qrCodeDataUrl: '', manualEntryKey: '' });
+    const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [twoFactorSetupMode, setTwoFactorSetupMode] = useState('APP');
+    const [twoFactorEmailSetupToken, setTwoFactorEmailSetupToken] = useState('');
+    const [twoFactorSendingOtp, setTwoFactorSendingOtp] = useState(false);
+    const [twoFactorVerifying, setTwoFactorVerifying] = useState(false);
+    const [twoFactorError, setTwoFactorError] = useState('');
+    const [twoFactorSuccess, setTwoFactorSuccess] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [changePasswordForm, setChangePasswordForm] = useState({
         newPassword: '',
@@ -837,6 +855,12 @@ const ClientDashboard = () => {
     const [changePasswordError, setChangePasswordError] = useState(null);
     const [changePasswordSuccess, setChangePasswordSuccess] = useState(false);
     const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+
+    useEffect(() => {
+        if (!twoFactorSuccess) return;
+        const timer = setTimeout(() => setTwoFactorSuccess(false), 3000);
+        return () => clearTimeout(timer);
+    }, [twoFactorSuccess]);
 
     // User Management State
     const [users, setUsers] = useState([]);
@@ -1473,7 +1497,149 @@ const ClientDashboard = () => {
         }));
     };
 
-    const handleSecurityChange = (key, value) => {
+    const handleTwoFactorSetupStart = async () => {
+        setTwoFactorLoading(true);
+        setTwoFactorSendingOtp(false);
+        setTwoFactorVerifying(false);
+        setTwoFactorError('');
+        setTwoFactorSuccess(false);
+        setTwoFactorSetupMode('APP');
+        try {
+            const response = await fetch(`${baseApiUrl}/auth/2fa/setup`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders('CLIENT')
+                }
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to setup two-factor authentication');
+            }
+
+            setTwoFactorSetupData({
+                qrCodeDataUrl: payload.data?.qrCodeDataUrl || '',
+                manualEntryKey: payload.data?.manualEntryKey || ''
+            });
+            setTwoFactorEmailSetupToken('');
+            setTwoFactorCode('');
+            setShowTwoFactorSetupModal(true);
+        } catch (error) {
+            setTwoFactorError(error.message || 'Unable to setup two-factor authentication');
+        } finally {
+            setTwoFactorLoading(false);
+        }
+    };
+
+    const handleTwoFactorSetupVerify = async () => {
+        setTwoFactorError('');
+        const normalizedCode = twoFactorCode.trim();
+        if (!/^\d{6}$/.test(normalizedCode)) {
+            setTwoFactorError('Enter a valid 6-digit verification code');
+            return;
+        }
+
+        setTwoFactorVerifying(true);
+        try {
+            const verifyEndpoint = twoFactorSetupMode === 'EMAIL_OTP'
+                ? `${baseApiUrl}/auth/2fa/verify-email-setup`
+                : `${baseApiUrl}/auth/2fa/verify-setup`;
+            const response = await fetch(verifyEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders('CLIENT')
+                },
+                body: JSON.stringify(
+                    twoFactorSetupMode === 'EMAIL_OTP'
+                        ? { token: normalizedCode, setupToken: twoFactorEmailSetupToken }
+                        : { token: normalizedCode }
+                )
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Invalid verification code');
+            }
+
+            setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: true }));
+            setShowTwoFactorSetupModal(false);
+            setTwoFactorSetupData({ qrCodeDataUrl: '', manualEntryKey: '' });
+            setTwoFactorCode('');
+            setTwoFactorEmailSetupToken('');
+            setProfileData((prev) => ({
+                ...prev,
+                twoFactorEnabled: true,
+                twoFactorMethod: twoFactorSetupMode === 'EMAIL_OTP' ? 'EMAIL_OTP' : 'APP'
+            }));
+            setTwoFactorSuccess(true);
+        } catch (error) {
+            setTwoFactorError(error.message || 'Unable to verify code');
+        } finally {
+            setTwoFactorVerifying(false);
+        }
+    };
+
+    const handleTwoFactorEnableEmail = async () => {
+        setTwoFactorSendingOtp(true);
+        setTwoFactorError('');
+        setTwoFactorSuccess(false);
+        try {
+            const response = await fetch(`${baseApiUrl}/auth/2fa/enable-email`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders('CLIENT')
+                }
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to send OTP');
+            }
+
+            setTwoFactorCode('');
+            setTwoFactorSetupMode('EMAIL_OTP');
+            setTwoFactorEmailSetupToken(payload.data?.setupToken || '');
+            setTwoFactorError('');
+        } catch (error) {
+            setTwoFactorError(error.message || 'Unable to send OTP');
+        } finally {
+            setTwoFactorSendingOtp(false);
+        }
+    };
+
+    const handleTwoFactorDisable = async () => {
+        setTwoFactorLoading(true);
+        setTwoFactorError('');
+        setTwoFactorSuccess(false);
+        try {
+            const response = await fetch(`${baseApiUrl}/auth/2fa/disable`, {
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders('CLIENT')
+                }
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Unable to disable two-factor authentication');
+            }
+
+            setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: false }));
+            setProfileData((prev) => ({ ...prev, twoFactorEnabled: false }));
+            setTwoFactorSuccess(true);
+        } catch (error) {
+            setTwoFactorError(error.message || 'Unable to disable two-factor authentication');
+        } finally {
+            setTwoFactorLoading(false);
+        }
+    };
+
+    const handleSecurityChange = async (key, value) => {
+        if (key === 'twoFactorAuth') {
+            if (value) {
+                await handleTwoFactorSetupStart();
+            } else {
+                await handleTwoFactorDisable();
+            }
+            return;
+        }
         setSecuritySettings(prev => ({
             ...prev,
             [key]: value
@@ -4267,6 +4433,7 @@ const ClientDashboard = () => {
                                                     </div>
                                                     <button
                                                         onClick={() => handleSecurityChange(item.key, !securitySettings[item.key])}
+                                                        disabled={item.key === 'twoFactorAuth' && (twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying)}
                                                         className={`relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${securitySettings[item.key]
                                                             ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
                                                             : 'bg-gray-300'
@@ -4279,6 +4446,13 @@ const ClientDashboard = () => {
                                                     </button>
                                                 </div>
                                             ))}
+
+                                            {twoFactorSuccess && (
+                                                <p className="text-sm text-emerald-600">Two-factor settings updated successfully.</p>
+                                            )}
+                                            {twoFactorError && (
+                                                <p className="text-sm text-red-600">{twoFactorError}</p>
+                                            )}
 
                                             <button
                                                 type="button"
@@ -4586,6 +4760,97 @@ const ClientDashboard = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showTwoFactorSetupModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl">
+                        <div className="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-gray-900">Setup Two-Step Verification</h3>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying) return;
+                                    setShowTwoFactorSetupModal(false);
+                                    setTwoFactorCode('');
+                                    setTwoFactorEmailSetupToken('');
+                                    setTwoFactorError('');
+                                }}
+                                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="px-6 py-5 space-y-4">
+                            <p className="text-sm text-gray-600">
+                                {twoFactorSetupMode === 'EMAIL_OTP'
+                                    ? 'Enter the 6-digit OTP sent to your email to complete setup. If needed, click Resend OTP.'
+                                    : 'Scan the QR code in your authenticator app and verify, or use Email OTP instead.'}
+                            </p>
+                            {twoFactorSetupMode !== 'EMAIL_OTP' && twoFactorSetupData.qrCodeDataUrl ? (
+                                <div className="flex justify-center">
+                                    <img
+                                        src={twoFactorSetupData.qrCodeDataUrl}
+                                        alt="2FA QR code"
+                                        className="w-56 h-56 rounded-lg border border-gray-200 p-2 bg-white"
+                                    />
+                                </div>
+                            ) : null}
+                            {twoFactorSetupMode !== 'EMAIL_OTP' && twoFactorSetupData.manualEntryKey && (
+                                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                                    <p className="text-xs text-gray-500 mb-1">Manual key</p>
+                                    <p className="font-mono text-sm break-all text-gray-800">{twoFactorSetupData.manualEntryKey}</p>
+                                </div>
+                            )}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Verification Code</label>
+                                <input
+                                    type="text"
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-300 tracking-[0.25em]"
+                                    placeholder="000000"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                />
+                            </div>
+                            {twoFactorError && (
+                                <p className="text-sm text-red-600">{twoFactorError}</p>
+                            )}
+                            <div className="pt-2 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={handleTwoFactorEnableEmail}
+                                    disabled={twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying}
+                                    className="px-5 py-2.5 rounded-lg bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {twoFactorSendingOtp ? 'Sending...' : (twoFactorSetupMode === 'EMAIL_OTP' ? 'Resend OTP' : 'Send OTP')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying) return;
+                                        setShowTwoFactorSetupModal(false);
+                                        setTwoFactorCode('');
+                                        setTwoFactorEmailSetupToken('');
+                                        setTwoFactorError('');
+                                    }}
+                                    className="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleTwoFactorSetupVerify}
+                                    disabled={twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying}
+                                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {twoFactorVerifying ? 'Verifying...' : 'Verify & Enable'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
