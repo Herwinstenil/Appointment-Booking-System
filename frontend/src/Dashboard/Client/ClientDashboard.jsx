@@ -843,6 +843,7 @@ const ClientDashboard = () => {
     const [twoFactorVerifying, setTwoFactorVerifying] = useState(false);
     const [twoFactorError, setTwoFactorError] = useState('');
     const [twoFactorSuccess, setTwoFactorSuccess] = useState(false);
+    const [profileActivityEvents, setProfileActivityEvents] = useState([]);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [changePasswordForm, setChangePasswordForm] = useState({
         newPassword: '',
@@ -1570,6 +1571,13 @@ const ClientDashboard = () => {
                 twoFactorEnabled: true,
                 twoFactorMethod: twoFactorSetupMode === 'EMAIL_OTP' ? 'EMAIL_OTP' : 'APP'
             }));
+            setProfileActivityEvents((prev) => [{
+                id: `twofactor-enabled-${Date.now()}`,
+                action: `Enabled two-factor authentication (${twoFactorSetupMode === 'EMAIL_OTP' ? 'Email OTP' : 'Authenticator App'})`,
+                status: 'security',
+                icon: Shield,
+                timestamp: Date.now()
+            }, ...prev].slice(0, 50));
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to verify code');
@@ -1623,6 +1631,13 @@ const ClientDashboard = () => {
 
             setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: false }));
             setProfileData((prev) => ({ ...prev, twoFactorEnabled: false }));
+            setProfileActivityEvents((prev) => [{
+                id: `twofactor-disabled-${Date.now()}`,
+                action: 'Disabled two-factor authentication',
+                status: 'security',
+                icon: Shield,
+                timestamp: Date.now()
+            }, ...prev].slice(0, 50));
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to disable two-factor authentication');
@@ -2889,11 +2904,18 @@ const ClientDashboard = () => {
             });
         }
 
+        profileActivityEvents.forEach((event) => {
+            activities.push({
+                ...event,
+                time: formatActivityTime(event.timestamp)
+            });
+        });
+
         return activities
             .filter((item) => Number.isFinite(item.timestamp))
             .sort((a, b) => b.timestamp - a.timestamp)
             .slice(0, 12);
-    }, [bookings, services, profileData.updatedAt]);
+    }, [bookings, services, profileData.updatedAt, profileActivityEvents]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -2902,6 +2924,7 @@ const ClientDashboard = () => {
             case 'completed': return 'text-purple-600 bg-purple-50 border-purple-200';
             case 'payment': return 'text-green-600 bg-green-50 border-green-200';
             case 'alert': return 'text-amber-600 bg-amber-50 border-amber-200';
+            case 'security': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
         }
     };

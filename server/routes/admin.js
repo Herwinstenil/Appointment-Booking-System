@@ -1052,7 +1052,7 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
     const activities = await prisma.activity.findMany({
       where: {
         type: {
-          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED']
+          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED']
         }
       },
       include: {
@@ -1069,7 +1069,7 @@ router.get('/dashboard/recent-activities', authenticateToken, authorizeRoles('AD
       id: `activity-${activity.id}`,
       action: activity.description,
       time: formatTimeAgo(activity.createdAt),
-      status: activity.type.toLowerCase().replace('_', '-'),
+      status: activity.type.toLowerCase().replace(/_/g, '-'),
       icon: getActivityIcon(activity.type),
       createdAt: activity.createdAt
     }));
@@ -1130,6 +1130,8 @@ function getActivityIcon(type) {
     'CLIENT_EDITED': 'Edit',
     'REPORT_GENERATED': 'FileText',
     'REPORT_DOWNLOADED': 'Download',
+    'TWO_FACTOR_ENABLED': 'Shield',
+    'TWO_FACTOR_DISABLED': 'Shield',
     'completed': 'CheckCircle',
     'pending': 'Clock',
     'cancelled': 'XCircle',
@@ -2132,7 +2134,7 @@ router.get('/dashboard/export-activities', authenticateToken, authorizeRoles('AD
     const activities = await prisma.activity.findMany({
       where: {
         type: {
-          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED']
+          in: ['ADMIN_LOGIN', 'ADMIN_CREATED', 'CLIENT_CREATED', 'CLIENT_DELETED', 'CLIENT_EDITED', 'REPORT_GENERATED', 'REPORT_DOWNLOADED', 'TWO_FACTOR_ENABLED', 'TWO_FACTOR_DISABLED']
         }
       },
       include: {

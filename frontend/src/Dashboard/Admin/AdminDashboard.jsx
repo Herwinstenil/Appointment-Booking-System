@@ -161,7 +161,8 @@ const AdminDashboard = () => {
         AlertCircle,
         UserMinus,
         Edit,
-        Download
+        Download,
+        Shield
     };
 
     // Loading and error states
@@ -1371,6 +1372,7 @@ const AdminDashboard = () => {
                 twoFactorEnabled: true,
                 twoFactorMethod: twoFactorSetupMode === 'EMAIL_OTP' ? 'EMAIL_OTP' : 'APP'
             }));
+            await fetchRecentActivities();
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to verify code');
@@ -1424,6 +1426,7 @@ const AdminDashboard = () => {
 
             setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: false }));
             setProfileData((prev) => ({ ...prev, twoFactorEnabled: false }));
+            await fetchRecentActivities();
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to disable two-factor authentication');
@@ -1993,6 +1996,8 @@ const AdminDashboard = () => {
             case 'client-edited': return 'text-blue-600 bg-blue-50 border-blue-200';
             case 'client-deleted': return 'text-red-600 bg-red-50 border-red-200';
             case 'report-downloaded': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+            case 'two-factor-enabled': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
+            case 'two-factor-disabled': return 'text-orange-600 bg-orange-50 border-orange-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
         }
     };

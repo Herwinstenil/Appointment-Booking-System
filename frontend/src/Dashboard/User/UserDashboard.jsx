@@ -842,7 +842,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         const profileActivities = profileActivityEvents.map((event) => ({
             ...event,
             time: formatActivityTime(event.timestamp),
-            icon: User
+            icon: event.icon || User
         }));
 
         return [...profileActivities, ...appointmentActivities]
@@ -857,6 +857,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             case 'completion': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
             case 'rating': return 'text-amber-600 bg-amber-50 border-amber-200';
             case 'profile': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'security': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
             case 'cancellation': return 'text-red-600 bg-red-50 border-red-200';
             case 'reschedule': return 'text-indigo-600 bg-indigo-50 border-indigo-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
@@ -948,6 +949,13 @@ const getBookingHistoryStatusClass = (status = '') => {
                 twoFactorEnabled: true,
                 twoFactorMethod: twoFactorSetupMode === 'EMAIL_OTP' ? 'EMAIL_OTP' : 'APP'
             }));
+            setProfileActivityEvents((prev) => [{
+                id: `twofactor-enabled-${Date.now()}`,
+                action: `Enabled two-factor authentication (${twoFactorSetupMode === 'EMAIL_OTP' ? 'Email OTP' : 'Authenticator App'})`,
+                status: 'security',
+                icon: Shield,
+                timestamp: Date.now()
+            }, ...prev].slice(0, 50));
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to verify code');
@@ -1002,6 +1010,13 @@ const getBookingHistoryStatusClass = (status = '') => {
 
             setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: false }));
             setProfileData((prev) => ({ ...prev, twoFactorEnabled: false }));
+            setProfileActivityEvents((prev) => [{
+                id: `twofactor-disabled-${Date.now()}`,
+                action: 'Disabled two-factor authentication',
+                status: 'security',
+                icon: Shield,
+                timestamp: Date.now()
+            }, ...prev].slice(0, 50));
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to disable two-factor authentication');

@@ -111,6 +111,40 @@ const sendTwoFactorEnabledConfirmationEmail = async (user, method = TWO_FACTOR_M
   });
 };
 
+const buildActivityActorName = (user = {}) => {
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  return fullName || user.username || user.email || 'User';
+};
+
+const logTwoFactorActivity = async (user, enabled, method = null) => {
+  if (!user?.id) {
+    return;
+  }
+
+  const methodLabel = method === TWO_FACTOR_METHODS.EMAIL_OTP ? 'Email OTP' : 'Authenticator App';
+  const roleLabel = (user.role || 'USER').toString().toUpperCase();
+  const actorName = buildActivityActorName(user);
+  const actionText = enabled
+    ? `enabled two-factor authentication using ${methodLabel}`
+    : 'disabled two-factor authentication';
+
+  try {
+    await prisma.activity.create({
+      data: {
+        type: enabled ? 'TWO_FACTOR_ENABLED' : 'TWO_FACTOR_DISABLED',
+        description: `${roleLabel} ${actorName} ${actionText}`,
+        userId: user.id,
+        metadata: {
+          role: roleLabel,
+          method: method || null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('2FA activity log error:', error?.message || error);
+  }
+};
+
 const buildRedirectUrl = (user, token) => {
   const minimalUser = {
     id: user.id,
@@ -658,6 +692,7 @@ router.post('/2fa/verify-setup', authenticateToken, [
         twoFactorOtpCodeHash: await bcrypt.hash(token, 8)
       }
     });
+    await logTwoFactorActivity(req.user, true, TWO_FACTOR_METHODS.APP);
 
     await sendTwoFactorEnabledConfirmationEmail(req.user, TWO_FACTOR_METHODS.APP).catch((error) => {
       console.error('2FA enabled confirmation email error:', error?.message || error);
@@ -795,6 +830,7 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
         twoFactorOtpCodeHash: await bcrypt.hash(token, 8)
       }
     });
+    await logTwoFactorActivity(req.user, true, TWO_FACTOR_METHODS.EMAIL_OTP);
 
     await sendTwoFactorEnabledConfirmationEmail(req.user, TWO_FACTOR_METHODS.EMAIL_OTP).catch((error) => {
       console.error('2FA enabled confirmation email error:', error?.message || error);
@@ -815,6 +851,7 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
 
 router.post('/2fa/disable', authenticateToken, async (req, res) => {
   try {
+    const existingMethod = req.user?.twoFactorMethod || null;
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -825,6 +862,7 @@ router.post('/2fa/disable', authenticateToken, async (req, res) => {
         twoFactorOtpCodeHash: null
       }
     });
+    await logTwoFactorActivity(req.user, false, existingMethod);
 
     return res.json({
       success: true,
