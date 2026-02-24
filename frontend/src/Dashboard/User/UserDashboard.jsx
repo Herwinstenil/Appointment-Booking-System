@@ -529,6 +529,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const [twoFactorSetupData, setTwoFactorSetupData] = useState({ qrCodeDataUrl: '', manualEntryKey: '' });
     const [twoFactorCode, setTwoFactorCode] = useState('');
     const [twoFactorSetupMode, setTwoFactorSetupMode] = useState('APP');
+    const [twoFactorEmailSetupToken, setTwoFactorEmailSetupToken] = useState('');
     const [twoFactorError, setTwoFactorError] = useState('');
     const [twoFactorSuccess, setTwoFactorSuccess] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -887,6 +888,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                 qrCodeDataUrl: payload.data?.qrCodeDataUrl || '',
                 manualEntryKey: payload.data?.manualEntryKey || ''
             });
+            setTwoFactorEmailSetupToken('');
             setTwoFactorCode('');
             setShowTwoFactorSetupModal(true);
         } catch (error) {
@@ -915,7 +917,11 @@ const getBookingHistoryStatusClass = (status = '') => {
                     'Content-Type': 'application/json',
                     ...getAuthHeaders()
                 },
-                body: JSON.stringify({ token: normalizedCode })
+                body: JSON.stringify(
+                    twoFactorSetupMode === 'EMAIL_OTP'
+                        ? { token: normalizedCode, setupToken: twoFactorEmailSetupToken }
+                        : { token: normalizedCode }
+                )
             });
             const payload = await response.json();
             if (!response.ok || !payload.success) {
@@ -926,6 +932,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             setShowTwoFactorSetupModal(false);
             setTwoFactorSetupData({ qrCodeDataUrl: '', manualEntryKey: '' });
             setTwoFactorCode('');
+            setTwoFactorEmailSetupToken('');
             setProfileData((prev) => ({
                 ...prev,
                 twoFactorEnabled: true,
@@ -957,6 +964,7 @@ const getBookingHistoryStatusClass = (status = '') => {
 
             setTwoFactorCode('');
             setTwoFactorSetupMode('EMAIL_OTP');
+            setTwoFactorEmailSetupToken(payload.data?.setupToken || '');
             setTwoFactorError('');
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to enable email OTP');
@@ -4043,6 +4051,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     if (twoFactorLoading) return;
                                     setShowTwoFactorSetupModal(false);
                                     setTwoFactorCode('');
+                                    setTwoFactorEmailSetupToken('');
                                     setTwoFactorError('');
                                 }}
                                 className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -4093,7 +4102,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     disabled={twoFactorLoading}
                                     className="px-5 py-2.5 rounded-lg bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {twoFactorLoading && twoFactorSetupMode === 'EMAIL_OTP' ? 'Sending...' : 'Email OTP'}
+                                    {twoFactorLoading && twoFactorSetupMode === 'EMAIL_OTP' ? 'Sending...' : 'Send OTP'}
                                 </button>
                                 <button
                                     type="button"
@@ -4101,6 +4110,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                         if (twoFactorLoading) return;
                                         setShowTwoFactorSetupModal(false);
                                         setTwoFactorCode('');
+                                        setTwoFactorEmailSetupToken('');
                                         setTwoFactorError('');
                                     }}
                                     className="px-5 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition"

@@ -42,10 +42,16 @@ const createAppToken = (user) => jwt.sign(
   { expiresIn: '7d' }
 );
 
-const createPendingTwoFactorToken = (user, method = TWO_FACTOR_METHODS.APP) => jwt.sign(
+const createPendingTwoFactorToken = (user, method = TWO_FACTOR_METHODS.APP, expiresIn = '10m') => jwt.sign(
   { userId: user.id, role: user.role, twoFactorPending: true, twoFactorMethod: method },
   process.env.JWT_SECRET,
-  { expiresIn: '10m' }
+  { expiresIn }
+);
+
+const createEmailSetupToken = (user) => jwt.sign(
+  { userId: user.id, twoFactorEmailSetup: true },
+  process.env.JWT_SECRET,
+  { expiresIn: '1m' }
 );
 
 const getTwoFactorIssuer = () => process.env.TWO_FACTOR_ISSUER || 'Appointment Booking System';
@@ -373,7 +379,11 @@ router.post('/login', [
         await sendTwoFactorEmailCode(user, otpCode);
       }
 
-      const tempToken = createPendingTwoFactorToken(user, twoFactorMethod);
+      const tempToken = createPendingTwoFactorToken(
+        user,
+        twoFactorMethod,
+        twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP ? '1m' : '10m'
+      );
       return res.json({
         success: true,
         message: 'Two-factor verification required',
@@ -453,6 +463,16 @@ router.post('/login/2fa', [
     try {
       decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
     } catch (error) {
+      const decodedWithoutVerify = jwt.decode(tempToken);
+      if (
+        error?.name === 'TokenExpiredError' &&
+        decodedWithoutVerify?.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP
+      ) {
+        return res.status(401).json({
+          success: false,
+          message: 'OTP expired. Please login again.'
+        });
+      }
       return res.status(401).json({
         success: false,
         message: 'Two-factor session expired. Please login again.'
@@ -703,10 +723,14 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
     });
 
     await sendTwoFactorEmailCode(req.user, otpCode);
+    const setupToken = createEmailSetupToken(req.user);
 
     return res.json({
       success: true,
-      message: 'OTP sent to your email. Enter it to complete setup.'
+      message: 'OTP sent to your email. It is valid for 1 minute.',
+      data: {
+        setupToken
+      }
     });
   } catch (error) {
     console.error('Enable email OTP 2FA error:', error);
@@ -718,7 +742,8 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
 });
 
 router.post('/2fa/verify-email-setup', authenticateToken, [
-  body('token').isLength({ min: 6, max: 6 }).withMessage('Invalid verification code')
+  body('token').isLength({ min: 6, max: 6 }).withMessage('Invalid verification code'),
+  body('setupToken').isString().notEmpty().withMessage('Setup token is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -730,7 +755,29 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
       });
     }
 
-    const { token } = req.body;
+    const { token, setupToken } = req.body;
+    let decodedSetup;
+    try {
+      decodedSetup = jwt.verify(setupToken, process.env.JWT_SECRET);
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError') {
+        return res.status(400).json({
+          success: false,
+          message: 'OTP expired. Please click Send OTP again.'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid setup session. Please click Send OTP again.'
+      });
+    }
+    if (!decodedSetup?.twoFactorEmailSetup || decodedSetup?.userId !== req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid setup session. Please click Send OTP again.'
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
