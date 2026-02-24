@@ -970,6 +970,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             setTwoFactorSetupMode('EMAIL_OTP');
             setTwoFactorEmailSetupToken(payload.data?.setupToken || '');
             setTwoFactorError('');
+            setTwoFactorSuccess(false);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to enable email OTP');
         } finally {
@@ -4066,7 +4067,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                         <div className="px-6 py-5 space-y-4">
                             <p className="text-sm text-gray-600">
                                 {twoFactorSetupMode === 'EMAIL_OTP'
-                                    ? 'Enter the 6-digit OTP sent to your email to complete setup.'
+                                    ? 'Enter the 6-digit OTP sent to your email to complete setup. If needed, click Resend OTP.'
                                     : 'Scan the QR code in your authenticator app and verify, or use Email OTP instead.'}
                             </p>
                             {twoFactorSetupMode !== 'EMAIL_OTP' && twoFactorSetupData.qrCodeDataUrl ? (
@@ -4106,7 +4107,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     disabled={twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying}
                                     className="px-5 py-2.5 rounded-lg bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {twoFactorSendingOtp ? 'Sending...' : 'Send OTP'}
+                                    {twoFactorSendingOtp ? 'Sending...' : (twoFactorSetupMode === 'EMAIL_OTP' ? 'Resend OTP' : 'Send OTP')}
                                 </button>
                                 <button
                                     type="button"
