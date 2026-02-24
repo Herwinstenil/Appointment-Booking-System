@@ -91,6 +91,26 @@ const sendTwoFactorEmailCode = async (user, code) => {
   });
 };
 
+const sendTwoFactorEnabledConfirmationEmail = async (user, method = TWO_FACTOR_METHODS.APP) => {
+  if (!emailTransporter || !user?.email) {
+    return;
+  }
+
+  const methodLabel = method === TWO_FACTOR_METHODS.EMAIL_OTP ? 'Email OTP' : 'Authenticator App';
+
+  await emailTransporter.sendMail({
+    from: EMAIL_FROM,
+    to: user.email,
+    subject: 'Two-step authentication enabled',
+    text: `Two-step authentication has been enabled on your account using ${methodLabel}.`,
+    html: `
+      <p>Two-step authentication has been enabled on your account.</p>
+      <p><strong>Method:</strong> ${methodLabel}</p>
+      <p>If this was not you, please change your password immediately.</p>
+    `
+  });
+};
+
 const buildRedirectUrl = (user, token) => {
   const minimalUser = {
     id: user.id,
@@ -639,6 +659,10 @@ router.post('/2fa/verify-setup', authenticateToken, [
       }
     });
 
+    await sendTwoFactorEnabledConfirmationEmail(req.user, TWO_FACTOR_METHODS.APP).catch((error) => {
+      console.error('2FA enabled confirmation email error:', error?.message || error);
+    });
+
     return res.json({
       success: true,
       message: 'Two-factor authentication enabled successfully'
@@ -770,6 +794,10 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
         twoFactorTempSecret: null,
         twoFactorOtpCodeHash: await bcrypt.hash(token, 8)
       }
+    });
+
+    await sendTwoFactorEnabledConfirmationEmail(req.user, TWO_FACTOR_METHODS.EMAIL_OTP).catch((error) => {
+      console.error('2FA enabled confirmation email error:', error?.message || error);
     });
 
     return res.json({
