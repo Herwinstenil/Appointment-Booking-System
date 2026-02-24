@@ -701,7 +701,7 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
-        twoFactorEnabled: true,
+        twoFactorEnabled: false,
         twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
         twoFactorSecret: null,
         twoFactorTempSecret: null,
@@ -714,13 +714,85 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Email OTP two-factor authentication enabled and OTP sent to your email'
+      message: 'OTP sent to your email. Enter it to complete setup.'
     });
   } catch (error) {
     console.error('Enable email OTP 2FA error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to enable email OTP two-factor authentication'
+    });
+  }
+});
+
+router.post('/2fa/verify-email-setup', authenticateToken, [
+  body('token').isLength({ min: 6, max: 6 }).withMessage('Invalid verification code')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
+
+    const { token } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        twoFactorMethod: true,
+        twoFactorOtpCodeHash: true,
+        twoFactorOtpExpiresAt: true
+      }
+    });
+
+    if (!user || user.twoFactorMethod !== TWO_FACTOR_METHODS.EMAIL_OTP || !user.twoFactorOtpCodeHash) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email OTP setup session not found. Please request OTP again.'
+      });
+    }
+
+    const isExpired = !user.twoFactorOtpExpiresAt || new Date(user.twoFactorOtpExpiresAt).getTime() < Date.now();
+    if (isExpired) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP expired. Please request a new OTP.'
+      });
+    }
+
+    const isValid = await bcrypt.compare(token, user.twoFactorOtpCodeHash);
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
+        twoFactorSecret: null,
+        twoFactorTempSecret: null,
+        twoFactorOtpCodeHash: null,
+        twoFactorOtpExpiresAt: new Date()
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Email OTP two-factor authentication enabled successfully'
+    });
+  } catch (error) {
+    console.error('Verify email OTP setup error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to verify email OTP setup'
     });
   }
 });

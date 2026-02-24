@@ -528,6 +528,7 @@ const getBookingHistoryStatusClass = (status = '') => {
     const [showTwoFactorSetupModal, setShowTwoFactorSetupModal] = useState(false);
     const [twoFactorSetupData, setTwoFactorSetupData] = useState({ qrCodeDataUrl: '', manualEntryKey: '' });
     const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [twoFactorSetupMode, setTwoFactorSetupMode] = useState('APP');
     const [twoFactorError, setTwoFactorError] = useState('');
     const [twoFactorSuccess, setTwoFactorSuccess] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -869,6 +870,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         setTwoFactorLoading(true);
         setTwoFactorError('');
         setTwoFactorSuccess(false);
+        setTwoFactorSetupMode('APP');
         try {
             const response = await fetch(`${API_BASE_URL}/auth/2fa/setup`, {
                 method: 'POST',
@@ -904,7 +906,10 @@ const getBookingHistoryStatusClass = (status = '') => {
 
         setTwoFactorLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/2fa/verify-setup`, {
+            const verifyEndpoint = twoFactorSetupMode === 'EMAIL_OTP'
+                ? `${API_BASE_URL}/auth/2fa/verify-email-setup`
+                : `${API_BASE_URL}/auth/2fa/verify-setup`;
+            const response = await fetch(verifyEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -921,7 +926,11 @@ const getBookingHistoryStatusClass = (status = '') => {
             setShowTwoFactorSetupModal(false);
             setTwoFactorSetupData({ qrCodeDataUrl: '', manualEntryKey: '' });
             setTwoFactorCode('');
-            setProfileData((prev) => ({ ...prev, twoFactorEnabled: true, twoFactorMethod: 'APP' }));
+            setProfileData((prev) => ({
+                ...prev,
+                twoFactorEnabled: true,
+                twoFactorMethod: twoFactorSetupMode === 'EMAIL_OTP' ? 'EMAIL_OTP' : 'APP'
+            }));
             setTwoFactorSuccess(true);
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to verify code');
@@ -946,12 +955,9 @@ const getBookingHistoryStatusClass = (status = '') => {
                 throw new Error(payload.message || 'Unable to enable email OTP');
             }
 
-            setSecuritySettings((prev) => ({ ...prev, twoFactorAuth: true }));
-            setProfileData((prev) => ({ ...prev, twoFactorEnabled: true, twoFactorMethod: 'EMAIL_OTP' }));
-            setShowTwoFactorSetupModal(false);
-            setTwoFactorSetupData({ qrCodeDataUrl: '', manualEntryKey: '' });
             setTwoFactorCode('');
-            setTwoFactorSuccess(true);
+            setTwoFactorSetupMode('EMAIL_OTP');
+            setTwoFactorError('');
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to enable email OTP');
         } finally {
@@ -4046,9 +4052,11 @@ const getBookingHistoryStatusClass = (status = '') => {
                         </div>
                         <div className="px-6 py-5 space-y-4">
                             <p className="text-sm text-gray-600">
-                                Scan the QR code in your authenticator app and verify, or use Email OTP instead.
+                                {twoFactorSetupMode === 'EMAIL_OTP'
+                                    ? 'Enter the 6-digit OTP sent to your email to complete setup.'
+                                    : 'Scan the QR code in your authenticator app and verify, or use Email OTP instead.'}
                             </p>
-                            {twoFactorSetupData.qrCodeDataUrl ? (
+                            {twoFactorSetupMode !== 'EMAIL_OTP' && twoFactorSetupData.qrCodeDataUrl ? (
                                 <div className="flex justify-center">
                                     <img
                                         src={twoFactorSetupData.qrCodeDataUrl}
@@ -4057,7 +4065,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     />
                                 </div>
                             ) : null}
-                            {twoFactorSetupData.manualEntryKey && (
+                            {twoFactorSetupMode !== 'EMAIL_OTP' && twoFactorSetupData.manualEntryKey && (
                                 <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
                                     <p className="text-xs text-gray-500 mb-1">Manual key</p>
                                     <p className="font-mono text-sm break-all text-gray-800">{twoFactorSetupData.manualEntryKey}</p>
@@ -4085,7 +4093,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                                     disabled={twoFactorLoading}
                                     className="px-5 py-2.5 rounded-lg bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    Email OTP
+                                    {twoFactorLoading && twoFactorSetupMode === 'EMAIL_OTP' ? 'Sending...' : 'Email OTP'}
                                 </button>
                                 <button
                                     type="button"
