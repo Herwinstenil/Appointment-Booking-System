@@ -530,6 +530,8 @@ const getBookingHistoryStatusClass = (status = '') => {
     const [twoFactorCode, setTwoFactorCode] = useState('');
     const [twoFactorSetupMode, setTwoFactorSetupMode] = useState('APP');
     const [twoFactorEmailSetupToken, setTwoFactorEmailSetupToken] = useState('');
+    const [twoFactorSendingOtp, setTwoFactorSendingOtp] = useState(false);
+    const [twoFactorVerifying, setTwoFactorVerifying] = useState(false);
     const [twoFactorError, setTwoFactorError] = useState('');
     const [twoFactorSuccess, setTwoFactorSuccess] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -869,6 +871,8 @@ const getBookingHistoryStatusClass = (status = '') => {
 
     const handleTwoFactorSetupStart = async () => {
         setTwoFactorLoading(true);
+        setTwoFactorSendingOtp(false);
+        setTwoFactorVerifying(false);
         setTwoFactorError('');
         setTwoFactorSuccess(false);
         setTwoFactorSetupMode('APP');
@@ -906,7 +910,7 @@ const getBookingHistoryStatusClass = (status = '') => {
             return;
         }
 
-        setTwoFactorLoading(true);
+        setTwoFactorVerifying(true);
         try {
             const verifyEndpoint = twoFactorSetupMode === 'EMAIL_OTP'
                 ? `${API_BASE_URL}/auth/2fa/verify-email-setup`
@@ -942,12 +946,12 @@ const getBookingHistoryStatusClass = (status = '') => {
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to verify code');
         } finally {
-            setTwoFactorLoading(false);
+            setTwoFactorVerifying(false);
         }
     };
 
     const handleTwoFactorEnableEmail = async () => {
-        setTwoFactorLoading(true);
+        setTwoFactorSendingOtp(true);
         setTwoFactorError('');
         setTwoFactorSuccess(false);
         try {
@@ -969,7 +973,7 @@ const getBookingHistoryStatusClass = (status = '') => {
         } catch (error) {
             setTwoFactorError(error.message || 'Unable to enable email OTP');
         } finally {
-            setTwoFactorLoading(false);
+            setTwoFactorSendingOtp(false);
         }
     };
 
@@ -4048,7 +4052,7 @@ const getBookingHistoryStatusClass = (status = '') => {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (twoFactorLoading) return;
+                                    if (twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying) return;
                                     setShowTwoFactorSetupModal(false);
                                     setTwoFactorCode('');
                                     setTwoFactorEmailSetupToken('');
@@ -4099,15 +4103,15 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 <button
                                     type="button"
                                     onClick={handleTwoFactorEnableEmail}
-                                    disabled={twoFactorLoading}
+                                    disabled={twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying}
                                     className="px-5 py-2.5 rounded-lg bg-blue-100 text-blue-700 font-medium hover:bg-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {twoFactorLoading && twoFactorSetupMode === 'EMAIL_OTP' ? 'Sending...' : 'Send OTP'}
+                                    {twoFactorSendingOtp ? 'Sending...' : 'Send OTP'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (twoFactorLoading) return;
+                                        if (twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying) return;
                                         setShowTwoFactorSetupModal(false);
                                         setTwoFactorCode('');
                                         setTwoFactorEmailSetupToken('');
@@ -4120,10 +4124,10 @@ const getBookingHistoryStatusClass = (status = '') => {
                                 <button
                                     type="button"
                                     onClick={handleTwoFactorSetupVerify}
-                                    disabled={twoFactorLoading}
+                                    disabled={twoFactorLoading || twoFactorSendingOtp || twoFactorVerifying}
                                     className="px-5 py-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white rounded-lg font-medium hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    {twoFactorLoading ? 'Verifying...' : 'Verify & Enable'}
+                                    {twoFactorVerifying ? 'Verifying...' : 'Verify & Enable'}
                                 </button>
                             </div>
                         </div>

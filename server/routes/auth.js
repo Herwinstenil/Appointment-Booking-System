@@ -82,10 +82,11 @@ const sendTwoFactorEmailCode = async (user, code) => {
     from: EMAIL_FROM,
     to: user.email,
     subject: 'Your login verification code',
-    text: `Your verification code is ${code}.`,
+    text: `Your verification code is ${code}.\nThis OTP expires in 1 minute.`,
     html: `
       <p>Your verification code is:</p>
       <h2 style="letter-spacing: 4px;">${code}</h2>
+      <p style="margin-top: 8px;">This OTP expires in 1 minute.</p>
     `
   });
 };
