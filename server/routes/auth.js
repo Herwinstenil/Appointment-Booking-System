@@ -76,11 +76,10 @@ const sendTwoFactorEmailCode = async (user, code) => {
     from: EMAIL_FROM,
     to: user.email,
     subject: 'Your login verification code',
-    text: `Your verification code is ${code}. It expires in 10 minutes.`,
+    text: `Your verification code is ${code}.`,
     html: `
       <p>Your verification code is:</p>
       <h2 style="letter-spacing: 4px;">${code}</h2>
-      <p>This code expires in 10 minutes.</p>
     `
   });
 };
@@ -363,13 +362,11 @@ router.post('/login', [
       if (twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP) {
         const otpCode = generateSixDigitCode();
         const otpHash = await bcrypt.hash(otpCode, 8);
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
         await prisma.user.update({
           where: { id: user.id },
           data: {
-            twoFactorOtpCodeHash: otpHash,
-            twoFactorOtpExpiresAt: expiresAt
+            twoFactorOtpCodeHash: otpHash
           }
         });
 
@@ -492,11 +489,10 @@ router.post('/login/2fa', [
 
     if (pendingMethod === TWO_FACTOR_METHODS.EMAIL_OTP) {
       const isMethodEnabled = user.twoFactorMethod === TWO_FACTOR_METHODS.EMAIL_OTP;
-      const isExpired = !user.twoFactorOtpExpiresAt || new Date(user.twoFactorOtpExpiresAt).getTime() < Date.now();
-      if (!isMethodEnabled || !user.twoFactorOtpCodeHash || isExpired) {
+      if (!isMethodEnabled || !user.twoFactorOtpCodeHash) {
         return res.status(401).json({
           success: false,
-          message: 'Email OTP expired. Please login again.'
+          message: 'Email OTP not found. Please login again.'
         });
       }
 
@@ -511,8 +507,7 @@ router.post('/login/2fa', [
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          twoFactorOtpCodeHash: null,
-          twoFactorOtpExpiresAt: new Date()
+          twoFactorOtpCodeHash: await bcrypt.hash(verificationToken, 8)
         }
       });
     } else {
@@ -661,8 +656,7 @@ router.post('/2fa/verify-setup', authenticateToken, [
         twoFactorMethod: TWO_FACTOR_METHODS.APP,
         twoFactorSecret: user.twoFactorTempSecret,
         twoFactorTempSecret: null,
-        twoFactorOtpCodeHash: null,
-        twoFactorOtpExpiresAt: null
+        twoFactorOtpCodeHash: await bcrypt.hash(token, 8)
       }
     });
 
@@ -696,7 +690,6 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
 
     const otpCode = generateSixDigitCode();
     const otpHash = await bcrypt.hash(otpCode, 8);
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await prisma.user.update({
       where: { id: req.user.id },
@@ -705,8 +698,7 @@ router.post('/2fa/enable-email', authenticateToken, async (req, res) => {
         twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
         twoFactorSecret: null,
         twoFactorTempSecret: null,
-        twoFactorOtpCodeHash: otpHash,
-        twoFactorOtpExpiresAt: expiresAt
+        twoFactorOtpCodeHash: otpHash
       }
     });
 
@@ -744,8 +736,7 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
       select: {
         id: true,
         twoFactorMethod: true,
-        twoFactorOtpCodeHash: true,
-        twoFactorOtpExpiresAt: true
+        twoFactorOtpCodeHash: true
       }
     });
 
@@ -753,14 +744,6 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
       return res.status(400).json({
         success: false,
         message: 'Email OTP setup session not found. Please request OTP again.'
-      });
-    }
-
-    const isExpired = !user.twoFactorOtpExpiresAt || new Date(user.twoFactorOtpExpiresAt).getTime() < Date.now();
-    if (isExpired) {
-      return res.status(400).json({
-        success: false,
-        message: 'OTP expired. Please request a new OTP.'
       });
     }
 
@@ -779,8 +762,7 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
         twoFactorMethod: TWO_FACTOR_METHODS.EMAIL_OTP,
         twoFactorSecret: null,
         twoFactorTempSecret: null,
-        twoFactorOtpCodeHash: null,
-        twoFactorOtpExpiresAt: new Date()
+        twoFactorOtpCodeHash: await bcrypt.hash(token, 8)
       }
     });
 
@@ -799,7 +781,6 @@ router.post('/2fa/verify-email-setup', authenticateToken, [
 
 router.post('/2fa/disable', authenticateToken, async (req, res) => {
   try {
-    const expiredAt = new Date();
     await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -807,8 +788,7 @@ router.post('/2fa/disable', authenticateToken, async (req, res) => {
         twoFactorMethod: null,
         twoFactorSecret: null,
         twoFactorTempSecret: null,
-        twoFactorOtpCodeHash: null,
-        twoFactorOtpExpiresAt: expiredAt
+        twoFactorOtpCodeHash: null
       }
     });
 
