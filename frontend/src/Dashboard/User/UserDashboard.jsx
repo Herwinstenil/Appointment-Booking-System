@@ -571,6 +571,12 @@ const getBookingHistoryStatusClass = (status = '') => {
         };
     }, [loadAppointments]);
 
+    useEffect(() => {
+        if (!twoFactorSuccess) return;
+        const timer = setTimeout(() => setTwoFactorSuccess(false), 3000);
+        return () => clearTimeout(timer);
+    }, [twoFactorSuccess]);
+
     // Appointments filtering state
     const [searchTerm, setSearchTerm] = useState('');
     const [activeAppointmentTab, setActiveAppointmentTab] = useState('All');
