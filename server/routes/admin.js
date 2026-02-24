@@ -1611,7 +1611,7 @@ router.get('/services', authenticateToken, authorizeRoles('ADMIN'), async (req, 
       prisma.service.findMany({
         where,
         include: {
-          user: {
+          client: {
             select: {
               id: true,
               username: true,
@@ -1955,8 +1955,7 @@ router.get('/appointments', authenticateToken, authorizeRoles('ADMIN'), async (r
               id: true,
               name: true,
               price: true,
-              category: true,
-              duration: true
+              category: true
             }
           },
           client: {
