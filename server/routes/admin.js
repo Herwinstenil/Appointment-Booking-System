@@ -68,6 +68,8 @@ const ADMIN_PROFILE_SELECT = {
   bio: true,
   avatarUrl: true,
   language: true,
+  twoFactorEnabled: true,
+  twoFactorMethod: true,
   createdAt: true,
   lastLogin: true,
   role: true
