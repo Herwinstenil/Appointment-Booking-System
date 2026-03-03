@@ -66,10 +66,22 @@ import {
     UserMinus
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const ADMIN_PROFILE_ENDPOINT = `${API_BASE_URL}/api/admin/profile`;
-const CHANGE_PASSWORD_ENDPOINT = `${API_BASE_URL}/api/auth/change-password`;
-const AUTH_2FA_BASE_ENDPOINT = `${API_BASE_URL}/api/auth/2fa`;
+const resolveApiOrigin = () => {
+    const configured = import.meta.env.VITE_API_URL?.trim();
+    if (configured) {
+        return configured.replace(/\/+$/, '').replace(/\/api$/, '');
+    }
+    if (typeof window !== 'undefined') {
+        return window.location.origin;
+    }
+    return '';
+};
+
+const API_ORIGIN = resolveApiOrigin();
+const API_BASE_URL = `${API_ORIGIN}/api`;
+const ADMIN_PROFILE_ENDPOINT = `${API_BASE_URL}/admin/profile`;
+const CHANGE_PASSWORD_ENDPOINT = `${API_BASE_URL}/auth/change-password`;
+const AUTH_2FA_BASE_ENDPOINT = `${API_BASE_URL}/auth/2fa`;
 const DEFAULT_PROFILE_STATE = {
     firstName: '',
     lastName: '',
@@ -176,7 +188,7 @@ const AdminDashboard = () => {
     const fetchUsersData = async () => {
         try {
             const headers = getAuthHeaders();
-            const usersResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers });
+            const usersResponse = await fetch(`${API_BASE_URL}/admin/users?limit=100`, { headers });
 
             if (usersResponse.ok) {
                 const usersData = await usersResponse.json();
@@ -198,7 +210,7 @@ const AdminDashboard = () => {
     const fetchServerUptime = async () => {
         try {
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/server-uptime`, { headers });
             if (response.ok) {
                 const uptimeData = await response.json();
                 setServerUptimeData(uptimeData.data);
@@ -212,7 +224,7 @@ const AdminDashboard = () => {
     const fetchSystemMetrics = async () => {
         try {
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/system-metrics`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/system-metrics`, { headers });
             if (response.ok) {
                 const metricsData = await response.json();
                 setSystemMetricsData(metricsData.data);
@@ -245,17 +257,17 @@ const AdminDashboard = () => {
                     serverUptimeResponse,
                     systemMetricsResponse
                 ] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/stats`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?limit=100`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/services?limit=100`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/appointments?limit=100`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/performance-metrics`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/top-clients`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/server-uptime`, { headers }),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/system-metrics`, { headers })
+                    fetch(`${API_BASE_URL}/admin/dashboard/stats`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/users?limit=100`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/services?limit=100`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/appointments?limit=100`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/revenue-by-category`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/recent-transactions`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/performance-metrics`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/top-clients`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/recent-activities`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/server-uptime`, { headers }),
+                    fetch(`${API_BASE_URL}/admin/dashboard/system-metrics`, { headers })
                 ]);
 
                 // Process responses
@@ -336,7 +348,7 @@ const AdminDashboard = () => {
     const fetchTopClients = async () => {
         try {
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/top-clients`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/top-clients`, { headers });
             if (response.ok) {
                 const data = await response.json();
                 setTopClients(data.data || []);
@@ -350,7 +362,7 @@ const AdminDashboard = () => {
     const fetchRecentActivities = async () => {
         try {
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-activities`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/recent-activities`, { headers });
             if (response.ok) {
                 const data = await response.json();
                 setRecentActivities(data.data || []);
@@ -1098,7 +1110,7 @@ const AdminDashboard = () => {
             const headers = getAuthHeaders();
 
             // Fetch client data for revenue and booking trend calculations
-            const clientsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?role=CLIENT&limit=1000`, { headers });
+            const clientsResponse = await fetch(`${API_BASE_URL}/admin/users?role=CLIENT&limit=1000`, { headers });
 
             if (!clientsResponse.ok) {
                 throw new Error('Failed to fetch client data');
@@ -1137,7 +1149,7 @@ const AdminDashboard = () => {
             setBookingAnalyticsError(null);
 
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users?role=CLIENT&limit=1000`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/users?role=CLIENT&limit=1000`, { headers });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch client data');
@@ -1898,7 +1910,7 @@ const AdminDashboard = () => {
         try {
             setIsRefreshing(true);
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${userToDelete.id}`, {
+            const response = await fetch(`${API_BASE_URL}/admin/users/${userToDelete.id}`, {
                 method: 'DELETE',
                 headers
             });
@@ -2082,7 +2094,7 @@ const AdminDashboard = () => {
                 const [firstName, ...lastNameParts] = localClient.name.trim().split(' ');
                 const lastName = lastNameParts.join(' ');
 
-                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users`, {
+                const response = await fetch(`${API_BASE_URL}/admin/users`, {
                     method: 'POST',
                     headers: {
                         ...headers,
@@ -2609,7 +2621,7 @@ const AdminDashboard = () => {
                     updateData.password = editedUser.password;
                 }
 
-                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/users/${selectedUser.id}`, {
+                const response = await fetch(`${API_BASE_URL}/admin/users/${selectedUser.id}`, {
                     method: 'PUT',
                     headers: {
                         ...headers,
@@ -2636,7 +2648,7 @@ const AdminDashboard = () => {
 
                 // Fetch updated revenue by category immediately after revenue update
                 try {
-                    const revenueByCategoryResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/revenue-by-category`, { headers });
+                    const revenueByCategoryResponse = await fetch(`${API_BASE_URL}/admin/dashboard/revenue-by-category`, { headers });
                     if (revenueByCategoryResponse.ok) {
                         const revenueData = await revenueByCategoryResponse.json();
                         setRevenueByCategory(revenueData.data || []);
@@ -2647,7 +2659,7 @@ const AdminDashboard = () => {
 
                 // Fetch updated recent transactions immediately after revenue update
                 try {
-                    const recentTransactionsResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/recent-transactions`, { headers });
+                    const recentTransactionsResponse = await fetch(`${API_BASE_URL}/admin/dashboard/recent-transactions`, { headers });
                     if (recentTransactionsResponse.ok) {
                         const transactionsData = await recentTransactionsResponse.json();
                         setRecentTransactions(transactionsData.data || []);
@@ -3904,7 +3916,7 @@ const AdminDashboard = () => {
 
             // Log the activity
             const headers = getAuthHeaders();
-            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+            await fetch(`${API_BASE_URL}/admin/activities/report-downloaded`, {
                 method: 'POST',
                 headers: {
                     ...headers,
@@ -3979,7 +3991,7 @@ const AdminDashboard = () => {
 
             // Log the activity
             const headers = getAuthHeaders();
-            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+            await fetch(`${API_BASE_URL}/admin/activities/report-downloaded`, {
                 method: 'POST',
                 headers: {
                     ...headers,
@@ -4038,7 +4050,7 @@ const AdminDashboard = () => {
 
             // Log the activity
             const headers = getAuthHeaders();
-            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+            await fetch(`${API_BASE_URL}/admin/activities/report-downloaded`, {
                 method: 'POST',
                 headers: {
                     ...headers,
@@ -4057,7 +4069,7 @@ const AdminDashboard = () => {
         try {
             // Fetch all activities data
             const headers = getAuthHeaders();
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/dashboard/export-activities`, { headers });
+            const response = await fetch(`${API_BASE_URL}/admin/dashboard/export-activities`, { headers });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch activities data');
@@ -4159,7 +4171,7 @@ const AdminDashboard = () => {
             doc.save('activity-log-report.pdf');
 
             // Log the activity
-            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/activities/report-downloaded`, {
+            await fetch(`${API_BASE_URL}/admin/activities/report-downloaded`, {
                 method: 'POST',
                 headers: {
                     ...headers,

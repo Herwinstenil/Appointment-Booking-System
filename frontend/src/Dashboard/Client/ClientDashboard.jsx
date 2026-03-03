@@ -473,7 +473,7 @@ const createServiceMutationState = () => ({
 const ClientDashboard = () => {
     const navigate = useNavigate();
     const { getAuthHeaders, API_BASE_URL, activateRole, getSession, logout } = useAuth();
-    const baseApiUrl = API_BASE_URL || 'http://localhost:5000/api';
+    const baseApiUrl = API_BASE_URL;
     const clientProfileEndpoint = `${baseApiUrl}/client/profile`;
     const [activeItem, setActiveItem] = useState('Dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -484,7 +484,7 @@ const ClientDashboard = () => {
     }, [activateRole]);
 
     const socketBaseUrl = useMemo(() => {
-        const base = API_BASE_URL || 'http://localhost:5000/api';
+        const base = API_BASE_URL;
         return base.replace(/\/api\/?$/, '');
     }, [API_BASE_URL]);
 
@@ -497,7 +497,7 @@ const ClientDashboard = () => {
         setServicesLoading(true);
         setServicesError(null);
         const headers = getAuthHeaders('CLIENT');
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
 
         try {
             const servicesResponse = await fetch(`${baseUrl}/services`, {
@@ -519,7 +519,7 @@ const ClientDashboard = () => {
     }, [API_BASE_URL, getAuthHeaders]);
 
     const fetchBookingsList = useCallback(async () => {
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = getAuthHeaders('CLIENT');
 
         const response = await fetch(`${baseUrl}/appointments/client`, {
@@ -540,7 +540,7 @@ const ClientDashboard = () => {
         setUsersLoading(true);
         setUsersError(null);
         const headers = getAuthHeaders('CLIENT');
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
 
         try {
             const usersResponse = await fetch(`${baseUrl}/client/users`, { headers });
@@ -570,7 +570,7 @@ const ClientDashboard = () => {
 
             try {
                 const headers = getAuthHeaders('CLIENT');
-                const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+                const baseUrl = API_BASE_URL;
                 const startedAt = performance.now();
 
                 const [statsResponse, revenueResponse] = await Promise.all([
@@ -1461,7 +1461,7 @@ const ClientDashboard = () => {
 
     const [processingRequestId, setProcessingRequestId] = useState(null);
     const loadAvailability = useCallback(async () => {
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = getAuthHeaders('CLIENT');
         try {
             const response = await fetch(`${baseUrl}/client/availability`, { headers });
@@ -1901,7 +1901,7 @@ const ClientDashboard = () => {
             targetId: serviceId
         });
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -1938,7 +1938,7 @@ const ClientDashboard = () => {
         setConfirmingBookingId(bookingId);
         setBookingActionError('');
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -1972,7 +1972,7 @@ const ClientDashboard = () => {
         setCancellingBookingId(bookingId);
         setBookingActionError('');
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -2018,7 +2018,7 @@ const ClientDashboard = () => {
     const handleSaveAvailability = async () => {
         setAvailabilitySaveError('');
         try {
-            const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+            const baseUrl = API_BASE_URL;
             const headers = {
                 ...getAuthHeaders('CLIENT'),
                 'Content-Type': 'application/json'
@@ -2050,7 +2050,7 @@ const ClientDashboard = () => {
         setProcessingRequestId(request.bookingId);
         setBookingActionError('');
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -2122,7 +2122,7 @@ const ClientDashboard = () => {
             targetId: null
         });
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -2225,7 +2225,7 @@ const ClientDashboard = () => {
         // Clear errors
         setClientErrors({});
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -2312,7 +2312,7 @@ const ClientDashboard = () => {
         setBookingActionError('');
         setUpdatingBookingId(editBookingData.id);
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders('CLIENT'),
             'Content-Type': 'application/json'
@@ -2387,7 +2387,7 @@ const ClientDashboard = () => {
             targetId: editServiceData.id
         });
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = {
             ...getAuthHeaders(),
             'Content-Type': 'application/json'
@@ -2430,7 +2430,7 @@ const ClientDashboard = () => {
         if (!serviceToDelete) return;
         setDeleteConfirm(false);
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = getAuthHeaders('CLIENT');
 
         setServiceMutation({
@@ -2473,7 +2473,7 @@ const ClientDashboard = () => {
             return;
         }
 
-        const baseUrl = API_BASE_URL || 'http://localhost:5000/api';
+        const baseUrl = API_BASE_URL;
         const headers = getAuthHeaders('CLIENT');
 
         try {

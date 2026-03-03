@@ -69,6 +69,23 @@ const resolveActiveRole = (sessions, preferredRole = null) => {
     return roles.find((role) => sessions[role]?.token) || null;
 };
 
+const parseJsonResponse = async (response, fallbackMessage = 'Request failed') => {
+    const rawText = await response.text();
+    if (!rawText) {
+        throw new Error(`${fallbackMessage}. Empty server response.`);
+    }
+
+    try {
+        return JSON.parse(rawText);
+    } catch (error) {
+        const statusLabel = `${response.status} ${response.statusText}`.trim();
+        if (rawText.trimStart().startsWith('<')) {
+            throw new Error(`Server returned HTML instead of JSON (${statusLabel}). Check API URL or dev proxy.`);
+        }
+        throw new Error(`${fallbackMessage}. Invalid JSON response (${statusLabel}).`);
+    }
+};
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -86,7 +103,16 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(initialAuth.userRole ? initialAuth.sessions[initialAuth.userRole]?.user : null);
     const [loading, setLoading] = useState(true);
 
-    const API_BASE_URL = 'http://localhost:5000/api';
+    const API_BASE_URL = useMemo(() => {
+        const configured = import.meta.env.VITE_API_URL?.trim();
+        if (configured) {
+            return configured.replace(/\/+$/, '');
+        }
+        if (typeof window !== 'undefined') {
+            return `${window.location.origin}/api`;
+        }
+        return '/api';
+    }, []);
 
     const applyLanguage = useCallback((lang) => {
         if (!lang) return;
@@ -189,7 +215,7 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response, 'Login failed');
 
             if (data.success) {
                 if (data.data?.requiresTwoFactor) {
@@ -210,7 +236,7 @@ export const AuthProvider = ({ children }) => {
             return { success: false, message: data.message };
         } catch (error) {
             console.error('Login error:', error);
-            return { success: false, message: 'Network error. Please try again.' };
+            return { success: false, message: error.message || 'Network error. Please try again.' };
         }
     }, [API_BASE_URL, storeRoleSession]);
 
@@ -224,7 +250,7 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ tempToken, token }),
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response, '2FA verification failed');
 
             if (data.success) {
                 const { user, token: authToken } = data.data;
@@ -235,7 +261,7 @@ export const AuthProvider = ({ children }) => {
             return { success: false, message: data.message };
         } catch (error) {
             console.error('2FA login verification error:', error);
-            return { success: false, message: 'Network error. Please try again.' };
+            return { success: false, message: error.message || 'Network error. Please try again.' };
         }
     }, [API_BASE_URL, storeRoleSession]);
 
@@ -249,7 +275,7 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify(userData),
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response, 'Registration failed');
 
             if (data.success) {
                 const { user, token } = data.data;
@@ -260,7 +286,7 @@ export const AuthProvider = ({ children }) => {
             return { success: false, message: data.message };
         } catch (error) {
             console.error('Register error:', error);
-            return { success: false, message: 'Network error. Please try again.' };
+            return { success: false, message: error.message || 'Network error. Please try again.' };
         }
     }, [API_BASE_URL, storeRoleSession]);
 
@@ -274,7 +300,7 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({ email, newPassword }),
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response, 'Password reset failed');
 
             if (data.success) {
                 return await login(email, newPassword);
@@ -283,7 +309,7 @@ export const AuthProvider = ({ children }) => {
             return { success: false, message: data.message };
         } catch (error) {
             console.error('Reset password error:', error);
-            return { success: false, message: 'Network error. Please try again.' };
+            return { success: false, message: error.message || 'Network error. Please try again.' };
         }
     }, [API_BASE_URL, login]);
 

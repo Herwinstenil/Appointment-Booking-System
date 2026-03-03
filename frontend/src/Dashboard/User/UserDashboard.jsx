@@ -146,7 +146,7 @@ const UserDashboard = () => {
     }, [activateRole]);
 
     const socketBaseUrl = useMemo(() => {
-        const base = API_BASE_URL || 'http://localhost:5000/api';
+        const base = API_BASE_URL;
         return base.replace(/\/api\/?$/, '');
     }, [API_BASE_URL]);
 

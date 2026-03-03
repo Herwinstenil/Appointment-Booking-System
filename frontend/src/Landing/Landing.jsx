@@ -5,6 +5,23 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAuth } from '../Context/AuthContext.jsx';
 
+const parseJsonResponse = async (response, fallbackMessage = 'Request failed') => {
+  const rawText = await response.text();
+  if (!rawText) {
+    throw new Error(`${fallbackMessage}. Empty server response.`);
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch (error) {
+    const statusLabel = `${response.status} ${response.statusText}`.trim();
+    if (rawText.trimStart().startsWith('<')) {
+      throw new Error(`Server returned HTML instead of JSON (${statusLabel}). Check API URL or dev proxy.`);
+    }
+    throw new Error(`${fallbackMessage}. Invalid JSON response (${statusLabel}).`);
+  }
+};
+
 const toDateOnlyString = (value) => {
   if (!value) return '';
   const date = value instanceof Date ? value : new Date(value);
@@ -53,7 +70,7 @@ export default function AppointmentLanding() {
         const response = await fetch(`${API_BASE_URL}/services/active`, {
           headers: getAuthHeaders()
         });
-        const payload = await response.json();
+        const payload = await parseJsonResponse(response, 'Unable to load services');
 
         if (!response.ok || !payload.success) {
           throw new Error(payload.message || 'Unable to load services');
@@ -144,7 +161,7 @@ export default function AppointmentLanding() {
         })
       });
 
-      const payload = await response.json();
+      const payload = await parseJsonResponse(response, 'Unable to book appointment');
 
       if (!response.ok || !payload.success) {
         throw new Error(payload.message || 'Unable to book appointment');
