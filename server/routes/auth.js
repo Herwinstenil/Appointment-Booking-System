@@ -308,6 +308,18 @@ router.post('/register', [
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Get next client number if creating a CLIENT
+    let clientNo = null;
+    let revenue = null;
+    if (role.toUpperCase() === 'CLIENT') {
+      const maxClientNo = await prisma.user.aggregate({
+        where: { role: 'CLIENT' },
+        _max: { clientNo: true }
+      });
+      clientNo = (maxClientNo._max.clientNo || 0) + 1;
+      revenue = 0.0;
+    }
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -319,6 +331,8 @@ router.post('/register', [
         role: role.toUpperCase(),
         company,
         mobile,
+        clientNo,
+        revenue,
         passwordUpdatedAt: new Date(),
         language: 'en'
       },
@@ -331,6 +345,8 @@ router.post('/register', [
         role: true,
         company: true,
         mobile: true,
+        clientNo: true,
+        revenue: true,
         avatarUrl: true,
         language: true,
         createdAt: true
