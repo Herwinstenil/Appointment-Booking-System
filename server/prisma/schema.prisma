@@ -1,5 +1,3 @@
-// Prisma schema for Appointment Booking System
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,71 +7,64 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  email     String?  @unique
-  password  String?
-  firstName String?
-  lastName  String?
-  role      Role     @default(USER)
-  company   String?
-  mobile    String?
-  address   String?
-  bio       String?
-  avatarUrl String?
-  language  String   @default("en")
-  emailVerified      Boolean  @default(false)
-  twoFactorEnabled   Boolean  @default(false)
-  twoFactorMethod    String?  @default("APP")
-  twoFactorSecret    String?
-  twoFactorTempSecret String?
-  twoFactorOtpCodeHash String?
-  passwordUpdatedAt  DateTime?
+  id                    String        @id @default(cuid())
+  username              String        @unique
+  email                 String?       @unique
+  password              String?
+  firstName             String?
+  lastName              String?
+  role                  Role          @default(USER)
+  company               String?
+  mobile                String?
+  address               String?
+  bio                   String?
+  position              String?
+  website               String?
+  isActive              Boolean       @default(true)
+  lastLogin             DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  clientNo              Int?          @unique
+  revenue               Float?        @default(0.0)
+  googleId              String?       @unique
+  facebookId            String?       @unique
+  githubId              String?       @unique
+  avatarUrl             String?
+  emailVerified         Boolean       @default(false)
+  twoFactorEnabled      Boolean       @default(false)
+  passwordUpdatedAt     DateTime?
   lastSuspiciousLoginAt DateTime?
-  position  String?
-  website   String?
-  isActive  Boolean  @default(true)
-  lastLogin DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clientNo  Int?     @unique
-  revenue   Float?   @default(0.0)
-
-  // Social login IDs
-  googleId    String? @unique
-  facebookId  String? @unique
-  githubId    String? @unique
-
-  // Relations
-  services               Service[] @relation("ClientServices")
-  appointmentsAsUser     Appointment[] @relation("UserAppointments")
-  appointmentsAsClient   Appointment[] @relation("ClientAppointments")
-  activities             Activity[]
-  uploads                FileUpload[]
+  language              String        @default("en")
+  twoFactorSecret       String?
+  twoFactorTempSecret   String?
+  twoFactorMethod       String?       @default("APP")
+  twoFactorOtpCodeHash  String?
+  activities            Activity[]
+  appointmentsAsClient  Appointment[] @relation("ClientAppointments")
+  appointmentsAsUser    Appointment[] @relation("UserAppointments")
+  uploads               FileUpload[]
+  services              Service[]     @relation("ClientServices")
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  category    String?
-  isActive    Boolean  @default(true)
-  rating      Float?
-  clientNo    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  client      User        @relation("ClientServices", fields: [clientNo], references: [clientNo])
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  category     String?
+  isActive     Boolean       @default(true)
+  rating       Float?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  clientNo     Int
   appointments Appointment[]
+  client       User          @relation("ClientServices", fields: [clientNo], references: [clientNo])
 }
 
 model Appointment {
   id        String   @id @default(cuid())
   userId    String
   serviceId String
-  clientNo  Int
   date      DateTime
   time      String
   amount    Float
@@ -83,11 +74,38 @@ model Appointment {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  clientNo  Int
+  client    User     @relation("ClientAppointments", fields: [clientNo], references: [clientNo])
+  service   Service  @relation(fields: [serviceId], references: [id])
+  user      User     @relation("UserAppointments", fields: [userId], references: [id])
+}
 
-  // Relations
-  user    User    @relation("UserAppointments", fields: [userId], references: [id])
-  service Service @relation(fields: [serviceId], references: [id])
-  client  User?   @relation("ClientAppointments", fields: [clientNo], references: [clientNo])
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  userId      String?
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+  user        User?        @relation(fields: [userId], references: [id])
+}
+
+model FileUpload {
+  id          String   @id @default(cuid())
+  userId      String
+  fileName    String
+  mimeType    String?
+  sizeInBytes BigInt   @default(0)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model ClientAvailability {
+  clientNo     Int      @id
+  availability Json
+  timeSlots    Json
+  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
 }
 
 enum Role {
@@ -113,34 +131,4 @@ enum ActivityType {
   REPORT_DOWNLOADED
   TWO_FACTOR_ENABLED
   TWO_FACTOR_DISABLED
-}
-
-model Activity {
-  id          String      @id @default(cuid())
-  type        ActivityType
-  description String
-  userId      String?     // admin who performed the action
-  targetId    String?     // id of the target (new admin, new client, etc.)
-  metadata    Json?       // additional data
-  createdAt   DateTime    @default(now())
-
-  user        User?       @relation(fields: [userId], references: [id])
-}
-
-model FileUpload {
-  id          String   @id @default(cuid())
-  userId      String
-  fileName    String
-  mimeType    String?
-  sizeInBytes BigInt    @default(0)
-  createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
-}
-
-model ClientAvailability {
-  clientNo     Int      @id
-  availability Json     @db.JsonB
-  timeSlots    Json     @db.JsonB
-  updatedAt    DateTime @default(now()) @db.Timestamptz(6)
 }
