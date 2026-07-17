@@ -19,6 +19,7 @@ services:
   backend:
     build: ./server
     container_name: appointment_backend
+    restart: unless-stopped
 
     depends_on:
       - postgres
