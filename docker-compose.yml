@@ -3,6 +3,7 @@ services:
   postgres:
     image: postgres:17
     container_name: appointment_postgres
+    restart: unless-stopped
 
     environment:
       POSTGRES_USER: postgres
