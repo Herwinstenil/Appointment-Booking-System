@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: appointment_postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: STENIL@2003
+      POSTGRES_DB: appointment_booking
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./server
+    container_name: appointment_backend
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "5000:5000"
+
+    environment:
+      DATABASE_URL: postgresql://postgres:STENIL%402003@postgres:5432/appointment_booking?schema=public
+      PORT: 5000
+      NODE_ENV: development
+
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    container_name: appointment_frontend
+
+    depends_on:
+      - backend
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      VITE_PROXY_TARGET: http://backend:5000
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    command: npm run dev -- --host
+
+volumes:
+  postgres_data:
