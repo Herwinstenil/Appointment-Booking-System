@@ -27,6 +27,9 @@ services:
     ports:
       - "5000:5000"
 
+    env_file:
+      - ./server/.env
+
     environment:
       DATABASE_URL: postgresql://postgres:STENIL%402003@postgres:5432/appointment_booking?schema=public
       PORT: 5000
