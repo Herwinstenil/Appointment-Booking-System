@@ -290,13 +290,24 @@ router.post('/', authenticateToken, authorizeRoles('USER'), async (req, res) => 
       });
     }
 
+    console.log('Booking debug:', {
+      userId: req.user.id,
+      clientNo: service.clientNo,
+      serviceId,
+      date: parsedDate,
+      time: appointmentTime,
+      amount: service.price,
+      serviceRaw: JSON.stringify(service).slice(0, 500)
+    });
+
     const appointment = await prisma.appointment.create({
       data: {
         userId: req.user.id,
-        clientNo: service.client?.clientNo || null,
+        clientNo: service.clientNo,
         serviceId,
         date: parsedDate,
         time: appointmentTime,
+        duration: service.duration || '1 hour',
         amount: service.price,
         status: 'PENDING',
         notes: notes ? notes.trim() : null
