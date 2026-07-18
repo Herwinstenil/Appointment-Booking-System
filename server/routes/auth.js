@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -174,13 +175,20 @@ passport.use(new GoogleStrategy({
           data: { googleId: profile.id }
         });
       } else {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), saltRounds);
         user = await prisma.user.create({
           data: {
             googleId: profile.id,
             email: profile.emails[0].value,
             username: profile.displayName.replace(/\s/g, '').toLowerCase(),
             firstName: profile.name.givenName,
-            lastName: profile.name.familyName
+            lastName: profile.name.familyName,
+            password: hashedPassword,
+            role: 'USER',
+            isActive: true,
+            language: 'en',
+            passwordUpdatedAt: new Date()
           }
         });
       }
@@ -207,13 +215,20 @@ passport.use(new FacebookStrategy({
           data: { facebookId: profile.id }
         });
       } else {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), saltRounds);
         user = await prisma.user.create({
           data: {
             facebookId: profile.id,
             email: profile.emails[0].value,
             username: profile.displayName.replace(/\s/g, '').toLowerCase(),
             firstName: profile.name.givenName,
-            lastName: profile.name.familyName
+            lastName: profile.name.familyName,
+            password: hashedPassword,
+            role: 'USER',
+            isActive: true,
+            language: 'en',
+            passwordUpdatedAt: new Date()
           }
         });
       }
@@ -239,12 +254,19 @@ passport.use(new GitHubStrategy({
           data: { githubId: profile.id }
         });
       } else {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), saltRounds);
         user = await prisma.user.create({
           data: {
             githubId: profile.id,
             email: profile.emails[0].value,
             username: profile.username,
-            firstName: profile.displayName
+            firstName: profile.displayName,
+            password: hashedPassword,
+            role: 'USER',
+            isActive: true,
+            language: 'en',
+            passwordUpdatedAt: new Date()
           }
         });
       }
