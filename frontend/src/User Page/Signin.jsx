@@ -325,6 +325,7 @@ export default function Signin() {
                             </button>
 
                             {/* Facebook Button */}
+                            {/*
                             <button
                                 onClick={() => handleSocialLogin('facebook')}
                                 className="w-12 h-12 flex items-center justify-center bg-[#1877F2] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:bg-[#166FE5] group"
@@ -332,6 +333,7 @@ export default function Signin() {
                             >
                                 <FaFacebookF className="w-5 h-5 text-white" />
                             </button>
+                            */}
 
                             {/* GitHub Button */}
                             <button
